@@ -64,6 +64,10 @@ public class Line : MonoBehaviour
 
         width = 800;
         height = 500;
+        Debug.DrawLine(new Vector2(0, 0), new Vector2(0, height), Color.gray);
+        Debug.DrawLine(new Vector2(0, 0), new Vector2(width, 0), Color.gray);
+        Debug.DrawLine(new Vector2(width, height), new Vector2(0, height), Color.gray);
+        Debug.DrawLine(new Vector2(width, height), new Vector2(width, 0), Color.gray);
 
         gpi = Mathf.PI;//pi
         
