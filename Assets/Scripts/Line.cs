@@ -5,9 +5,9 @@ using System.Collections.Generic;
 public class Line : MonoBehaviour
 {
     float gpi;
-    int N, gtaka, ghaba;
+    int N;
     int i, j, k;
-    float Nd, gtakad, ghabad;
+    float Nd, width, height;
     float tmpw;
     int br;
     Color colorObs, colorPnP, colorSnP, colorSnS;
@@ -62,10 +62,8 @@ public class Line : MonoBehaviour
         colorSnP = Color.red;
         colorSnS = Color.magenta;
 
-        ghabad = 1000;
-        gtakad = 500;
-        ghaba = (int)ghabad;
-        gtaka = (int)gtakad;
+        width = 800;
+        height = 500;
         N = 20;
         if (N == 20)
         {
@@ -124,10 +122,10 @@ public class Line : MonoBehaviour
         k = 0;
         while (k < N)
         {
-            dxs = rand() * (ghaba - 30) + 15;
-            dys = rand() * (gtaka - 30) + 15;
-            dxe = rand() * (ghaba - 30) + 15;
-            dye = rand() * (gtaka - 30) + 15;
+            dxs = rand() * (width - 30) + 15;
+            dys = rand() * (height - 30) + 15;
+            dxe = rand() * (width - 30) + 15;
+            dye = rand() * (height - 30) + 15;
             dslope = (dye - dys) / (dxe - dxs);
             dintercept = dys - dslope * dxs;
             minx = dxs;
@@ -466,22 +464,22 @@ public class Line : MonoBehaviour
             grx1 = -ssys / ssdi2;
             gry1 = 0.0f;
         }
-        if (ssys > gtakad)
+        if (ssys > height)
         {
-            grx1 = (gtakad - ssys) / ssdi2;
-            gry1 = gtakad;
+            grx1 = (height - ssys) / ssdi2;
+            gry1 = height;
         }
-        grx2 = ghabad;
-        gry2 = ssdi2 * ghabad + ssys;
+        grx2 = width;
+        gry2 = ssdi2 * width + ssys;
         if (gry2 < 0.0f)
         {
             grx2 = -ssys / ssdi2;
             gry2 = 0.0f;
         }
-        if (ssdi2 * ghabad + ssys > gtakad)
+        if (ssdi2 * width + ssys > height)
         {
-            grx2 = (gtakad - ssys) / ssdi2;
-            gry2 = gtakad;
+            grx2 = (height - ssys) / ssdi2;
+            gry2 = height;
         }
     }//bisec2poi
 
@@ -528,22 +526,22 @@ public class Line : MonoBehaviour
             gux1 = -lcys / lcslope;
             guy1 = 0.0f;
         }
-        if (lcys > gtakad)
+        if (lcys > height)
         {
-            gux1 = (gtakad - lcys) / lcslope;
-            guy1 = gtakad;
+            gux1 = (height - lcys) / lcslope;
+            guy1 = height;
         }
-        gux2 = ghabad;//(gux2,guy2) is right edge point of the one bisector of an angle  
-        guy2 = lcslope * ghabad + lcys;
+        gux2 = width;//(gux2,guy2) is right edge point of the one bisector of an angle  
+        guy2 = lcslope * width + lcys;
         if (guy2 < 0.0f)
         {
             gux2 = -lcys / lcslope;
             guy2 = 0.0f;
         }
-        if (lcslope * ghabad + lcys > gtakad)
+        if (lcslope * width + lcys > height)
         {
-            gux2 = (gtakad - lcys) / lcslope;
-            guy2 = gtakad;
+            gux2 = (height - lcys) / lcslope;
+            guy2 = height;
         }
 
         lthetaj = Mathf.Atan(gslope[parj]);
@@ -566,22 +564,22 @@ public class Line : MonoBehaviour
             gux3 = -lcys / lcslope;
             guy3 = 0.0f;
         }
-        if (lcys > gtakad)
+        if (lcys > height)
         {
-            gux3 = (gtakad - lcys) / lcslope;
-            guy3 = gtakad;
+            gux3 = (height - lcys) / lcslope;
+            guy3 = height;
         }
-        gux4 = ghabad;//(gux4,guy4) is right edge point of the other bisector of an angle  はもう一方の角の二等分線の右端
-        guy4 = lcslope * ghabad + lcys;
+        gux4 = width;//(gux4,guy4) is right edge point of the other bisector of an angle  はもう一方の角の二等分線の右端
+        guy4 = lcslope * width + lcys;
         if (guy4 < 0.0f)
         {
             gux4 = -lcys / lcslope;
             guy4 = 0.0f;
         }
-        if (lcslope * ghabad + lcys > gtakad)
+        if (lcslope * width + lcys > height)
         {
-            gux4 = (gtakad - lcys) / lcslope;
-            guy4 = gtakad;
+            gux4 = (height - lcys) / lcslope;
+            guy4 = height;
         }
 
     }//bisec2poi
