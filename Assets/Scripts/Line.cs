@@ -66,33 +66,7 @@ public class Line : MonoBehaviour
         height = 500;
 
         gpi = Mathf.PI;//pi
-
-        //s is start
-        //e is end
-        //l is left
-        //r is right
-        //s sometime is l
-        //e sometime is r
-
-        float slx;
-        float sly;
-        float srx;
-        float sry;
-
-        float elx;
-        float ely;
-        float erx;
-        float ery;
-
-        float selx;
-        float sely;
-        float serx;
-        float sery;
-
-        float eslx;
-        float esly;
-        float esrx;
-        float esry;
+        
 
         float dxs;
         float dxe;
@@ -481,15 +455,9 @@ public class Line : MonoBehaviour
     //2 bisectors of line segment i and line segment j　
     void bisec2seg(int pari, int parj)
     {
-
-
+        
         float lcx1;
         float lcy1;
-        float lcx2;
-        float lcy2;
-
-        float lslope;
-        float lintercept;
 
         float lthetai;
         float lthetaj;
