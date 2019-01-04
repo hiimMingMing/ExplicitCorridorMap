@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(Line))]
-public class LineEditor : Editor
+[CustomEditor(typeof(Voronoi))]
+public class VoronoiEditor : Editor
 {
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
 
-        Line myScript = (Line)target;
+        Voronoi myScript = (Voronoi)target;
         if (GUILayout.Button("Bake"))
         {
             myScript.Bake();
