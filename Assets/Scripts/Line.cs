@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class Line : MonoBehaviour
 {
     float gpi;
-    int N;
+    public int N = 6;
     int i, j, k;
     float Nd, width, height;
     float tmpw;
@@ -64,11 +64,6 @@ public class Line : MonoBehaviour
 
         width = 800;
         height = 500;
-        N = 20;
-        if (N == 20)
-        {
-            N = 2 + (int)(14 * rand());
-        }
 
         gpi = Mathf.PI;//pi
 
@@ -277,7 +272,7 @@ public class Line : MonoBehaviour
         }//lx
         for (int index=0;index < points.Count - 1; index++)
         {
-            Debug.DrawLine(points[index], points[index + 1], colorPnP);
+            if (Vector2.Distance(points[index], points[index + 1]) <= 1.0f) Debug.DrawLine(points[index], points[index + 1], colorPnP);
         }
         points.Clear();
 
@@ -358,7 +353,7 @@ public class Line : MonoBehaviour
         }//lx
         for (int index = 0; index < points.Count - 1; index++)
         {
-            Debug.DrawLine(points[index], points[index + 1], colorSnS);
+            if (Vector2.Distance(points[index], points[index + 1]) <= 1.0f) Debug.DrawLine(points[index], points[index + 1], colorSnS);
         }
         points.Clear();
     }
@@ -438,7 +433,7 @@ public class Line : MonoBehaviour
         }//y
         for (int index = 0; index < points.Count - 1; index++)
         {
-            Debug.DrawLine(points[index], points[index + 1], colorSnP);
+            if(Vector2.Distance(points[index], points[index + 1]) <= 1.0f) Debug.DrawLine(points[index], points[index + 1], colorSnP);
         }
         points.Clear();
     }
