@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using System.Collections.Generic;
 
 public class Line : MonoBehaviour
 {
@@ -239,6 +239,8 @@ public class Line : MonoBehaviour
                 z1end = slx * ldi + lys;
             }
         }
+        List<Vector2> points = new List<Vector2>();
+        
         for (z1 = z1start; z1 < z1end; z1 = z1 + 0.5f)
         {
             if (Mathf.Abs(ldi) < 1.0f)
@@ -271,10 +273,16 @@ public class Line : MonoBehaviour
             {
                 if (cntorder(i, j, lx, ly, disis) == 0)
                 {
-                    Debug.DrawLine(new Vector3((int)(lx), (int)(ly), 0), new Vector3((int)(lx) + 1, (int)(ly) + 1, 0), colorPnP);
+                    points.Add(new Vector2(lx, ly));
                 }
             }
         }//lx
+        for (int index=0;index < points.Count - 1; index++)
+        {
+            Debug.DrawLine(points[index], points[index + 1], colorPnP);
+        }
+        points.Clear();
+
     }
     private void ComputeSegmentAndSegment(int i, int j, float lsegcsx1, float lsegcsy1, float lsegcex1, float lsegcey1)
     {
@@ -298,6 +306,8 @@ public class Line : MonoBehaviour
             }
         }
         ldi = (lsegcsy1 - lsegcey1) / (lsegcsx1 - lsegcex1);
+        List<Vector2> points = new List<Vector2>();
+
         for (z1 = z1start; z1 < z1end; z1 = z1 + 0.5f)
         {
             if (Mathf.Abs(ldi) < 1.0f)
@@ -344,10 +354,15 @@ public class Line : MonoBehaviour
                                                                                                                  //compute distance to k. If distance to i is less than any other distance to k then plot (lx,ly) as bisector of i and j
                 if (cntorder(i, j, lx, ly, disijc) == 0)
                 {
-                    Debug.DrawLine(new Vector3((int)(lx), (int)(ly), 0), new Vector3((int)(lx) + 1, (int)(ly) + 1, 0), colorSnS);
+                    points.Add(new Vector2(lx, ly));
                 }
             }
         }//lx
+        for (int index = 0; index < points.Count - 1; index++)
+        {
+            Debug.DrawLine(points[index], points[index + 1], colorSnS);
+        }
+        points.Clear();
     }
     private void ComputeSegmentAndPoint(int i, int j, float gxsj, float gysj, float gxej, float gyej)
     {
@@ -390,6 +405,8 @@ public class Line : MonoBehaviour
         }
         lpboriginx = gpboriginx;
         lpboriginy = gpboriginy;
+        List<Vector2> points = new List<Vector2>();
+
         for (y = ystart; y < yend; y = y + 0.1f)
         {
             x = jou(y, 2.0f) / (4.0f * lpbijsp);
@@ -417,10 +434,15 @@ public class Line : MonoBehaviour
             {
                 if (cntorder(i, j, xrmp, yrmp, disjs) == 0)
                 {
-                    Debug.DrawLine(new Vector3((int)(xrmp), (int)(yrmp), 0), new Vector3((int)(xrmp) + 1, (int)(yrmp) + 1, 0), colorSnP);
+                    points.Add(new Vector2(xrmp, yrmp));
                 }
             }//cnt==0
         }//y
+        for (int index = 0; index < points.Count - 1; index++)
+        {
+            Debug.DrawLine(points[index], points[index + 1], colorSnP);
+        }
+        points.Clear();
     }
     //bisectors of two points 
     void bisec2poi(float tx1, float ty1, float tx2, float ty2)
