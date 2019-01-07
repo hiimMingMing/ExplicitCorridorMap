@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 83810841}
   - component: {fileID: 83810840}
   m_Layer: 0
-  m_Name: DLL
+  m_Name: Voronoi
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -138,7 +138,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 83810839}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6383007050ec7054cab5c77bd90049bb, type: 3}
+  m_Script: {fileID: 11500000, guid: 0547adaf5c1c6ac4a87fdead1558ad3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &83810841
