@@ -32,6 +32,7 @@ namespace OpenVoronoiCSharp
 
         /// \brief create a VoronoiDiagram
         /// \param far is the radius of a circle within which all sites must be located. use far==1.0
+
         public VoronoiDiagram()
         {
             kd_tree = new KdTree<KdPoint>(2);
@@ -39,7 +40,7 @@ namespace OpenVoronoiCSharp
             vpos = new VertexPositioner(g); // helper-class that positions vertices
             far_radius = 1.0;
             initialize();
-            num_psites = 3;
+            num_psites = 0;
             num_lsites = 0;
             num_asites = 0;
             reset_vertex_count();
@@ -1310,7 +1311,7 @@ namespace OpenVoronoiCSharp
                     // require that min_t and max_t bracket the root
                     if (errFunctr.value(min_t) * errFunctr.value(max_t) >= 0)
                         return;
-                    double result = MathNet.Numerics.RootFinding.Brent.FindRoot(errFunctr.value, min_t, max_t, 1e-20, 500);
+                    double result = MathNet.Numerics.RootFinding.Brent.FindRoot(errFunctr.value, min_t, max_t);
                     //int max_iter = 500;
 
                     split_pt_pos = split_edge.point(result);

@@ -1,29 +1,51 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using OpenVoronoiCSharp;
+using OpenVoronoiCSharp.Internals;
 using UnityEngine;
 using UnityEditor;
-using OpenVoronoiCSharp;
 [CustomEditor(typeof(OpenVoronoi))]
 public class OpenVoronoiEditor : Editor
 {
-    private VoronoiDiagram vd;
-
+    //private VoronoiDiagram vd;
+    public float vWidth = 0.01f;
+    VoronoiDiagram vd;
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
 
         //OpenVoronoi openVoronoi = target as OpenVoronoi;
+        vWidth = EditorGUILayout.FloatField("Vertex Width",vWidth);
+
         if (GUILayout.Button("Bake"))
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            float smallSize = 0.4f;
+            float largeSize = 1;
             vd = new VoronoiDiagram();
-            Vertex v1 = vd.insert_point_site(new Point(-0.4, -0.2));
-            Vertex v2 = vd.insert_point_site(new Point(0, 0.4));
-            Vertex v3 = vd.insert_point_site(new Point(0.4, -0.2));
-            //vd.insert_line_site(v1, v2);
+            var v1 = vd.insert_point_site(new Point(-smallSize, smallSize));
+            var v2 = vd.insert_point_site(new Point(smallSize, smallSize));
+            var v3 = vd.insert_point_site(new Point(smallSize, -smallSize));
+            var v4 = vd.insert_point_site(new Point(-smallSize, -smallSize));
+            var v11 = vd.insert_point_site(new Point(-largeSize, largeSize));
+            var v22 = vd.insert_point_site(new Point(largeSize, largeSize));
+            var v33 = vd.insert_point_site(new Point(largeSize, -largeSize));
+            var v44 = vd.insert_point_site(new Point(-largeSize, -largeSize));
+
+            vd.insert_line_site(v1, v2);
             vd.insert_line_site(v2, v3);
-            //vd.insert_line_site(v3, v1);
-            Debug.Log(vd.num_vertices() + " " + vd.num_faces());
+            vd.insert_line_site(v3, v4);
+            vd.insert_line_site(v4, v1);
+            vd.insert_line_site(v11, v22);
+            vd.insert_line_site(v22, v33);
+            vd.insert_line_site(v33, v44);
+            vd.insert_line_site(v44, v11);
+
+            vd.filter(new MedialAxisFilter());
+
+            watch.Stop();
+            Debug.Log(watch.ElapsedMilliseconds);
         }
     }
     void OnSceneGUI()
@@ -51,11 +73,17 @@ public class OpenVoronoiEditor : Editor
 
 
         List<Point> points = new List<Point>();
+        Handles.color = Color.white;
+
+        if (e.type == EdgeType.LINESITE)
+        {
+            Handles.color = Color.blue;
+        }
         if (e.type == EdgeType.SEPARATOR ||
             e.type == EdgeType.LINE ||
-            e.type == EdgeType.LINESITE ||
             e.type == EdgeType.OUTEDGE ||
             e.type == EdgeType.LINELINE ||
+            e.type == EdgeType.LINESITE ||
             e.type == EdgeType.PARA_LINELINE)
         {
             // edge drawn as two points
@@ -76,18 +104,28 @@ public class OpenVoronoiEditor : Editor
             }
         }
         Vector3[] line = new Vector3[points.Count];
-        for(int i = 0; i < line.Length; i++)
+        for (int i = 0; i < line.Length; i++)
         {
             line[i] = new Vector3((float)points[i].x, (float)points[i].y);
         }
-        Handles.color = Color.white;
         Handles.DrawPolyLine(line);
     }
     void DrawVertex(Vertex v)
     {
+        //if (v.type != VertexType.SEPPOINT) return;
         Point p = v.position;
         Handles.color = Color.yellow;
-        Handles.DrawSolidDisc(new Vector3((float)p.x, (float)p.y), new Vector3(0, 0, 1), 0.01f);
-        
+        Handles.DrawSolidDisc(new Vector3((float)p.x, (float)p.y), new Vector3(0, 0, 1), vWidth * 1.5f);
+        Handles.Label(new Vector3((float)p.x, (float)p.y), "x:" + p.x + "," + "y:" + p.y);
+        if (v.status == VertexStatus.NEW)
+        {
+            Handles.color = Color.green;
+            Handles.DrawWireDisc(new Vector3((float)p.x, (float)p.y), new Vector3(0, 0, 1), vWidth * 2f);
+        }
+        else if (v.status == VertexStatus.IN)
+        {
+            Handles.color = Color.red;
+            Handles.DrawWireDisc(new Vector3((float)p.x, (float)p.y), new Vector3(0, 0, 1), vWidth * 3f);
+        }
     }
 }
