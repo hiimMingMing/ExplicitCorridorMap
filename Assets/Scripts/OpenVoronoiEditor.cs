@@ -21,9 +21,9 @@ public class OpenVoronoiEditor : Editor
         if (GUILayout.Button("Bake"))
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            float smallSize = 0.4f;
-            float largeSize = 1;
-            vd = new VoronoiDiagram();
+            float smallSize = 4f;
+            float largeSize = 10f;
+            vd = new VoronoiDiagram(10);
             var v1 = vd.insert_point_site(new Point(-smallSize, smallSize));
             var v2 = vd.insert_point_site(new Point(smallSize, smallSize));
             var v3 = vd.insert_point_site(new Point(smallSize, -smallSize));
@@ -42,7 +42,7 @@ public class OpenVoronoiEditor : Editor
             vd.insert_line_site(v33, v44);
             vd.insert_line_site(v44, v11);
 
-            vd.filter(new MedialAxisFilter());
+            //vd.filter(new MedialAxisFilter());
 
             watch.Stop();
             Debug.Log(watch.ElapsedMilliseconds);
@@ -81,9 +81,9 @@ public class OpenVoronoiEditor : Editor
         }
         if (e.type == EdgeType.SEPARATOR ||
             e.type == EdgeType.LINE ||
-            e.type == EdgeType.OUTEDGE ||
             e.type == EdgeType.LINELINE ||
             e.type == EdgeType.LINESITE ||
+            e.type == EdgeType.OUTEDGE||
             e.type == EdgeType.PARA_LINELINE)
         {
             // edge drawn as two points
@@ -116,7 +116,7 @@ public class OpenVoronoiEditor : Editor
         Point p = v.position;
         Handles.color = Color.yellow;
         Handles.DrawSolidDisc(new Vector3((float)p.x, (float)p.y), new Vector3(0, 0, 1), vWidth * 1.5f);
-        Handles.Label(new Vector3((float)p.x, (float)p.y), "x:" + p.x + "," + "y:" + p.y);
+        Handles.Label(new Vector3((float)p.x, (float)p.y), "x:"+p.x + "\n" +"y:"+ p.y);
         if (v.status == VertexStatus.NEW)
         {
             Handles.color = Color.green;

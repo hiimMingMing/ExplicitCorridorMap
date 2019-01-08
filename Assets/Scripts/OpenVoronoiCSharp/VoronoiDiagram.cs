@@ -33,12 +33,12 @@ namespace OpenVoronoiCSharp
         /// \brief create a VoronoiDiagram
         /// \param far is the radius of a circle within which all sites must be located. use far==1.0
 
-        public VoronoiDiagram()
+        public VoronoiDiagram(float radius = 1.0f)
         {
             kd_tree = new KdTree<KdPoint>(2);
             vd_checker = new VoronoiDiagramChecker(g); // helper-class that checks topology/geometry
             vpos = new VertexPositioner(g); // helper-class that positions vertices
-            far_radius = 1.0;
+            far_radius = radius;
             initialize();
             num_psites = 0;
             num_lsites = 0;
