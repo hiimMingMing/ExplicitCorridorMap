@@ -22,4 +22,8 @@ public class OpenVoronoi : MonoBehaviour
     {
         
     }
+    void DrawVoronoi(VoronoiDiagram voronoiDiagram)
+    {
+
+    }
 }
