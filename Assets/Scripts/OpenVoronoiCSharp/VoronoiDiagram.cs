@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using OpenVoronoiCSharp.DataStructures;
+using OpenVoronoiCSharp.Internals;
+
 namespace OpenVoronoiCSharp
 {
     class VoronoiDiagram
