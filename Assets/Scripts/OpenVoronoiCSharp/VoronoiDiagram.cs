@@ -1308,7 +1308,7 @@ namespace OpenVoronoiCSharp
                     if (errFunctr.value(min_t) * errFunctr.value(max_t) >= 0)
                         return;
                     double result = MathNet.Numerics.RootFinding.Brent.FindRoot(errFunctr.value, min_t, max_t, 1e-20, 500);
-                    int max_iter = 500;
+                    //int max_iter = 500;
 
                     split_pt_pos = split_edge.point(result);
 
@@ -1828,7 +1828,7 @@ namespace OpenVoronoiCSharp
         public Edge v2_nxt; ///< edge following v2
         public Face f;      ///< face of v1 and v2
 
-        public String ToString()
+        public override String ToString()
         {
             return String.Format("EdgeData(\n  v1_prv: %s\n  v1: %s\n  v1_nxt: %s\n  v2_prv: %s\n  v2: %s\n  v2_nxt: %s\n)", v1_prv, v1, v1_nxt, v2_prv, v2, v2_nxt);
         }
@@ -1847,7 +1847,7 @@ namespace OpenVoronoiCSharp
             this.out_new_in = out_new_in;
         }
 
-        public String ToString()
+        public override String ToString()
         {
             return String.Format("SeparatorTarget(%s, %s, %s, %s)",
                                  v_previous, v_target, v_next, out_new_in);

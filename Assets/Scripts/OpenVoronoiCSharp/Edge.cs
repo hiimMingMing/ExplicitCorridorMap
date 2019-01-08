@@ -75,7 +75,7 @@ namespace OpenVoronoiCSharp
                 double nsig = sign ? -1 : +1;
                 double xc = x[0] - x[1] - x[2] * t + psig * x[3] * Math.Sqrt(discr1);
                 double yc = y[0] - y[1] - y[2] * t + nsig * y[3] * Math.Sqrt(discr2);
-                if (xc != xc)
+                if (Double.IsNaN( xc))
                 { // test for NaN!
                     throw new Exception();
                 }

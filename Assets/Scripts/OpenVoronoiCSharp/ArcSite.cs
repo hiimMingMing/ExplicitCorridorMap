@@ -92,10 +92,10 @@ namespace OpenVoronoiCSharp
                 return closer_endpoint(p);
         }
 
-        public double x() { return _center.x; }
-        public double y() { return _center.y; }
-        public double r() { return _radius; }
-        public double k() { return _k; } // ?
+        public override double x() { return _center.x; }
+        public override double y() { return _center.y; }
+        public override double r() { return _radius; }
+        public override double k() { return _k; } // ?
 
         /// return start Point of ArcSite
         public override Point start() { return _start; }

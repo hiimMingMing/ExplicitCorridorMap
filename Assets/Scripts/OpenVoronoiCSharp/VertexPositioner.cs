@@ -24,7 +24,7 @@ namespace OpenVoronoiCSharp
         double t_max; ///< maximum offset-distance
         Edge edge;  ///< the edge on which we position a new vertex
         List<double> errstat = new List<double>(); ///< error-statistics
-        bool silent; ///< silent mode (outputs no warnings to stdout)
+        //bool silent; ///< silent mode (outputs no warnings to stdout)
 
         /// create positioner, set graph.
         public VertexPositioner(HalfEdgeDiagram gi)
@@ -36,7 +36,7 @@ namespace OpenVoronoiCSharp
             sep_solver = new SEPSolver();
             alt_sep_solver = new ALTSEPSolver();
             lll_para_solver = new LLLPARASolver();
-            silent = false;
+            //silent = false;
             errstat.Clear();
         }
 
