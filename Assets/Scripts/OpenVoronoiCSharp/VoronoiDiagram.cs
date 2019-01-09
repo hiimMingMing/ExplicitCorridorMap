@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using OpenVoronoiCSharp.DataStructures;
 using OpenVoronoiCSharp.Internals;
-
+using SD.Tools.Algorithmia.PriorityQueues;
 namespace OpenVoronoiCSharp
 {
     class VoronoiDiagram
@@ -18,7 +18,7 @@ namespace OpenVoronoiCSharp
         /// priority_queue for vertex for processing
         // sorted by decreasing fabs() of in_circle-predicate, so that the vertices whose IN/OUT status we are 'most certain' about are processed first
         ///< queue of vertices to be processed
-        protected List<Pair<Vertex, Double>> vertexQueue = new List<Pair<Vertex, Double>>();
+        protected SimplePriorityQueue<Pair<Vertex, double>> vertexQueue = new SimplePriorityQueue<Pair<Vertex, double>>(ComparePair);
         protected HalfEdgeDiagram g = new HalfEdgeDiagram(); ///< the half-edge diagram of the vd
         protected double far_radius; ///< sites must fall within a circle with radius far_radius
         protected int num_psites; ///< the number of point sites
@@ -734,8 +734,8 @@ namespace OpenVoronoiCSharp
         {
             while (vertexQueue.Count != 0)
             {
-                Pair<Vertex, Double> nextVertexDet = vertexQueue.First();
-                vertexQueue.RemoveAt(0);
+                Pair<Vertex, Double> nextVertexDet = vertexQueue.Remove();
+                //vertexQueue.RemoveAt(0);
                 Vertex v = nextVertexDet.getFirst();
                 double h = nextVertexDet.getSecond();
                 Debug.Assert(v.status == VertexStatus.UNDECIDED, " v.status == VertexStatus.UNDECIDED ");
@@ -1821,6 +1821,10 @@ namespace OpenVoronoiCSharp
             //s.WIDTH = width;
             //s.writeTo(fname);
         }
+        private static int ComparePair(Pair<Vertex, Double> lhs, Pair<Vertex, Double> rhs)
+        {
+            return -Math.Abs(lhs.getSecond()).CompareTo( Math.Abs(rhs.getSecond()));
+        }
     }
     class EdgeData
     {
@@ -1873,4 +1877,5 @@ namespace OpenVoronoiCSharp
             this.get5 = f2;
         }
     }
+    
 }
