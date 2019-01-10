@@ -1823,7 +1823,7 @@ namespace OpenVoronoiCSharp
         }
         private static int ComparePair(Pair<Vertex, Double> lhs, Pair<Vertex, Double> rhs)
         {
-            return -Math.Abs(lhs.getSecond()).CompareTo( Math.Abs(rhs.getSecond()));
+            return -Math.Abs(lhs.getSecond()).CompareTo(Math.Abs(rhs.getSecond()));
         }
     }
     class EdgeData
@@ -1877,5 +1877,5 @@ namespace OpenVoronoiCSharp
             this.get5 = f2;
         }
     }
-    
+
 }
