@@ -24,24 +24,43 @@ public class MedialAxisEditor : Editor
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            Point p0 = new Point(200, 250);
-            Point p1 = new Point(400, 250);
-            List<Point> InputPoints = new List<Point>();
+            //Point p0 = new Point(200, 250);
+            //Point p1 = new Point(400, 250);
+            //List<Point> InputPoints = new List<Point>();
+            //List<Segment> InputSegments = new List<Segment> {
+            //    new Segment(new Point(0,0), new Point(0,500)),
+            //    new Segment(new Point(0,0), new Point(500,0)),
+            //    new Segment(new Point(500,0), new Point(500,500)),
+            //    new Segment(new Point(0,500), new Point(500,500)),
+            //    new Segment(new Point(50,50), new Point(50,450)),
+            //    new Segment(new Point(50,50), new Point(450,50)),
+            //    new Segment(new Point(450,50), new Point(450,450)),
+            //    new Segment(new Point(50,450), new Point(450,450)),
+            //    new Segment(new Point(50,50), p0),
+            //    new Segment(new Point(50,450), p0),
+            //    new Segment(p0,p1),
+            //    new Segment(p1,new Point(50,50))
+            //};
+            /*AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA*/
+            //Point p0 = new Point(200, 250);
+            //Point p1 = new Point(400, 250);
+
+            //List<Point> InputPoints = new List<Point>();
+            //List<Segment> InputSegments = new List<Segment> {
+            //    new Segment(new Point(0,0), new Point(0,500)),
+            //    new Segment(new Point(0,0), new Point(500,0)),
+            //    new Segment(new Point(0,0), new Point(500,500)),
+            //    new Segment(new Point(500,0), new Point(500,500)),
+            //    new Segment(new Point(0,500), new Point(500,500)),
+            //};
+            /*AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA*/
+            List<Point> InputPoints = new List<Point>() { new Point(250, 250) };
             List<Segment> InputSegments = new List<Segment> {
                 new Segment(new Point(0,0), new Point(0,500)),
                 new Segment(new Point(0,0), new Point(500,0)),
                 new Segment(new Point(500,0), new Point(500,500)),
                 new Segment(new Point(0,500), new Point(500,500)),
-                new Segment(new Point(50,50), new Point(50,450)),
-                new Segment(new Point(50,50), new Point(450,50)),
-                new Segment(new Point(450,50), new Point(450,450)),
-                new Segment(new Point(50,450), new Point(450,450)),
-                new Segment(new Point(50,50), p0),
-                new Segment(new Point(50,450), p0),
-                new Segment(p0,p1),
-                new Segment(p1,new Point(50,50))
             };
-
             VoronoiSolution = new BoostVoronoi();
             foreach (var point in InputPoints)
             {
@@ -86,7 +105,6 @@ public class MedialAxisEditor : Editor
             Edge outputSegment = VoronoiSolution.GetEdge(edgeIndex);
             if (!outputSegment.IsFinite)
                 continue;
-
             Vertex start = VoronoiSolution.GetVertex(outputSegment.Start);
             Vertex end = VoronoiSolution.GetVertex(outputSegment.End);
 
