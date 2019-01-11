@@ -48,6 +48,8 @@ public class OpenVoronoi : MonoBehaviour
         //Construct
         VoronoiSolution.Construct();
 
+        var x = VoronoiSolution.GetCell(1);
+        var n = x;
         Debug.Log("VoronoiEdge:" + VoronoiSolution.CountEdges);
         Debug.Log("VoronoiVertex:" + VoronoiSolution.CountVertices);
         Debug.Log("VoronoiCell:" + VoronoiSolution.CountCells);

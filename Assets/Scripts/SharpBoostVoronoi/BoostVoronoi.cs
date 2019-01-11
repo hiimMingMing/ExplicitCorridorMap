@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-
+using UnityEngine;
 namespace SharpBoostVoronoi
 {
     public class BoostVoronoi : IDisposable
@@ -37,12 +37,40 @@ namespace SharpBoostVoronoi
         public static extern void CreateEdgeMap(IntPtr v);
         [DllImport("BoostVoronoi")]
         public static extern void CreateCellMap(IntPtr v);
+        [DllImport("BoostVoronoi")]
+        public static extern void GetVertex(IntPtr v, long index, 
+            out long a0,
+            out double a1,
+            out double a2);
+        [DllImport("BoostVoronoi")]
+        public static extern void GetEdge(IntPtr v, long index, 
+            out long a0,
+            out long a1,
+            out long a2,
+            out bool a3,
+            out bool a4,
+            out bool a5,
+            out long a6,
+            out long a7);
+        [DllImport("BoostVoronoi")]
+        public static extern void GetCell(IntPtr v, long index, 
+            out long a0,
+            out long a1,
+            out short a2,
+            out bool a3,
+            out bool a4,
+            out bool a5,
+            out bool a6,
+            long[] array1,
+            out int array1Size,
+            long[] array2,
+            out int array2Size);
 
         public bool disposed = false;
 
         private int _scaleFactor = 0;
 
-
+        private const int BUFFER_SIZE = 15;
         /// <summary>
         /// The reference to the CLR wrapper class
         /// </summary>
@@ -147,6 +175,7 @@ namespace SharpBoostVoronoi
             this.CountVertices = GetCountVertices(VoronoiWrapper);
             this.CountEdges = GetCountEdges(VoronoiWrapper);
             this.CountCells = GetCountCells(VoronoiWrapper);
+
         }
 
         /// <summary>
@@ -159,27 +188,42 @@ namespace SharpBoostVoronoi
 
         public Vertex GetVertex(long index)
         {
-            //if (index < -0 || index > this.CountVertices - 1)
-            //    throw new IndexOutOfRangeException();
-
-            //return new Vertex(VoronoiWrapper.GetVertex(index));
-            return null;
+            if (index < -0 || index > this.CountVertices - 1)
+                throw new IndexOutOfRangeException();
+            GetVertex(VoronoiWrapper, index, out long a0, out double a1, out double a2);
+            var x = Tuple.Create(a0, a1, a2);
+            return new Vertex(x);
         }
+
 
         public Edge GetEdge(long index)
         {
-            //if (index < -0 || index > this.CountEdges - 1)
-            //    throw new IndexOutOfRangeException();
-            //return new Edge(VoronoiWrapper.GetEdge(index));
-            return null;
+            if (index < -0 || index > this.CountEdges - 1)
+                throw new IndexOutOfRangeException();
+            GetEdge(VoronoiWrapper, index, out long a0, out long a1, out long a2, out bool a3, out bool a4, out bool a5, out long a6, out long a7);
+            var x = Tuple.Create(a0, a1, a2, a3, a4, a5,Tuple.Create( a6, a7));
+            return new Edge(x);
         }
 
         public Cell GetCell(long index)
         {
-            //if (index < -0 || index > this.CountCells - 1)
-            //    throw new IndexOutOfRangeException();
-            //return new Cell(VoronoiWrapper.GetCell(index));
-            return null;
+            if (index < -0 || index > this.CountCells - 1)
+                throw new IndexOutOfRangeException();
+            long[] array1 = new long[BUFFER_SIZE];
+            long[] array2 = new long[BUFFER_SIZE];
+            GetCell(VoronoiWrapper, 1, out long a0, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out bool a6, array1, out int array1Size, array2, out int array2Size);
+            List<long> list1 = new List<long>();
+            for(int i=0; i< array1Size; i++)
+            {
+                list1.Add(array1[i]);
+            }
+            List<long> list2 = new List<long>();
+            for (int i = 0; i < array2Size; i++)
+            {
+                list2.Add(array2[i]);
+            }
+            var x = Tuple.Create(a0, a1, a2, Tuple.Create(a3, a4, a5, a6), list1, list2);
+            return new Cell(x);
         }
 
 
