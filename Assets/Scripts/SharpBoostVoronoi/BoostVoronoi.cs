@@ -211,7 +211,7 @@ namespace SharpBoostVoronoi
                 throw new IndexOutOfRangeException();
             long[] array1 = new long[BUFFER_SIZE];
             long[] array2 = new long[BUFFER_SIZE];
-            GetCell(VoronoiWrapper, 1, out long a0, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out bool a6, array1, out int array1Size, array2, out int array2Size);
+            GetCell(VoronoiWrapper, index, out long a0, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out bool a6, array1, out int array1Size, array2, out int array2Size);
             List<long> list1 = new List<long>();
             for(int i=0; i< array1Size; i++)
             {
@@ -248,7 +248,7 @@ namespace SharpBoostVoronoi
         public void AddPoint(double x, double y)
         {
             Point p = new Point(Convert.ToInt32(x * ScaleFactor), Convert.ToInt32(y * ScaleFactor));
-            InputPoints[InputPoints.Count] = p;
+            InputPoints.Add(InputPoints.Count, p);
             AddPoint(VoronoiWrapper,p.X, p.Y);
         }
 
@@ -281,7 +281,7 @@ namespace SharpBoostVoronoi
                  Convert.ToInt32(y2 * ScaleFactor)
             );
 
-            InputSegments[InputSegments.Count] = s;
+            InputSegments.Add(InputSegments.Count, s);
             AddSegment(
                 VoronoiWrapper,
                 s.Start.X,
