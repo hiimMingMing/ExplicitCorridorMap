@@ -2,48 +2,48 @@
 using SharpBoostVoronoi.Exceptions;
 using SharpBoostVoronoi.Input;
 using SharpBoostVoronoi.Output;
+using SharpBoostVoronoi.Maths;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using UnityEngine;
+
 namespace SharpBoostVoronoi
 {
     public class BoostVoronoi : IDisposable
     {
+        #region DLL_IMPORT
         [DllImport("BoostVoronoi")]
-        public static extern IntPtr CreateVoronoiWraper();
+        private static extern IntPtr CreateVoronoiWraper();
         [DllImport("BoostVoronoi")]
-        public static extern void DeleteVoronoiWrapper(IntPtr v);
+        private static extern void DeleteVoronoiWrapper(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern void AddPoint(IntPtr v, int x, int y);
+        private static extern void AddPoint(IntPtr v, int x, int y);
         [DllImport("BoostVoronoi")]
-        public static extern void AddSegment(IntPtr v, int x1, int y1, int x2, int y2);
+        private static extern void AddSegment(IntPtr v, int x1, int y1, int x2, int y2);
         [DllImport("BoostVoronoi")]
-        public static extern void Construct(IntPtr v);
+        private static extern void Construct(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern void Clear(IntPtr v);
+        private static extern void Clear(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern long GetCountVertices(IntPtr v);
+        private static extern long GetCountVertices(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern long GetCountEdges(IntPtr v);
+        private static extern long GetCountEdges(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern long GetCountCells(IntPtr v);
+        private static extern long GetCountCells(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern void CreateVertexMap(IntPtr v);
+        private static extern void CreateVertexMap(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern void CreateEdgeMap(IntPtr v);
+        private static extern void CreateEdgeMap(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern void CreateCellMap(IntPtr v);
+        private static extern void CreateCellMap(IntPtr v);
         [DllImport("BoostVoronoi")]
-        public static extern void GetVertex(IntPtr v, long index, 
+        private static extern void GetVertex(IntPtr v, long index, 
             out long a0,
             out double a1,
             out double a2);
         [DllImport("BoostVoronoi")]
-        public static extern void GetEdge(IntPtr v, long index, 
+        private static extern void GetEdge(IntPtr v, long index, 
             out long a0,
             out long a1,
             out long a2,
@@ -53,7 +53,7 @@ namespace SharpBoostVoronoi
             out long a6,
             out long a7);
         [DllImport("BoostVoronoi")]
-        public static extern void GetCell(IntPtr v, long index, 
+        private static extern void GetCell(IntPtr v, long index, 
             out long a0,
             out long a1,
             out short a2,
@@ -65,7 +65,7 @@ namespace SharpBoostVoronoi
             out int array1Size,
             long[] array2,
             out int array2Size);
-
+        #endregion
         public bool disposed = false;
 
         private int _scaleFactor = 0;
@@ -100,6 +100,9 @@ namespace SharpBoostVoronoi
         public long CountVertices { get; private set; }
         public long CountEdges { get; private set; }
         public long CountCells { get; private set; }
+        public Dictionary<long, Vertex> Vertices { get; } = new Dictionary<long, Vertex>();
+        public Dictionary<long, Edge> Edges { get; } = new Dictionary<long, Edge>();
+        public Dictionary<long, Cell> Cells { get; } = new Dictionary<long, Cell>();
 
         /// <summary>
         /// Default constructor
@@ -176,6 +179,48 @@ namespace SharpBoostVoronoi
             this.CountEdges = GetCountEdges(VoronoiWrapper);
             this.CountCells = GetCountCells(VoronoiWrapper);
 
+            for (long i=0;i< CountVertices; i++)
+            {
+                var vertex = GetVertex(i);
+                Vertices.Add(i, vertex);
+            }
+            for (long i = 0; i < CountEdges; i++)
+            {
+                var edge = GetEdge(i);
+                Edges.Add(i, edge);
+            }
+            for (long i = 0; i < CountCells; i++)
+            {
+                var cell = GetCell(i);
+                Cells.Add(i, cell);
+            }
+            //caculate nearest obstacle points of each vertex
+            foreach(var edge in Edges.Values)
+            {
+                if (!edge.IsFinite) continue;
+                var cell = Cells[edge.Cell];
+                var startVertex = Vertices[edge.Start];
+                var endVertex = Vertices[edge.End];
+                if (cell.ContainsPoint)
+                {
+                    var pointSite = RetrieveInputPoint(cell);
+                    startVertex.NearestObstaclePoints.Add(pointSite);
+                    endVertex.NearestObstaclePoints.Add(pointSite);
+                }
+                else
+                {
+                    var lineSite = RetrieveInputSegment(cell);
+                    var startLineSite = new Vertex(lineSite.Start.X, lineSite.Start.Y);
+                    var endLineSite = new Vertex(lineSite.End.X, lineSite.End.Y);
+                    var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex);
+                    var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex);
+
+                    startVertex.NearestObstaclePoints.Add(new Point((int)nearestPointOfStartVertex.X, (int)nearestPointOfStartVertex.Y));
+                    endVertex.NearestObstaclePoints.Add(new Point((int)nearestPointOfEndVertex.X, (int)nearestPointOfEndVertex.Y));
+                }
+
+
+            }
         }
 
         /// <summary>
@@ -186,7 +231,7 @@ namespace SharpBoostVoronoi
             Clear(VoronoiWrapper);
         }
 
-        public Vertex GetVertex(long index)
+        private Vertex GetVertex(long index)
         {
             if (index < -0 || index > this.CountVertices - 1)
                 throw new IndexOutOfRangeException();
@@ -196,7 +241,7 @@ namespace SharpBoostVoronoi
         }
 
 
-        public Edge GetEdge(long index)
+        private Edge GetEdge(long index)
         {
             if (index < -0 || index > this.CountEdges - 1)
                 throw new IndexOutOfRangeException();
@@ -205,7 +250,7 @@ namespace SharpBoostVoronoi
             return new Edge(x);
         }
 
-        public Cell GetCell(long index)
+        private Cell GetCell(long index)
         {
             if (index < -0 || index > this.CountCells - 1)
                 throw new IndexOutOfRangeException();

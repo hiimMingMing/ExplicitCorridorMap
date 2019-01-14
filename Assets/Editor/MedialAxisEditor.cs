@@ -79,6 +79,7 @@ public class MedialAxisEditor : Editor
             Debug.Log("Voronoi Vertex Count: " + VoronoiSolution.CountVertices);
             Debug.Log("Voronoi Cell Count: " + VoronoiSolution.CountCells);
             Debug.Log("Time: " + watch.ElapsedMilliseconds);
+            
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");
@@ -117,11 +118,11 @@ public class MedialAxisEditor : Editor
         Handles.color = Color.blue;
         for (long edgeIndex = 0; edgeIndex < VoronoiSolution.CountEdges; edgeIndex++)
         {
-            Edge outputSegment = VoronoiSolution.GetEdge(edgeIndex);
+            Edge outputSegment = VoronoiSolution.Edges[edgeIndex];
             if (!outputSegment.IsFinite)
                 continue;
-            Vertex start = VoronoiSolution.GetVertex(outputSegment.Start);
-            Vertex end = VoronoiSolution.GetVertex(outputSegment.End);
+            Vertex start = VoronoiSolution.Vertices[outputSegment.Start];
+            Vertex end = VoronoiSolution.Vertices[outputSegment.End];
 
             if (outputSegment.IsLinear)
             {
@@ -149,6 +150,18 @@ public class MedialAxisEditor : Editor
             }
         }
 
+        //Draw Nearest Obstacle Point 
+        Handles.color = Color.green;
+        foreach(var v in VoronoiSolution.Vertices.Values)
+        {
+            foreach(var p in v.NearestObstaclePoints)
+            {
+                //Debug.Log(v.NearestObstaclePoints.Count);
+                var start = new Vector3((int)v.X, (int)v.Y);
+                var end = new Vector3(p.X, p.Y);
+                Handles.DrawLine(start,end);
+            }
+        }
     }
     List<Segment> PopulateSegment(int maxX, int maxY)
     {
