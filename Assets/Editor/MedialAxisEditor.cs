@@ -120,7 +120,7 @@ public class MedialAxisEditor : Editor
         for (long edgeIndex = 0; edgeIndex < VoronoiSolution.CountEdges; edgeIndex++)
         {
             Edge outputSegment = VoronoiSolution.Edges[edgeIndex];
-            if (!outputSegment.IsFinite)
+            if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
                 continue;
             Vertex start = VoronoiSolution.Vertices[outputSegment.Start];
             Vertex end = VoronoiSolution.Vertices[outputSegment.End];
