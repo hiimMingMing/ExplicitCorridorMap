@@ -204,8 +204,8 @@ namespace SharpBoostVoronoi
                 if (cell.ContainsPoint)
                 {
                     var pointSite = RetrieveInputPoint(cell);
-                    startVertex.NearestObstaclePoints.Add(pointSite);
-                    endVertex.NearestObstaclePoints.Add(pointSite);
+                    startVertex.AddNearestObstaclePoint(pointSite);
+                    endVertex.AddNearestObstaclePoint(pointSite);
                 }
                 else
                 {
@@ -215,8 +215,8 @@ namespace SharpBoostVoronoi
                     var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex);
                     var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex);
 
-                    startVertex.NearestObstaclePoints.Add(new Point((int)nearestPointOfStartVertex.X, (int)nearestPointOfStartVertex.Y));
-                    endVertex.NearestObstaclePoints.Add(new Point((int)nearestPointOfEndVertex.X, (int)nearestPointOfEndVertex.Y));
+                    startVertex.AddNearestObstaclePoint(nearestPointOfStartVertex);
+                    endVertex.AddNearestObstaclePoint(nearestPointOfEndVertex);
                 }
 
 

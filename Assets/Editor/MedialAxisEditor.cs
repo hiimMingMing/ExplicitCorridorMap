@@ -14,6 +14,7 @@ public class MedialAxisEditor : Editor
     float inputPointRadius = 12f;
     float outputPointRadius = 6f;
     int segmentCount = 100000;
+    bool drawNearestObstaclePoints = false;
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -21,7 +22,7 @@ public class MedialAxisEditor : Editor
         //OpenVoronoi openVoronoi = target as OpenVoronoi;
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
-
+        drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", drawNearestObstaclePoints);
         if (GUILayout.Button("Bake"))
         {
 
@@ -151,15 +152,17 @@ public class MedialAxisEditor : Editor
         }
 
         //Draw Nearest Obstacle Point 
-        Handles.color = Color.green;
-        foreach(var v in VoronoiSolution.Vertices.Values)
+        if (drawNearestObstaclePoints)
         {
-            foreach(var p in v.NearestObstaclePoints)
+            Handles.color = Color.green;
+            foreach (var v in VoronoiSolution.Vertices.Values)
             {
-                //Debug.Log(v.NearestObstaclePoints.Count);
-                var start = new Vector3((int)v.X, (int)v.Y);
-                var end = new Vector3(p.X, p.Y);
-                Handles.DrawLine(start,end);
+                foreach (var p in v.NearestObstaclePoints)
+                {
+                    var start = new Vector3((int)v.X, (int)v.Y);
+                    var end = new Vector3(p.x, p.y);
+                    Handles.DrawLine(start, end);
+                }
             }
         }
     }
