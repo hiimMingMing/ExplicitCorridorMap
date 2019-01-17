@@ -39,32 +39,30 @@ namespace SharpBoostVoronoi
         private static extern void CreateCellMap(IntPtr v);
         [DllImport("BoostVoronoi")]
         private static extern void GetVertex(IntPtr v, long index, 
-            out long a0,
             out double a1,
-            out double a2);
+            out double a2,
+            out long a3);
         [DllImport("BoostVoronoi")]
         private static extern void GetEdge(IntPtr v, long index, 
-            out long a0,
             out long a1,
             out long a2,
             out bool a3,
             out bool a4,
             out bool a5,
             out long a6,
-            out long a7);
+            out long a7,
+            out long a8,
+            out long a9,
+            out long a10,
+            out long a11);
         [DllImport("BoostVoronoi")]
         private static extern void GetCell(IntPtr v, long index, 
-            out long a0,
             out long a1,
             out short a2,
             out bool a3,
             out bool a4,
             out bool a5,
-            out bool a6,
-            long[] array1,
-            out int array1Size,
-            long[] array2,
-            out int array2Size);
+            out long a6);
         #endregion
         public bool disposed = false;
 
@@ -235,8 +233,8 @@ namespace SharpBoostVoronoi
         {
             if (index < -0 || index > this.CountVertices - 1)
                 throw new IndexOutOfRangeException();
-            GetVertex(VoronoiWrapper, index, out long a0, out double a1, out double a2);
-            var x = Tuple.Create(a0, a1, a2);
+            GetVertex(VoronoiWrapper, index, out double a1, out double a2, out long a3);
+            var x = Tuple.Create(a1, a2,a3);
             return new Vertex(x);
         }
 
@@ -245,8 +243,9 @@ namespace SharpBoostVoronoi
         {
             if (index < -0 || index > this.CountEdges - 1)
                 throw new IndexOutOfRangeException();
-            GetEdge(VoronoiWrapper, index, out long a0, out long a1, out long a2, out bool a3, out bool a4, out bool a5, out long a6, out long a7);
-            var x = Tuple.Create(a0, a1, a2, a3, a4, a5,Tuple.Create( a6, a7));
+            GetEdge(VoronoiWrapper, index, out long a1, out long a2, out bool a3, out bool a4, out bool a5, out long a6, out long a7, out long a8, out long a9, out long a10, out long a11);
+            var relation = Tuple.Create(a6,a7,a8, a9, a10, a11);
+            var x = Tuple.Create( a1, a2, a3, a4,a5, relation);
             return new Edge(x);
         }
 
@@ -256,18 +255,8 @@ namespace SharpBoostVoronoi
                 throw new IndexOutOfRangeException();
             long[] array1 = new long[BUFFER_SIZE];
             long[] array2 = new long[BUFFER_SIZE];
-            GetCell(VoronoiWrapper, index, out long a0, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out bool a6, array1, out int array1Size, array2, out int array2Size);
-            List<long> list1 = new List<long>();
-            for(int i=0; i< array1Size; i++)
-            {
-                list1.Add(array1[i]);
-            }
-            List<long> list2 = new List<long>();
-            for (int i = 0; i < array2Size; i++)
-            {
-                list2.Add(array2[i]);
-            }
-            var x = Tuple.Create(a0, a1, a2, Tuple.Create(a3, a4, a5, a6), list1, list2);
+            GetCell(VoronoiWrapper, index, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out long a6);
+            var x = Tuple.Create(a1, a2,a3, a4, a5, a6);
             return new Cell(x);
         }
 

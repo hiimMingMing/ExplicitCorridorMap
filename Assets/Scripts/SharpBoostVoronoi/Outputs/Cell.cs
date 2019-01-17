@@ -10,10 +10,7 @@ namespace SharpBoostVoronoi.Output
 
     public class Cell
     {
-        /// <summary>
-        /// The voronoi cell identifier
-        /// </summary>
-        public long Index { get; set; }
+
 
         /// <summary>
         /// The index of the source feature
@@ -30,20 +27,9 @@ namespace SharpBoostVoronoi.Output
         /// </summary>
         public bool ContainsSegment { get; set; }
 
-        /// <summary>
-        /// Indexes of the segment that makes the cell
-        /// </summary>
-        public List<long> EdgesIndex { get; set; }
+        public long IncidentEdge { get; set; }
 
-        /// <summary>
-        /// Indexes of the vertices that makes the cell
-        /// </summary>
-        public List<long> VerticesIndex { get; set; }
 
-        /// <summary>
-        /// True if the cell has a segment that is infinite
-        /// </summary>
-        public bool IsOpen { get; set; }
 
         /// <summary>
         /// Returns true if the cell doesn't have an incident edge. Can happen if a few input segments share a common endpoint.
@@ -55,34 +41,17 @@ namespace SharpBoostVoronoi.Output
         /// </summary>
         public CellSourceCatory SourceCategory { get; set; }
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="t">A tuple returned by the CLR wrapper.</param>
-        public Cell(Tuple <int, int, bool, bool, List<long>, bool, short> t)
+        
+
+
+        public Cell(Tuple< long, short, bool, bool, bool, long> t)
         {
-            Index = t.Item1;
-            Site = t.Item2;
+            Site = t.Item1;
+            SourceCategory = (CellSourceCatory)t.Item2;
             ContainsPoint = t.Item3;
             ContainsSegment = t.Item4;
-            EdgesIndex = t.Item5;
-            IsOpen = t.Item6;
-            SourceCategory = (CellSourceCatory)t.Item7;
-
-        }
-
-
-        public Cell(Tuple<long, long, short, Tuple<bool, bool, bool, bool>, List<long>, List<long>> t)
-        {
-            Index = t.Item1;
-            Site = t.Item2;
-            SourceCategory = (CellSourceCatory)t.Item3;
-            ContainsPoint = t.Item4.Item1;
-            ContainsSegment = t.Item4.Item2;
-            IsOpen = t.Item4.Item3;
-            IsDegnerate = t.Item4.Item4;
-            EdgesIndex = t.Item5;
-            VerticesIndex = t.Item6;
+            IsDegnerate = t.Item5;
+            IncidentEdge = t.Item6;
         }
 
 

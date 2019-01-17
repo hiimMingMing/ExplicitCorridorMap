@@ -75,6 +75,12 @@ public class MedialAxisEditor : Editor
                 VoronoiSolution.AddSegment(segment.Start.X, segment.Start.Y, segment.End.X, segment.End.Y);
             }
             VoronoiSolution.Construct();
+            for(int i = 0; i < VoronoiSolution.CountEdges; i++)
+            {
+                var e = VoronoiSolution.Edges[i];
+                if(e.IsFinite && e.IsPrimary)
+                    Debug.Log(i + " " + e.Twin);
+            }
             watch.Stop();
             Debug.Log("Voronoi Edge Count: " + VoronoiSolution.CountEdges);
             Debug.Log("Voronoi Vertex Count: " + VoronoiSolution.CountVertices);
@@ -95,6 +101,31 @@ public class MedialAxisEditor : Editor
         }
 
     }
+    //private void OnSceneGUI()
+    //{
+    //    if (VoronoiSolution == null) return;
+    //    var v = VoronoiSolution.Vertices[7];
+    //    if (v == null) return;
+    //    //Handles.color = Color.magenta;
+    //    //DrawVertex(v);
+    //    var e = VoronoiSolution.Edges[v.IncidentEdge];
+    //    //DrawEdge(e);
+    //    var e2 = VoronoiSolution.Edges[e.Twin];
+    //    //DrawEdge(e2);
+    //    var c = VoronoiSolution.Cells[e2.Cell];
+    //    var ie = VoronoiSolution.Edges[c.IncidentEdge];
+    //    int count = 0;
+    //    do
+    //    {
+    //        count++;
+    //        DrawEdge(ie);
+    //        ie = VoronoiSolution.Edges[ie.Next];
+    //    }
+    //    while (ie != VoronoiSolution.Edges[c.IncidentEdge]);
+    //    //var e2 = VoronoiSolution.Edges[e.Next];
+    //    //DrawEdge(e2);
+    //    Debug.Log(count);
+    //}
     void OnSceneGUI()
     {
         if (VoronoiSolution == null) return;
@@ -120,35 +151,7 @@ public class MedialAxisEditor : Editor
         for (long edgeIndex = 0; edgeIndex < VoronoiSolution.CountEdges; edgeIndex++)
         {
             Edge outputSegment = VoronoiSolution.Edges[edgeIndex];
-            if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
-                continue;
-            Vertex start = VoronoiSolution.Vertices[outputSegment.Start];
-            Vertex end = VoronoiSolution.Vertices[outputSegment.End];
-
-            if (outputSegment.IsLinear)
-            {
-                var startPoint = new Vector3((float)start.X, (float)start.Y);
-                var endPoint = new Vector3((float)end.X, (float)end.Y);
-                Handles.DrawSolidDisc(startPoint, Vector3.forward, outputPointRadius);
-                Handles.DrawSolidDisc(endPoint, Vector3.forward, outputPointRadius);
-                Handles.DrawLine(startPoint, endPoint);
-            }
-            else
-            {
-                List<Vertex> discretizedEdge = VoronoiSolution.SampleCurvedEdge(outputSegment, 2);
-                for (int i = 1; i < discretizedEdge.Count; i++)
-                {
-                    float X1 = (float)discretizedEdge[i - 1].X;
-                    float Y1 = (float)discretizedEdge[i - 1].Y;
-                    float X2 = (float)discretizedEdge[i].X;
-                    float Y2 = (float)discretizedEdge[i].Y;
-                    Handles.DrawLine(new Vector3(X1, Y1), new Vector3(X2, Y2));
-                }
-                var startPoint = new Vector3((float)start.X, (float)start.Y);
-                var endPoint = new Vector3((float)end.X, (float)end.Y);
-                Handles.DrawSolidDisc(startPoint, Vector3.forward, outputPointRadius);
-                Handles.DrawSolidDisc(endPoint, Vector3.forward, outputPointRadius);
-            }
+            DrawEdge(outputSegment);
         }
 
         //Draw Nearest Obstacle Point 
@@ -164,6 +167,48 @@ public class MedialAxisEditor : Editor
                     Handles.DrawLine(start, end);
                 }
             }
+        }
+    }
+    void DrawVertex(Vertex vertex)
+    {
+        var position = new Vector3((float)vertex.X, (float)vertex.Y);
+        Handles.DrawSolidDisc(position, Vector3.forward, outputPointRadius);
+    }
+    void DrawEdge(Edge outputSegment)
+    {
+        //if (!outputSegment.IsFinite) return;
+        if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
+            return;
+        Vertex start = VoronoiSolution.Vertices[outputSegment.Start];
+        Vertex end = VoronoiSolution.Vertices[outputSegment.End];
+
+        if (outputSegment.IsLinear)
+        {
+            var startPoint = new Vector3((float)start.X, (float)start.Y);
+            var endPoint = new Vector3((float)end.X, (float)end.Y);
+            //Handles.color = Color.magenta;
+            DrawVertex(start);
+            //Handles.color = Color.red;
+            DrawVertex(end);
+            Handles.color = Color.blue;
+            Handles.DrawLine(startPoint, endPoint);
+        }
+        else
+        {
+            List<Vertex> discretizedEdge = VoronoiSolution.SampleCurvedEdge(outputSegment, 2);
+            for (int i = 1; i < discretizedEdge.Count; i++)
+            {
+                float X1 = (float)discretizedEdge[i - 1].X;
+                float Y1 = (float)discretizedEdge[i - 1].Y;
+                float X2 = (float)discretizedEdge[i].X;
+                float Y2 = (float)discretizedEdge[i].Y;
+                Handles.color = Color.blue;
+                Handles.DrawLine(new Vector3(X1, Y1), new Vector3(X2, Y2));
+            }
+            //Handles.color = Color.magenta;
+            DrawVertex(start);
+            //Handles.color = Color.red;
+            DrawVertex(end);
         }
     }
     List<Segment> PopulateSegment(int maxX, int maxY)

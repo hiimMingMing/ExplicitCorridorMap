@@ -18,10 +18,6 @@ namespace SharpBoostVoronoi.Output
         /// </summary>
         public long End { get; set; }
 
-        /// <summary>
-        /// The index of the input geometry around which the cell is built.
-        /// </summary>
-        public long SiteIndex{ get; set; }
 
         /// <summary>
         /// True is the edge is a primary edge, False otherwise.
@@ -48,26 +44,34 @@ namespace SharpBoostVoronoi.Output
         /// </summary>
         public long Twin { get; set; }
 
+        public long Next { get; set; }
+        public long Prev { get; set; }
+        public long RotNext { get; set; }
+        public long RotPrev { get; set; }
+
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="t">A tuple returned by the CLR wrapper.</param>
 
 
-        public Edge(Tuple<long, long, long, bool, bool, bool, Tuple<long, long>> t)
+        public Edge(Tuple<long, long, bool, bool, bool, Tuple<long,long,long,long,long,long>> t)
         {
-            Start = t.Item2;
-            End = t.Item3;
-            IsPrimary = t.Item4;
-            IsLinear = t.Item5;
-            IsFinite = t.Item6;
-            SiteIndex = -1;
+            Start = t.Item1;
+            End = t.Item2;
+            IsPrimary = t.Item3;
+            IsLinear = t.Item4;
+            IsFinite = t.Item5;
+            Twin = t.Item6.Item1;
+            Cell = t.Item6.Item2;
+            Next = t.Item6.Item3;
+            Prev = t.Item6.Item4;
+            RotNext = t.Item6.Item5;
+            RotPrev = t.Item6.Item6;
 
-            Twin = t.Item7.Item1;
-            Cell = t.Item7.Item2;
         }
 
-       
+
 
     }
 }
