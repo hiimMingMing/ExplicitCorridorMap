@@ -75,11 +75,11 @@ public class MedialAxisEditor : Editor
                 VoronoiSolution.AddSegment(segment.Start.X, segment.Start.Y, segment.End.X, segment.End.Y);
             }
             VoronoiSolution.Construct();
-            for(int i = 0; i < VoronoiSolution.CountEdges; i++)
+            foreach (var e in VoronoiSolution.Edges.Values)
             {
-                var e = VoronoiSolution.Edges[i];
-                if(e.IsFinite && e.IsPrimary)
-                    Debug.Log(i + " " + e.Twin);
+                if (!e.IsFinite || !e.IsPrimary)
+                    continue;
+                Debug.Log(e.ID + " " + e.Twin);
             }
             watch.Stop();
             Debug.Log("Voronoi Edge Count: " + VoronoiSolution.CountEdges);
@@ -104,27 +104,29 @@ public class MedialAxisEditor : Editor
     //private void OnSceneGUI()
     //{
     //    if (VoronoiSolution == null) return;
-    //    var v = VoronoiSolution.Vertices[7];
-    //    if (v == null) return;
+    //    //var v = VoronoiSolution.Vertices[7];
+    //    //if (v == null) return;
     //    //Handles.color = Color.magenta;
     //    //DrawVertex(v);
-    //    var e = VoronoiSolution.Edges[v.IncidentEdge];
-    //    //DrawEdge(e);
-    //    var e2 = VoronoiSolution.Edges[e.Twin];
+    //    var e = VoronoiSolution.Edges[41];
+    //    DrawEdge(e);
+    //    DrawObstaclePoint(e);
+    //    //var e2 = VoronoiSolution.Edges[e.Twin];
     //    //DrawEdge(e2);
-    //    var c = VoronoiSolution.Cells[e2.Cell];
+    //    var c = VoronoiSolution.Cells[e.Cell];
     //    var ie = VoronoiSolution.Edges[c.IncidentEdge];
     //    int count = 0;
     //    do
     //    {
     //        count++;
     //        DrawEdge(ie);
+    //        DrawObstaclePoint(ie);
+
     //        ie = VoronoiSolution.Edges[ie.Next];
     //    }
     //    while (ie != VoronoiSolution.Edges[c.IncidentEdge]);
     //    //var e2 = VoronoiSolution.Edges[e.Next];
     //    //DrawEdge(e2);
-    //    Debug.Log(count);
     //}
     void OnSceneGUI()
     {
@@ -148,26 +150,43 @@ public class MedialAxisEditor : Editor
 
         //Draw ouput edge and vertex
         Handles.color = Color.blue;
-        for (long edgeIndex = 0; edgeIndex < VoronoiSolution.CountEdges; edgeIndex++)
+        foreach (var edge in VoronoiSolution.Edges.Values)
         {
-            Edge outputSegment = VoronoiSolution.Edges[edgeIndex];
-            DrawEdge(outputSegment);
+            DrawEdge(edge);
         }
 
-        //Draw Nearest Obstacle Point 
+        //Draw Nearest Obstacle Point
         if (drawNearestObstaclePoints)
         {
             Handles.color = Color.green;
-            foreach (var v in VoronoiSolution.Vertices.Values)
+            foreach (var edge in VoronoiSolution.Edges.Values)
             {
-                foreach (var p in v.NearestObstaclePoints)
-                {
-                    var start = new Vector3((int)v.X, (int)v.Y);
-                    var end = new Vector3(p.x, p.y);
-                    Handles.DrawLine(start, end);
-                }
+                DrawObstaclePoint(edge);
             }
         }
+    }
+    void DrawObstaclePoint(Edge edge)
+    {
+        if (!edge.IsFinite || !edge.IsPrimary) return ;
+        var startVertex = VoronoiSolution.Vertices[edge.Start];
+        var endVertex = VoronoiSolution.Vertices[edge.End];
+        var begin = new Vector3((int)startVertex.X, (int)startVertex.Y);
+        var obsLeft = new Vector3(edge.LeftObstacleStart.X, edge.LeftObstacleStart.Y);
+        var obsRight = new Vector3(edge.RightObstacleStart.X, edge.RightObstacleStart.Y);
+
+        Handles.color = Color.green;
+        Handles.DrawLine(begin, obsLeft);
+        Handles.color = Color.cyan;
+        Handles.DrawLine(begin, obsRight);
+
+        begin = new Vector3((int)endVertex.X, (int)endVertex.Y);
+        obsLeft = new Vector3(edge.LeftObstacleEnd.X, edge.LeftObstacleEnd.Y);
+        obsRight = new Vector3(edge.RightObstacleEnd.X, edge.RightObstacleEnd.Y);
+        Handles.color = Color.green;
+        Handles.DrawLine(begin, obsLeft);
+        Handles.color = Color.cyan;
+        Handles.DrawLine(begin, obsRight);
+
     }
     void DrawVertex(Vertex vertex)
     {
@@ -176,9 +195,9 @@ public class MedialAxisEditor : Editor
     }
     void DrawEdge(Edge outputSegment)
     {
-        //if (!outputSegment.IsFinite) return;
-        if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
-            return;
+        if (!outputSegment.IsFinite) return;
+        //if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
+        //    return;
         Vertex start = VoronoiSolution.Vertices[outputSegment.Start];
         Vertex end = VoronoiSolution.Vertices[outputSegment.End];
 
@@ -186,9 +205,9 @@ public class MedialAxisEditor : Editor
         {
             var startPoint = new Vector3((float)start.X, (float)start.Y);
             var endPoint = new Vector3((float)end.X, (float)end.Y);
-            //Handles.color = Color.magenta;
+            Handles.color = Color.magenta;
             DrawVertex(start);
-            //Handles.color = Color.red;
+            Handles.color = Color.red;
             DrawVertex(end);
             Handles.color = Color.blue;
             Handles.DrawLine(startPoint, endPoint);
@@ -205,9 +224,9 @@ public class MedialAxisEditor : Editor
                 Handles.color = Color.blue;
                 Handles.DrawLine(new Vector3(X1, Y1), new Vector3(X2, Y2));
             }
-            //Handles.color = Color.magenta;
+            Handles.color = Color.magenta;
             DrawVertex(start);
-            //Handles.color = Color.red;
+            Handles.color = Color.red;
             DrawVertex(end);
         }
     }

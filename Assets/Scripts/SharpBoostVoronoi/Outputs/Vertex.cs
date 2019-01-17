@@ -10,17 +10,18 @@ namespace SharpBoostVoronoi.Output
 {
     public class Vertex
     {
+        public long ID;
         public double X { get; set; }
         public double Y { get; set; }
         public long IncidentEdge { get; set; }
         //public List<Point> NearestObstaclePoints { get; } = new List<Point>();
-        public HashSet<Vector2Int> NearestObstaclePoints { get; } = new HashSet<Vector2Int>();
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="t">A tuple where the first value represents the X-axis and the second value the Y-axis</param>
-        public Vertex(Tuple<double, double,long> t)
+        public Vertex(long id,Tuple<double, double,long> t)
         {
+            ID = id;
             X = t.Item1;
             Y = t.Item2;
             IncidentEdge = t.Item3;
@@ -30,14 +31,7 @@ namespace SharpBoostVoronoi.Output
             X = x;
             Y = y;
         }
-        public void AddNearestObstaclePoint(Point x)
-        {
-            NearestObstaclePoints.Add(new Vector2Int(x.X, x.Y));
-        }
-        public void AddNearestObstaclePoint(Vertex x)
-        {
-            NearestObstaclePoints.Add(new Vector2Int((int)x.X, (int)x.Y));
-        }
+
         /// <summary>
         /// Constructor
         /// </summary>

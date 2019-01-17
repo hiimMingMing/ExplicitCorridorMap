@@ -192,35 +192,47 @@ namespace SharpBoostVoronoi
                 var cell = GetCell(i);
                 Cells.Add(i, cell);
             }
-            //caculate nearest obstacle points of each vertex
-            foreach(var edge in Edges.Values)
+            foreach (var edge in Edges.Values)
             {
-                if (!edge.IsFinite) continue;
+                if (edge.ID % 2 == 1|| !edge.IsFinite || !edge.IsPrimary) continue;
+                var twinEdge = Edges[edge.Twin];
                 var cell = Cells[edge.Cell];
-                var startVertex = Vertices[edge.Start];
-                var endVertex = Vertices[edge.End];
-                if (cell.ContainsPoint)
-                {
-                    var pointSite = RetrieveInputPoint(cell);
-                    startVertex.AddNearestObstaclePoint(pointSite);
-                    endVertex.AddNearestObstaclePoint(pointSite);
-                }
-                else
-                {
-                    var lineSite = RetrieveInputSegment(cell);
-                    var startLineSite = new Vertex(lineSite.Start.X, lineSite.Start.Y);
-                    var endLineSite = new Vertex(lineSite.End.X, lineSite.End.Y);
-                    var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex);
-                    var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex);
+                var twinCell = Cells[twinEdge.Cell];
 
-                    startVertex.AddNearestObstaclePoint(nearestPointOfStartVertex);
-                    endVertex.AddNearestObstaclePoint(nearestPointOfEndVertex);
-                }
+                var obsLeft = ComputeObstaclePoint(cell, edge);
+                edge.LeftObstacleStart = obsLeft.Item1;
+                edge.LeftObstacleEnd = obsLeft.Item2;
 
+                var obsRight = ComputeObstaclePoint(twinCell, edge);
+                edge.RightObstacleStart = obsRight.Item1;
+                edge.RightObstacleEnd = obsRight.Item2;
 
+                twinEdge.LeftObstacleStart = edge.RightObstacleEnd;
+                twinEdge.LeftObstacleEnd = edge.RightObstacleStart;
+                twinEdge.RightObstacleStart = edge.LeftObstacleEnd;
+                twinEdge.RightObstacleEnd = edge.LeftObstacleStart;
             }
         }
+        private Tuple<Point,Point> ComputeObstaclePoint(Cell cell,Edge edge)
+        {
+            var startVertex = Vertices[edge.Start];
+            var endVertex = Vertices[edge.End];
+            if (cell.ContainsPoint)
+            {
+                var pointSite = RetrieveInputPoint(cell);
+                return Tuple.Create(pointSite, pointSite);
+            }
+            else
+            {
+                var lineSite = RetrieveInputSegment(cell);
+                var startLineSite = new Vertex(lineSite.Start.X, lineSite.Start.Y);
+                var endLineSite = new Vertex(lineSite.End.X, lineSite.End.Y);
+                var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex);
+                var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex);
 
+                return Tuple.Create(new Point(nearestPointOfStartVertex), new Point(nearestPointOfEndVertex));
+            }
+        }
         /// <summary>
         /// Clears the list of the inserted geometries.
         /// </summary>
@@ -235,7 +247,7 @@ namespace SharpBoostVoronoi
                 throw new IndexOutOfRangeException();
             GetVertex(VoronoiWrapper, index, out double a1, out double a2, out long a3);
             var x = Tuple.Create(a1, a2,a3);
-            return new Vertex(x);
+            return new Vertex(index,x);
         }
 
 
@@ -246,7 +258,7 @@ namespace SharpBoostVoronoi
             GetEdge(VoronoiWrapper, index, out long a1, out long a2, out bool a3, out bool a4, out bool a5, out long a6, out long a7, out long a8, out long a9, out long a10, out long a11);
             var relation = Tuple.Create(a6,a7,a8, a9, a10, a11);
             var x = Tuple.Create( a1, a2, a3, a4,a5, relation);
-            return new Edge(x);
+            return new Edge(index,x);
         }
 
         private Cell GetCell(long index)
@@ -257,7 +269,7 @@ namespace SharpBoostVoronoi
             long[] array2 = new long[BUFFER_SIZE];
             GetCell(VoronoiWrapper, index, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out long a6);
             var x = Tuple.Create(a1, a2,a3, a4, a5, a6);
-            return new Cell(x);
+            return new Cell(index,x);
         }
 
 

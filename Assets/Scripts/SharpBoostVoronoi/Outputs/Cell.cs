@@ -11,7 +11,7 @@ namespace SharpBoostVoronoi.Output
     public class Cell
     {
 
-
+        public long ID;
         /// <summary>
         /// The index of the source feature
         /// </summary>
@@ -44,8 +44,9 @@ namespace SharpBoostVoronoi.Output
         
 
 
-        public Cell(Tuple< long, short, bool, bool, bool, long> t)
+        public Cell(long id, Tuple< long, short, bool, bool, bool, long> t)
         {
+            ID = id;
             Site = t.Item1;
             SourceCategory = (CellSourceCatory)t.Item2;
             ContainsPoint = t.Item3;

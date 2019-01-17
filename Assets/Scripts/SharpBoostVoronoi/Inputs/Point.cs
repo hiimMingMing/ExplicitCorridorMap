@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpBoostVoronoi.Output;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,11 @@ namespace SharpBoostVoronoi.Input
         public Point()
         {
  
+        }
+        public Point(Vertex v)
+        {
+            X = (int)v.X;
+            Y = (int)v.Y;
         }
 
         /// <summary>

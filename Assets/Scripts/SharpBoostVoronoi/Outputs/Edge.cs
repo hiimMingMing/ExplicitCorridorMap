@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using SharpBoostVoronoi.Input;
+using UnityEngine;
 namespace SharpBoostVoronoi.Output
 {
     public class Edge
     {
+        public long ID;
         /// <summary>
         /// The index of the start vertex of this segment.
         /// </summary>
         public long Start { get; set; }
 
+        public Point LeftObstacleStart { get; set; }
+        public Point RightObstacleStart { get; set; }
+        public Point LeftObstacleEnd { get; set; }
+        public Point RightObstacleEnd { get; set; }
         /// <summary>
         /// The index of the end vertex of this segment.
         /// </summary>
@@ -55,8 +57,9 @@ namespace SharpBoostVoronoi.Output
         /// <param name="t">A tuple returned by the CLR wrapper.</param>
 
 
-        public Edge(Tuple<long, long, bool, bool, bool, Tuple<long,long,long,long,long,long>> t)
+        public Edge(long id,Tuple<long, long, bool, bool, bool, Tuple<long,long,long,long,long,long>> t)
         {
+            ID = id;
             Start = t.Item1;
             End = t.Item2;
             IsPrimary = t.Item3;
