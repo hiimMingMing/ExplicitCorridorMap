@@ -54,6 +54,16 @@ namespace SharpBoostVoronoi.Input
         {
             return String.Format("{0}, {1}", X, Y);
         }
-
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            var p = obj as Point;
+            if (p == null) return false;
+            return X == p.X && Y == p.Y;
+        }
+        public override int GetHashCode()
+        {
+            return X ^ Y;
+        }
     }
 }

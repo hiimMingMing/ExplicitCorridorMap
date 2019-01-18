@@ -6,11 +6,31 @@ namespace SharpBoostVoronoi
 {
     public class Astar
     {
-        public static List<Vertex> FindPath(BoostVoronoi graph, Vertex start, Vertex goal)
+        public static List<Edge> FindPath(BoostVoronoi graph, Vertex start, Vertex goal)
         {
-            return FindPath_Reversed(graph, goal, start);
+            var path = Astar.FindPathVertex(graph, start, goal);
+            var edgeList = new List<Edge>();
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                var originalEdge = graph.Edges[path[i].IncidentEdge];
+                var neighborEdge = originalEdge;
+                do
+                {
+                    if (!neighborEdge.IsFinite || !neighborEdge.IsPrimary) continue;
+                    var end = graph.Vertices[neighborEdge.End];
+                    if (end.Equals(path[i + 1])) edgeList.Add(neighborEdge);
+                }
+                //proceed to next edge
+                while ((neighborEdge = graph.Edges[neighborEdge.RotNext]) != originalEdge);
+            }
+            return edgeList;
+
         }
-        private static List<Vertex> FindPath_Reversed(BoostVoronoi graph, Vertex start, Vertex goal)
+        private static List<Vertex> FindPathVertex(BoostVoronoi graph, Vertex start, Vertex goal)
+        {
+            return FindPathVertexReversed(graph, goal, start);
+        }
+        private static List<Vertex> FindPathVertexReversed(BoostVoronoi graph, Vertex start, Vertex goal)
         {
             var openSet = new HashSet<Vertex>();
             openSet.Add(start);

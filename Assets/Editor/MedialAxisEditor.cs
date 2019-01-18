@@ -96,31 +96,12 @@ public class MedialAxisEditor : Editor
             var goal = VoronoiSolution.Vertices[goalIndex];
             //Debug.Log(goal.Equals(goal));
             Debug.Log("Find path from " + startIndex + " to " + goalIndex);
-            var path = Astar.FindPath(VoronoiSolution, start, goal);
-            edgeList = new List<Edge>();
-            for (int i = 0; i < path.Count -1; i++)
-            {
-                var originalEdge = VoronoiSolution.Edges[path[i].IncidentEdge];
-                var neighborEdge = originalEdge;
-                do
-                {
-                    if (!neighborEdge.IsFinite || !neighborEdge.IsPrimary) continue;
-                    var end = VoronoiSolution.Vertices[neighborEdge.End];
-                    if (end.Equals(path[i + 1])) edgeList.Add(neighborEdge);
-                }
-                //proceed to next edge
-                while ((neighborEdge = VoronoiSolution.Edges[neighborEdge.RotNext]) != originalEdge);
-            }
+            edgeList = Astar.FindPath(VoronoiSolution, start, goal);
             Debug.Log("Path length:" + edgeList.Count);
             foreach (var e in edgeList)
             {
                 Debug.Log(e.Start + "-" + e.End);
             }
-            //Debug.Log("Path length:" + path.Count);
-            //foreach (var v in path)
-            //{
-            //    Debug.Log(v.ID+" ["+v+"]");
-            //}
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");
@@ -214,7 +195,42 @@ public class MedialAxisEditor : Editor
             {
                 DrawObstaclePoint(edge);
             }
+            List<Point> portalsLeft = new List<Point>();
+            List<Point> portalsRight = new List<Point>();
+
+            for (int i = 0; i < edgeList.Count; i++)
+            {
+                var edge = edgeList[i];
+                if (i != 0)
+                {
+                    var left1 = edge.LeftObstacleStart;
+                    var right1 = edge.RightObstacleStart;
+                    portalsLeft.Add(left1);
+                    portalsRight.Add(right1);
+                    DrawPortal(left1,right1);
+
+                }
+                if (i == edgeList.Count - 1) break;
+                var edgeNext = edgeList[i + 1];
+                if(edge.LeftObstacleEnd.Equals(edgeNext.LeftObstacleStart) &&
+                    edge.RightObstacleEnd.Equals(edgeNext.RightObstacleStart))
+                {
+                    continue;
+                }
+                var left2 = edge.LeftObstacleEnd;
+                var right2 = edge.RightObstacleEnd;
+                portalsLeft.Add(left2);
+                portalsRight.Add(right2);
+                DrawPortal(left2, right2);
+            }
+            //Debug.Log("PorCountt:" + portalsLeft.Count);
         }
+    }
+    void DrawPortal(Point begin, Point end)
+    {
+        Handles.color = Color.white;
+        Handles.DrawLine(new Vector3(begin.X,begin.Y),new Vector3(end.X,end.Y));
+
     }
     void DrawObstaclePoint(Edge edge)
     {
