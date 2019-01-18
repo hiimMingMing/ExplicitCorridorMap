@@ -8,6 +8,10 @@ namespace SharpBoostVoronoi
     {
         public static List<Vertex> FindPath(BoostVoronoi graph, Vertex start, Vertex goal)
         {
+            return FindPath_Reversed(graph, goal, start);
+        }
+        private static List<Vertex> FindPath_Reversed(BoostVoronoi graph, Vertex start, Vertex goal)
+        {
             var openSet = new HashSet<Vertex>();
             openSet.Add(start);
             var closeSet = new HashSet<Vertex>();
@@ -44,7 +48,7 @@ namespace SharpBoostVoronoi
             return result;
 
         }
-        public static List<Vertex> RecontructPath(Dictionary<Vertex, Vertex> cameFrom, Vertex current)
+        private static List<Vertex> RecontructPath(Dictionary<Vertex, Vertex> cameFrom, Vertex current)
         {
             var totalPath = new List<Vertex>();
             totalPath.Add(current);
@@ -55,12 +59,12 @@ namespace SharpBoostVoronoi
             }
             return totalPath;
         }
-        public static double HeuristicCost(Vertex start, Vertex goal)
+        private static double HeuristicCost(Vertex start, Vertex goal)
         {
             var h = Math.Pow(start.X - goal.X, 2) + Math.Pow(start.Y - goal.Y, 2);
             return h;
         }
-        public static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, double> fScore)
+        private static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, double> fScore)
         {
             double min = Double.MaxValue;
             Vertex result = null;

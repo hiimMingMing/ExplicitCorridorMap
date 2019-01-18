@@ -17,6 +17,7 @@ public class MedialAxisEditor : Editor
     bool drawNearestObstaclePoints = false;
     int startIndex = 0;
     int goalIndex = 0;
+    List<Edge> edgeList = null;
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -96,11 +97,30 @@ public class MedialAxisEditor : Editor
             //Debug.Log(goal.Equals(goal));
             Debug.Log("Find path from " + startIndex + " to " + goalIndex);
             var path = Astar.FindPath(VoronoiSolution, start, goal);
-            Debug.Log("Path length:" + path.Count);
-            foreach (var v in path)
+            edgeList = new List<Edge>();
+            for (int i = 0; i < path.Count -1; i++)
             {
-                Debug.Log(v.ID+" ["+v+"]");
+                var originalEdge = VoronoiSolution.Edges[path[i].IncidentEdge];
+                var neighborEdge = originalEdge;
+                do
+                {
+                    if (!neighborEdge.IsFinite || !neighborEdge.IsPrimary) continue;
+                    var end = VoronoiSolution.Vertices[neighborEdge.End];
+                    if (end.Equals(path[i + 1])) edgeList.Add(neighborEdge);
+                }
+                //proceed to next edge
+                while ((neighborEdge = VoronoiSolution.Edges[neighborEdge.RotNext]) != originalEdge);
             }
+            Debug.Log("Path length:" + edgeList.Count);
+            foreach (var e in edgeList)
+            {
+                Debug.Log(e.Start + "-" + e.End);
+            }
+            //Debug.Log("Path length:" + path.Count);
+            //foreach (var v in path)
+            //{
+            //    Debug.Log(v.ID+" ["+v+"]");
+            //}
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");
@@ -181,10 +201,16 @@ public class MedialAxisEditor : Editor
         }
 
         //Draw Nearest Obstacle Point
-        if (drawNearestObstaclePoints)
+        //if (drawNearestObstaclePoints)
+        //{
+        //    foreach (var edge in VoronoiSolution.Edges.Values)
+        //    {
+        //        DrawObstaclePoint(edge);
+        //    }
+        //}
+        if (drawNearestObstaclePoints && edgeList != null)
         {
-            Handles.color = Color.green;
-            foreach (var edge in VoronoiSolution.Edges.Values)
+            foreach (var edge in edgeList)
             {
                 DrawObstaclePoint(edge);
             }
