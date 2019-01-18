@@ -15,6 +15,8 @@ public class MedialAxisEditor : Editor
     float outputPointRadius = 6f;
     int segmentCount = 100000;
     bool drawNearestObstaclePoints = false;
+    int startIndex = 0;
+    int goalIndex = 0;
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -23,9 +25,11 @@ public class MedialAxisEditor : Editor
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
         drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", drawNearestObstaclePoints);
+        startIndex = EditorGUILayout.IntField("StarIndex", startIndex);
+        goalIndex = EditorGUILayout.IntField("GoalIndex", goalIndex);
+
         if (GUILayout.Button("Bake"))
         {
-
             Point p0 = new Point(200, 250);
             Point p1 = new Point(400, 250);
             List<Point> InputPoints = new List<Point>();
@@ -75,18 +79,28 @@ public class MedialAxisEditor : Editor
                 VoronoiSolution.AddSegment(segment.Start.X, segment.Start.Y, segment.End.X, segment.End.Y);
             }
             VoronoiSolution.Construct();
-            foreach (var e in VoronoiSolution.Edges.Values)
-            {
-                if (!e.IsFinite || !e.IsPrimary)
-                    continue;
-                Debug.Log(e.ID + " " + e.Twin);
-            }
+            //foreach (var e in VoronoiSolution.Edges.Values)
+            //{
+            //    if (!e.IsFinite || !e.IsPrimary)
+            //        continue;
+            //    Debug.Log(e.ID + " " + e.Twin);
+            //}
             watch.Stop();
-            Debug.Log("Voronoi Edge Count: " + VoronoiSolution.CountEdges);
-            Debug.Log("Voronoi Vertex Count: " + VoronoiSolution.CountVertices);
-            Debug.Log("Voronoi Cell Count: " + VoronoiSolution.CountCells);
-            Debug.Log("Time: " + watch.ElapsedMilliseconds);
-            
+            //Debug.Log("Voronoi Edge Count: " + VoronoiSolution.CountEdges);
+            //Debug.Log("Voronoi Vertex Count: " + VoronoiSolution.CountVertices);
+            //Debug.Log("Voronoi Cell Count: " + VoronoiSolution.CountCells);
+            //Debug.Log("Time: " + watch.ElapsedMilliseconds);
+
+            var start = VoronoiSolution.Vertices[startIndex];
+            var goal = VoronoiSolution.Vertices[goalIndex];
+            //Debug.Log(goal.Equals(goal));
+            Debug.Log("Find path from " + startIndex + " to " + goalIndex);
+            var path = Astar.FindPath(VoronoiSolution, start, goal);
+            Debug.Log("Path length:" + path.Count);
+            foreach (var v in path)
+            {
+                Debug.Log(v.ID+" ["+v+"]");
+            }
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");
@@ -104,27 +118,38 @@ public class MedialAxisEditor : Editor
     //private void OnSceneGUI()
     //{
     //    if (VoronoiSolution == null) return;
-    //    //var v = VoronoiSolution.Vertices[7];
+    //    var v = VoronoiSolution.Vertices[10];
     //    //if (v == null) return;
     //    //Handles.color = Color.magenta;
     //    //DrawVertex(v);
-    //    var e = VoronoiSolution.Edges[41];
-    //    DrawEdge(e);
-    //    DrawObstaclePoint(e);
-    //    //var e2 = VoronoiSolution.Edges[e.Twin];
-    //    //DrawEdge(e2);
-    //    var c = VoronoiSolution.Cells[e.Cell];
-    //    var ie = VoronoiSolution.Edges[c.IncidentEdge];
-    //    int count = 0;
+    //    var e = VoronoiSolution.Edges[v.IncidentEdge];
+    //    int c = 0;
     //    do
     //    {
-    //        count++;
-    //        DrawEdge(ie);
-    //        DrawObstaclePoint(ie);
-
-    //        ie = VoronoiSolution.Edges[ie.Next];
+    //        c++;
+    //        DrawEdge(e);
+    //        e = VoronoiSolution.Edges[e.RotNext];
     //    }
-    //    while (ie != VoronoiSolution.Edges[c.IncidentEdge]);
+    //    while (e != VoronoiSolution.Edges[v.IncidentEdge]);
+    //    Debug.Log(c);
+    //    //DrawObstaclePoint(e);
+    //    //var e2 = VoronoiSolution.Edges[e.Twin];
+    //    //DrawEdge(e2);
+
+
+    //    /*CELL*/
+    //    //var c = VoronoiSolution.Cells[e.Cell];
+    //    //var ie = VoronoiSolution.Edges[c.IncidentEdge];
+    //    //int count = 0;
+    //    //do
+    //    //{
+    //    //    count++;
+    //    //    DrawEdge(ie);
+    //    //    DrawObstaclePoint(ie);
+
+    //    //    ie = VoronoiSolution.Edges[ie.Next];
+    //    //}
+    //    //while (ie != VoronoiSolution.Edges[c.IncidentEdge]);
     //    //var e2 = VoronoiSolution.Edges[e.Next];
     //    //DrawEdge(e2);
     //}
@@ -192,12 +217,13 @@ public class MedialAxisEditor : Editor
     {
         var position = new Vector3((float)vertex.X, (float)vertex.Y);
         Handles.DrawSolidDisc(position, Vector3.forward, outputPointRadius);
+        Handles.Label(position,vertex.ID+"");
     }
     void DrawEdge(Edge outputSegment)
     {
-        if (!outputSegment.IsFinite) return;
-        //if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
-        //    return;
+        //if (!outputSegment.IsFinite) return;
+        if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
+            return;
         Vertex start = VoronoiSolution.Vertices[outputSegment.Start];
         Vertex end = VoronoiSolution.Vertices[outputSegment.End];
 

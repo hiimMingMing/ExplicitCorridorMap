@@ -43,6 +43,17 @@ namespace SharpBoostVoronoi.Output
             Y = t.Item2 / scaleFactor;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            var p = obj as Vertex;
+            if (p == null) return false;
+            return X == p.X && Y == p.Y;
+        }
+        public override int GetHashCode()
+        {
+            return (int)X^(int)Y;
+        }
         /// <summary>
         /// Returns a concatenation of the coordinates, separated by a comma
         /// </summary>
