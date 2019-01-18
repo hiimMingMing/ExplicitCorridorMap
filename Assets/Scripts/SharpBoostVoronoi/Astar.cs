@@ -28,32 +28,18 @@ namespace SharpBoostVoronoi
                 var neighborEdge = originalEdge;
                 do
                 {
-                    if (!neighborEdge.IsFinite || !neighborEdge.IsPrimary)
-                    {
-                        neighborEdge = graph.Edges[neighborEdge.RotNext];
-                        continue;
-                    }
+                    if (!neighborEdge.IsFinite || !neighborEdge.IsPrimary) continue;
                     var neigborVertex = graph.Vertices[neighborEdge.End];
-                    if (closeSet.Contains(neigborVertex))
-                    {
-                        neighborEdge = graph.Edges[neighborEdge.RotNext];
-                        continue;
-                    }
+                    if (closeSet.Contains(neigborVertex)) continue;
                     var tentativeGScore = gScore[current] + HeuristicCost(current, neigborVertex);
                     if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
-                    else if (tentativeGScore >= gScore[neigborVertex])
-                    {
-                        neighborEdge = graph.Edges[neighborEdge.RotNext];
-                        continue;
-                    }
+                    else if (tentativeGScore >= gScore[neigborVertex]) continue;
                     cameFrom[neigborVertex] = current;
                     gScore[neigborVertex] = tentativeGScore;
-                    fScore[neigborVertex] = tentativeGScore + HeuristicCost(neigborVertex, goal);
-                    
-                    //next edge
-                    neighborEdge = graph.Edges[neighborEdge.RotNext];
+                    fScore[neigborVertex] = tentativeGScore + HeuristicCost(neigborVertex, goal);                    
                 }
-                while (neighborEdge != originalEdge);
+                //proceed to next edge
+                while ((neighborEdge = graph.Edges[neighborEdge.RotNext]) != originalEdge);
             }
             return result;
 
