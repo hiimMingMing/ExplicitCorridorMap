@@ -64,24 +64,27 @@ public class MedialAxisEditor : Editor
             //watch.Stop();
             //Debug.Log("Time: " + watch.ElapsedMilliseconds);
 
+            //startIndex = UnityEngine.Random.Range(0, VoronoiSolution.Vertices.Count);
+            //goalIndex = UnityEngine.Random.Range(0, VoronoiSolution.Vertices.Count);
+
             var start = VoronoiSolution.Vertices[startIndex];
             var goal = VoronoiSolution.Vertices[goalIndex];
             Debug.Log("Find path from " + startIndex + " to " + goalIndex);
             edgeList = Astar.FindPath(VoronoiSolution, start, goal);
             Debug.Log("Path length:" + edgeList.Count);
-            foreach (var e in edgeList)
-            {
-                Debug.Log(e.Start + "-" + e.End);
-            }
+            //foreach (var e in edgeList)
+            //{
+            //    Debug.Log(e.Start + "-" + e.End);
+            //}
             portalsLeft = new List<Point>();
             portalsRight = new List<Point>();
             ComputePortals(portalsLeft, portalsRight);
             shortestPath = GetShortestPath(portalsLeft, portalsRight);
-            Debug.Log("SP:"+shortestPath.Count);
-            foreach(var p in shortestPath)
-            {
-                Debug.Log(p);
-            }
+            //Debug.Log("SP:"+shortestPath.Count);
+            //foreach(var p in shortestPath)
+            //{
+            //    Debug.Log(p);
+            //}
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");
@@ -162,21 +165,21 @@ public class MedialAxisEditor : Editor
         }
 
         //Draw Nearest Obstacle Point
-        //if (drawNearestObstaclePoints)
-        //{
-        //    foreach (var edge in VoronoiSolution.Edges.Values)
-        //    {
-        //        DrawObstaclePoint(edge);
-        //    }
-        //}
-        if (drawNearestObstaclePoints && edgeList != null && portalsLeft!=null && shortestPath!= null)
+        if (drawNearestObstaclePoints)
+        {
+            foreach (var edge in VoronoiSolution.Edges.Values)
+            {
+                DrawObstaclePoint(edge);
+            }
+        }
+        if (edgeList != null && portalsLeft!=null && shortestPath!= null)
         {
             //foreach (var edge in edgeList)
             //{
             //    DrawObstaclePoint(edge);
             //}
 
-            //Debug.Log("PorCountt:" + portalsLeft.Count);
+            ////Debug.Log("PorCountt:" + portalsLeft.Count);
             for (int i = 0; i < portalsLeft.Count; i++)
             {
                 DrawPortal(portalsLeft[i], portalsRight[i]);
@@ -278,7 +281,6 @@ public class MedialAxisEditor : Editor
                 var right1 = edge.RightObstacleStart;
                 portalsLeft.Add(left1);
                 portalsRight.Add(right1);
-
             }
             else
             {
@@ -296,7 +298,7 @@ public class MedialAxisEditor : Editor
                 break;
             }
             var edgeNext = edgeList[i + 1];
-            if (edge.LeftObstacleEnd.Equals(edgeNext.LeftObstacleStart) &&
+            if (edge.LeftObstacleEnd.Equals(edgeNext.LeftObstacleStart) ||
                 edge.RightObstacleEnd.Equals(edgeNext.RightObstacleStart))
             {
                 continue;
