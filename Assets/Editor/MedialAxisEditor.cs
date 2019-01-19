@@ -81,22 +81,22 @@ public class MedialAxisEditor : Editor
             portalsRight = new List<Point>();
             ComputePortals(portalsLeft, portalsRight);
             shortestPath = GetShortestPath(portalsLeft, portalsRight);
-            //Debug.Log("SP:"+shortestPath.Count);
-            //foreach(var p in shortestPath)
+
+            //var kdTree = new KdTree<double, Vertex>(2, new DoubleMath());
+            //foreach(var v in VoronoiSolution.Vertices.Values)
             //{
-            //    Debug.Log(p);
+            //    kdTree.Add(v.GetKDKey(), v);
             //}
-            var kdTree = new KdTree<double, Vertex>(2, new DoubleMath());
-            foreach(var v in VoronoiSolution.Vertices.Values)
-            {
-                kdTree.Add(v.GetKDKey(), v);
-            }
-            var nodes = kdTree.GetNearestNeighbours(new double[] {200,100},4);
-            foreach(var node in nodes)
-            {
-                var vertex = node.Value;
-                Debug.Log(vertex.ID + "[" + vertex.X + "," + vertex.Y +"]");
-            }
+            //var nodes = kdTree.GetNearestNeighbours(new double[] {200,100},4);
+            //foreach(var node in nodes)
+            //{
+            //    var vertex = node.Value;
+            //    Debug.Log(vertex.ID + "[" + vertex.X + "," + vertex.Y +"]");
+            //}
+            var a = new Vector2Int(3, 4);
+            var b = new Vector2Int(3, 5);
+            Debug.Log(a == b);
+
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");

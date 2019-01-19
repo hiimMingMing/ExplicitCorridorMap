@@ -66,7 +66,6 @@ namespace SharpBoostVoronoi
         #endregion
         public bool disposed = false;
 
-        private int _scaleFactor = 0;
 
         private const int BUFFER_SIZE = 15;
         /// <summary>
@@ -83,11 +82,6 @@ namespace SharpBoostVoronoi
         /// The input segments used to construct the voronoi diagram
         /// </summary>
         public Dictionary<long, Segment> InputSegments { get; private set; }
-
-        /// <summary>
-        /// A scale factor. It will be used as a multiplier for input coordinates. Output coordinates will be divided by the scale factor automatically.
-        /// </summary>
-        public int ScaleFactor { get { return _scaleFactor; } private set { _scaleFactor = value; Tolerance = Convert.ToDouble(1) / _scaleFactor; } }
 
         /// <summary>
         /// A property used to define tolerance to parabola interpolation.
@@ -110,7 +104,6 @@ namespace SharpBoostVoronoi
             InputPoints = new Dictionary<long, Point>();
             InputSegments = new Dictionary<long, Segment>();
             VoronoiWrapper = CreateVoronoiWraper();
-            ScaleFactor = 1;
             CountVertices = -1;
             CountEdges = -1;
             CountCells = -1;
@@ -140,21 +133,7 @@ namespace SharpBoostVoronoi
             disposed = true;
         }
 
-        /// <summary>
-        /// Constructor that allows to define a scale factor.
-        /// </summary>
-        /// <param name="scaleFactor"> A scale factor greater than zero. It will be used as a multiplier for input coordinates. Output coordinates will be divided by the scale factor automatically.</param>
-        public BoostVoronoi(int scaleFactor)
-        {
-            InputPoints = new Dictionary<long, Point>();
-            InputSegments = new Dictionary<long, Segment>();
-            VoronoiWrapper = CreateVoronoiWraper();
 
-            if (scaleFactor <= 0)
-                throw new InvalidScaleFactorException();
-
-            ScaleFactor = scaleFactor;
-        }
 
 
         /// <summary>
@@ -291,9 +270,9 @@ namespace SharpBoostVoronoi
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        public void AddPoint(double x, double y)
+        public void AddPoint(int x, int y)
         {
-            Point p = new Point(Convert.ToInt32(x * ScaleFactor), Convert.ToInt32(y * ScaleFactor));
+            Point p = new Point(x,y);
             InputPoints.Add(InputPoints.Count, p);
             AddPoint(VoronoiWrapper,p.X, p.Y);
         }
@@ -318,14 +297,9 @@ namespace SharpBoostVoronoi
         /// <param name="y1">Y coordinate of the start point</param>
         /// <param name="x2">X coordinate of the end point</param>
         /// <param name="y2">Y coordinate of the end point</param>
-        public void AddSegment(double x1, double y1, double x2, double y2)
+        public void AddSegment(int x1, int y1, int x2, int y2)
         {
-            Segment s = new Segment(
-                 Convert.ToInt32(x1 * ScaleFactor),
-                 Convert.ToInt32(y1 * ScaleFactor),
-                 Convert.ToInt32(x2 * ScaleFactor),
-                 Convert.ToInt32(y2 * ScaleFactor)
-            );
+            Segment s = new Segment(x1,y1,x2,y2);
 
             InputSegments.Add(InputSegments.Count, s);
             AddSegment(
@@ -391,9 +365,9 @@ namespace SharpBoostVoronoi
 
 
             return ParabolaComputation.Densify(
-                new Vertex(Convert.ToDouble(pointSite.X) / Convert.ToDouble(ScaleFactor), Convert.ToDouble(pointSite.Y) / Convert.ToDouble(ScaleFactor)),
-                new Vertex(Convert.ToDouble(segmentSite.Start.X) / Convert.ToDouble(ScaleFactor), Convert.ToDouble(segmentSite.Start.Y) / Convert.ToDouble(ScaleFactor)),
-                new Vertex(Convert.ToDouble(segmentSite.End.X) / Convert.ToDouble(ScaleFactor), Convert.ToDouble(segmentSite.End.Y) / Convert.ToDouble(ScaleFactor)),
+                new Vertex(pointSite.X, pointSite.Y),
+                new Vertex(segmentSite.Start.X , segmentSite.Start.Y),
+                new Vertex(segmentSite.End.X ,segmentSite.End.Y),
                 discretization[0],
                 discretization[1],
                 max_distance,
