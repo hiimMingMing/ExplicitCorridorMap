@@ -7,7 +7,8 @@ using SharpBoostVoronoi;
 using SharpBoostVoronoi.Input;
 using SharpBoostVoronoi.Output;
 using System;
-
+using KdTree;
+using KdTree.Math;
 [CustomEditor(typeof(MedialAxis))]
 public class MedialAxisEditor : Editor
 {
@@ -85,6 +86,17 @@ public class MedialAxisEditor : Editor
             //{
             //    Debug.Log(p);
             //}
+            var kdTree = new KdTree<double, Vertex>(2, new DoubleMath());
+            foreach(var v in VoronoiSolution.Vertices.Values)
+            {
+                kdTree.Add(v.GetKDKey(), v);
+            }
+            var nodes = kdTree.GetNearestNeighbours(new double[] {200,100},4);
+            foreach(var node in nodes)
+            {
+                var vertex = node.Value;
+                Debug.Log(vertex.ID + "[" + vertex.X + "," + vertex.Y +"]");
+            }
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");

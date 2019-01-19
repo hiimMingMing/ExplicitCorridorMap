@@ -62,5 +62,10 @@ namespace SharpBoostVoronoi.Output
         {
             return String.Format("{0}, {1}", X, Y);
         }
+
+        public double[] GetKDKey()
+        {
+            return new double[] { X, Y };
+        }
     }
 }
