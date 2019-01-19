@@ -5,23 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace SharpBoostVoronoi.Exceptions
 {
     public class UnsolvableVertexException:Exception, IParabolaException
     {
-        public Vertex BoostVertex { get; set; }
-        public Vertex ComputedVertex { get; set; }
-        public double DistanceBoostVertexToFocus { get; set; }
-        public double DistanceComputedVertexToFocus { get; set; }
-        public double DistanceBoostVertexToDirectix { get; set; }
-        public double DistanceComputedVertexToDirectix { get; set; }
+        public Vector2 BoostVertex { get; set; }
+        public Vector2 ComputedVertex { get; set; }
+        public float DistanceBoostVertexToFocus { get; set; }
+        public float DistanceComputedVertexToFocus { get; set; }
+        public float DistanceBoostVertexToDirectix { get; set; }
+        public float DistanceComputedVertexToDirectix { get; set; }
 
         public ParabolaProblemInformation InputParabolaProblemInfo { get; set; }
         public ParabolaProblemInformation RoatatedParabolaProblemInfo { get; set; }
 
-        public UnsolvableVertexException(ParabolaProblemInformation nonRotatedInformation, ParabolaProblemInformation rotatedInformation, Vertex boostVertex, Vertex computedVertex,
-            double distanceBoostVertexToFocus, double distanceComputedVertexToFocus, double distanceBoostVertexToDirectix, double distanceComputedVertexToDirectix)
+        public UnsolvableVertexException(ParabolaProblemInformation nonRotatedInformation, ParabolaProblemInformation rotatedInformation, Vector2 boostVertex, Vector2 computedVertex,
+            float distanceBoostVertexToFocus, float distanceComputedVertexToFocus, float distanceBoostVertexToDirectix, float distanceComputedVertexToDirectix)
         {
             InputParabolaProblemInfo = nonRotatedInformation;
             RoatatedParabolaProblemInfo = rotatedInformation;

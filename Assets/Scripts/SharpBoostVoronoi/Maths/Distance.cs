@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using UnityEngine;
 namespace SharpBoostVoronoi.Maths
 {
     public class Distance
@@ -15,13 +15,13 @@ namespace SharpBoostVoronoi.Maths
         /// <param name="p1">A point</param>
         /// <param name="p2">A point</param>
         /// <returns></returns>
-        public static double ComputeDistanceBetweenPoints(Vertex p1, Vertex p2)
+        public static float ComputeDistanceBetweenPoints(Vector2 p1, Vector2 p2)
         {
-            if (p1.X == p2.X && p1.Y == p2.Y)
+            if (p1.x == p2.x && p1.y == p2.y)
             {
                 return 0;
             }
-            return Math.Sqrt(ComputeSquareDistanceBetweenPoints(p1, p2));
+            return (p1 - p2).magnitude;
         }
 
         /// <summary>
@@ -30,9 +30,9 @@ namespace SharpBoostVoronoi.Maths
         /// <param name="p1">A point</param>
         /// <param name="p2">A point</param>
         /// <returns></returns>
-        public static double ComputeSquareDistanceBetweenPoints(Vertex p1, Vertex p2)
+        public static float ComputeSquareDistanceBetweenPoints(Vector2 p1, Vector2 p2)
         {
-            return Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2);
+            return (p1-p2).sqrMagnitude;
         }
 
         /*****************************************
@@ -47,10 +47,10 @@ namespace SharpBoostVoronoi.Maths
         /// <param name="point">The point projected on the line</param>
         /// <param name="distance"></param>
         /// <returns></returns>
-        public static Vertex GetClosestPointOnLine(Vertex lineStart, Vertex lineEnd, Vertex point, out double distance)
+        public static Vector2 GetClosestPointOnLine(Vector2 lineStart, Vector2 lineEnd, Vector2 point, out float distance)
         {
             //Test if the line has a length <> 0
-            double dist2 = ComputeSquareDistanceBetweenPoints(lineStart, lineEnd);
+            float dist2 = ComputeSquareDistanceBetweenPoints(lineStart, lineEnd);
             if (dist2 == 0)
             {
                 distance = ComputeDistanceBetweenPoints(point, lineStart);
@@ -58,7 +58,7 @@ namespace SharpBoostVoronoi.Maths
             }
 
             //Compute the projection of on the line
-            double t = ((point.X - lineStart.X) * (lineEnd.X - lineStart.X) + (point.Y - lineStart.Y) * (lineEnd.Y - lineStart.Y)) / dist2;
+            float t = ((point.x - lineStart.x) * (lineEnd.x - lineStart.x) + (point.y - lineStart.y) * (lineEnd.y - lineStart.y)) / dist2;
 
 
             if (t < 0)//point projection falls beyond the first node of the segment
@@ -73,7 +73,7 @@ namespace SharpBoostVoronoi.Maths
                 return lineEnd;
             }
 
-            Vertex projectionPoint = new Vertex(lineStart.X + t * (lineEnd.X - lineStart.X), lineStart.Y + t * (lineEnd.Y - lineStart.Y));
+            Vector2 projectionPoint = new Vector2(lineStart.x + t * (lineEnd.x - lineStart.x), lineStart.y + t * (lineEnd.y - lineStart.y));
             distance = ComputeDistanceBetweenPoints(point, projectionPoint);
             return projectionPoint;
         }
@@ -86,9 +86,9 @@ namespace SharpBoostVoronoi.Maths
         /// <param name="lineEnd">The last point of the segment</param>
         /// <param name="point">The point projected on the line</param>
         /// <returns></returns>
-        public static Vertex GetClosestPointOnLine(Vertex lineStart, Vertex lineEnd, Vertex point)
+        public static Vector2 GetClosestPointOnLine(Vector2 lineStart, Vector2 lineEnd, Vector2 point)
         {
-            double distance = 0;
+            float distance = 0;
             return GetClosestPointOnLine(lineStart, lineEnd, point, out distance);
         }
 
@@ -100,9 +100,9 @@ namespace SharpBoostVoronoi.Maths
         /// <param name="lineStart">The first point of the segment</param>
         /// <param name="lineEnd">The last point of the segment</param>
         /// <returns></returns>
-        public static Vertex ComputeVector(Vertex lineStart, Vertex lineEnd)
+        public static Vector2 ComputeVector(Vector2 lineStart, Vector2 lineEnd)
         {
-            return new Vertex(lineEnd.X - lineStart.X, lineEnd.Y - lineStart.Y);
+            return new Vector2(lineEnd.x - lineStart.x, lineEnd.y - lineStart.y);
         }
 
         /// <summary>
@@ -112,15 +112,15 @@ namespace SharpBoostVoronoi.Maths
         /// <param name="p2">The last point of the line.</param>
         /// <param name="distanceOnLine">The distance on the line where the point will be fetched.</param>
         /// <returns></returns>
-        public static Vertex GetPointAtDistance(Vertex p1, Vertex p2, double distanceOnLine)
+        public static Vector2 GetPointAtDistance(Vector2 p1, Vector2 p2, float distanceOnLine)
         {
-            double dx = p2.X - p1.X;
-            double dy = p2.Y - p1.Y;
-            double l = Math.Sqrt(Math.Pow(dx,2) + Math.Pow(dy,2));
+            float dx = p2.x - p1.x;
+            float dy = p2.y - p1.y;
+            float l = Mathf.Sqrt(Mathf.Pow(dx,2) + Mathf.Pow(dy,2));
             if(distanceOnLine > l)
                 throw new Exception ("Length is greater than the length of the segment");
 
-            return new Vertex(p1.X + dx/l * distanceOnLine, p1.Y + dy/l * distanceOnLine);
+            return new Vector2(p1.x + dx/l * distanceOnLine, p1.y + dy/l * distanceOnLine);
         }
 
     }

@@ -20,9 +20,9 @@ public class MedialAxisEditor : Editor
     int startIndex = 0;
     int goalIndex = 0;
     List<Edge> edgeList = null;
-    List<Point> portalsLeft;
-    List<Point> portalsRight;
-    List<Point> shortestPath; 
+    List<Vector2> portalsLeft;
+    List<Vector2> portalsRight;
+    List<Vector2> shortestPath; 
     void AddRect(List<Segment> segments, RectInt rect)
     {
 
@@ -59,7 +59,7 @@ public class MedialAxisEditor : Editor
             VoronoiSolution = new BoostVoronoi();
             foreach (var segment in InputSegments)
             {
-                VoronoiSolution.AddSegment(segment.Start.X, segment.Start.Y, segment.End.X, segment.End.Y);
+                VoronoiSolution.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
             }
             VoronoiSolution.Construct();
             //watch.Stop();
@@ -77,8 +77,8 @@ public class MedialAxisEditor : Editor
             //{
             //    Debug.Log(e.Start + "-" + e.End);
             //}
-            portalsLeft = new List<Point>();
-            portalsRight = new List<Point>();
+            portalsLeft = new List<Vector2>();
+            portalsRight = new List<Vector2>();
             ComputePortals(portalsLeft, portalsRight);
             shortestPath = GetShortestPath(portalsLeft, portalsRight);
 
@@ -103,10 +103,8 @@ public class MedialAxisEditor : Editor
         segmentCount = EditorGUILayout.IntField("Number of Segments", segmentCount);
         if (GUILayout.Button("Test"))
         {
-            List<Point> points = new List<Point>();
-            List<Segment> segments = new List<Segment>();
-            points = new List<Point>();
-            segments = PopulateSegment(100, segmentCount/100);
+            var points = new List<Vector2Int>();
+            var segments = PopulateSegment(100, segmentCount/100);
             ConstructAndMeasure(ref points, ref segments);
         }
 
@@ -156,14 +154,14 @@ public class MedialAxisEditor : Editor
         Handles.color = Color.yellow;
         foreach (var inputPoint in VoronoiSolution.InputPoints.Values)
         {
-            var position = new Vector3(inputPoint.X, inputPoint.Y);
+            var position = new Vector3(inputPoint.x, inputPoint.y);
             Handles.DrawSolidDisc(position, Vector3.forward, inputPointRadius);
         }
         //Draw input segment
         foreach (var inputSegment in VoronoiSolution.InputSegments.Values)
         {
-            var startPoint = new Vector3(inputSegment.Start.X, inputSegment.Start.Y);
-            var endPoint = new Vector3(inputSegment.End.X, inputSegment.End.Y);
+            var startPoint = new Vector3(inputSegment.Start.x, inputSegment.Start.y);
+            var endPoint = new Vector3(inputSegment.End.x, inputSegment.End.y);
             Handles.DrawSolidDisc(startPoint, Vector3.forward, inputPointRadius);
             Handles.DrawSolidDisc(endPoint, Vector3.forward, inputPointRadius);
             Handles.DrawLine(startPoint, endPoint);
@@ -197,26 +195,26 @@ public class MedialAxisEditor : Editor
                 DrawPortal(portalsLeft[i], portalsRight[i]);
             }
 
-            var path = shortestPath.ConvertAll(x => new Vector3(x.X, x.Y)).ToArray();
+            var path = shortestPath.ConvertAll(x => new Vector3(x.x, x.y)).ToArray();
             Handles.color = Color.red;
             Handles.DrawPolyLine(path);
         }
     }
-    int CrossProduct(Point a,Point b, Point c)
+    float CrossProduct(Vector2 a, Vector2 b, Vector2 c)
     {
-        int ax = b.X - a.X;
-        int ay = b.Y - a.Y;
-        int bx = c.X - a.X;
-        int by = c.Y - a.Y;
+        float ax = b.x - a.x;
+        float ay = b.y - a.y;
+        float bx = c.x - a.x;
+        float by = c.y - a.y;
         return bx * ay - ax * by;
     }
 
 
-    List<Point> GetShortestPath(List<Point> portalsLeft, List<Point> portalsRight)
+    List<Vector2> GetShortestPath(List<Vector2> portalsLeft, List<Vector2> portalsRight)
     {
-        List<Point> path = new List<Point>();
+        List<Vector2> path = new List<Vector2>();
         if (portalsLeft.Count == 0) return path;
-        Point portalApex, portalLeft, portalRight;
+        Vector2 portalApex, portalLeft, portalRight;
         int apexIndex = 0, leftIndex = 0, rightIndex = 0;
         portalApex = portalsLeft[0];
         portalLeft = portalsLeft[0];
@@ -227,9 +225,9 @@ public class MedialAxisEditor : Editor
             var left = portalsLeft[i];
             var right = portalsRight[i];
             // Update right vertex.
-            if (CrossProduct(portalApex,portalRight,right) <= 0)
+            if (CrossProduct(portalApex,portalRight,right) <= 0.0f)
             {
-                if(portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0)
+                if(portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
                 {
                     // Tighten the funnel.
                     portalRight = right;
@@ -252,9 +250,9 @@ public class MedialAxisEditor : Editor
                 }
             }
             // Update left vertex.
-            if (CrossProduct(portalApex, portalLeft, left) >= 0)
+            if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
             {
-                if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0)
+                if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
                 {
                     // Tighten the funnel.
                     portalLeft = left;
@@ -281,7 +279,7 @@ public class MedialAxisEditor : Editor
         path.Add(portalsLeft[portalsLeft.Count - 1]);
         return path;
     }//funtion
-    void ComputePortals(List<Point> portalsLeft, List<Point> portalsRight)
+    void ComputePortals(List<Vector2> portalsLeft, List<Vector2> portalsRight)
     {
 
         for (int i = 0; i < edgeList.Count; i++)
@@ -296,15 +294,15 @@ public class MedialAxisEditor : Editor
             }
             else
             {
-                var start =VoronoiSolution.Vertices[ edge.Start];
-                var point = new Point(start);
+                var start = VoronoiSolution.Vertices[ edge.Start];
+                var point = start.ToVector2();
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
             }
             if (i == edgeList.Count - 1)
             {
                 var end = VoronoiSolution.Vertices[edge.End];
-                var point = new Point(end);
+                var point = end.ToVector2();
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
                 break;
@@ -321,29 +319,29 @@ public class MedialAxisEditor : Editor
             portalsRight.Add(right2);
         }
     }
-    void DrawPortal(Point begin, Point end)
+    void DrawPortal(Vector2 begin, Vector2 end)
     {
         Handles.color = Color.white;
-        Handles.DrawLine(new Vector3(begin.X,begin.Y),new Vector3(end.X,end.Y));
+        Handles.DrawLine(begin,end);
 
     }
     void DrawObstaclePoint(Edge edge)
     {
         if (!edge.IsFinite || !edge.IsPrimary) return ;
-        var startVertex = VoronoiSolution.Vertices[edge.Start];
-        var endVertex = VoronoiSolution.Vertices[edge.End];
-        var begin = new Vector3((int)startVertex.X, (int)startVertex.Y);
-        var obsLeft = new Vector3(edge.LeftObstacleStart.X, edge.LeftObstacleStart.Y);
-        var obsRight = new Vector3(edge.RightObstacleStart.X, edge.RightObstacleStart.Y);
+        var startVertex = VoronoiSolution.Vertices[edge.Start].ToVector2();
+        var endVertex = VoronoiSolution.Vertices[edge.End].ToVector2();
+        var begin = startVertex;
+        var obsLeft = edge.LeftObstacleStart;
+        var obsRight = edge.RightObstacleStart;
 
         Handles.color = Color.green;
         Handles.DrawLine(begin, obsLeft);
         Handles.color = Color.cyan;
         Handles.DrawLine(begin, obsRight);
 
-        begin = new Vector3((int)endVertex.X, (int)endVertex.Y);
-        obsLeft = new Vector3(edge.LeftObstacleEnd.X, edge.LeftObstacleEnd.Y);
-        obsRight = new Vector3(edge.RightObstacleEnd.X, edge.RightObstacleEnd.Y);
+        begin = endVertex;
+        obsLeft = edge.LeftObstacleEnd;
+        obsRight = edge.RightObstacleEnd;
         Handles.color = Color.green;
         Handles.DrawLine(begin, obsLeft);
         Handles.color = Color.cyan;
@@ -377,16 +375,11 @@ public class MedialAxisEditor : Editor
         }
         else
         {
-            List<Vertex> discretizedEdge = VoronoiSolution.SampleCurvedEdge(outputSegment, 10);
-            for (int i = 1; i < discretizedEdge.Count; i++)
-            {
-                float X1 = (float)discretizedEdge[i - 1].X;
-                float Y1 = (float)discretizedEdge[i - 1].Y;
-                float X2 = (float)discretizedEdge[i].X;
-                float Y2 = (float)discretizedEdge[i].Y;
-                Handles.color = Color.blue;
-                Handles.DrawLine(new Vector3(X1, Y1), new Vector3(X2, Y2));
-            }
+            List<Vector2> discretizedEdge = VoronoiSolution.SampleCurvedEdge(outputSegment, 10);
+            var curve = discretizedEdge.ConvertAll(x=>(Vector3)x).ToArray();
+            Handles.color = Color.blue;
+            Handles.DrawPolyLine(curve);
+
             Handles.color = Color.magenta;
             DrawVertex(start);
             Handles.color = Color.red;
@@ -400,7 +393,7 @@ public class MedialAxisEditor : Editor
         {
             for (int j = 0; j < maxY; j++)
             {
-                segments.Add(new Segment(new Point(i, j), new Point(i, j + 1)));
+                segments.Add(new Segment(new Vector2Int(i, j), new Vector2Int(i, j + 1)));
                 //segments.Add(new Segment(new Point(i, j), new Point(i + 1, j)));
                 //segments.Add(new Segment(new Point(i, j), new Point(i + 1, j + 1)));
             }
@@ -408,7 +401,7 @@ public class MedialAxisEditor : Editor
         return segments;
     }
 
-    void ConstructAndMeasure(ref List<Point> inputPoints, ref List<Segment> inputSegments)
+    void ConstructAndMeasure(ref List<Vector2Int> inputPoints, ref List<Segment> inputSegments)
         {
             Debug.Log(String.Format("Testing with {0} points and {1} segments", inputPoints.Count, inputSegments.Count));
             var stopwatch = new System.Diagnostics.Stopwatch();
@@ -416,10 +409,10 @@ public class MedialAxisEditor : Editor
             using (BoostVoronoi bv = new BoostVoronoi())
             {
                 foreach (var point in inputPoints)
-                    bv.AddPoint(point.X, point.Y);
+                    bv.AddPoint(point.x, point.y);
 
                 foreach (var segment in inputSegments)
-                    bv.AddSegment(segment.Start.X, segment.Start.Y, segment.End.X, segment.End.Y);
+                    bv.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
 
 
 

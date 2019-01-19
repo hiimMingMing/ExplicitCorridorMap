@@ -76,7 +76,7 @@ namespace SharpBoostVoronoi
         /// <summary>
         /// The input points used to construct the voronoi diagram
         /// </summary>
-        public Dictionary<long, Point> InputPoints { get; private set; }
+        public Dictionary<long, Vector2Int> InputPoints { get; private set; }
 
         /// <summary>
         /// The input segments used to construct the voronoi diagram
@@ -86,7 +86,7 @@ namespace SharpBoostVoronoi
         /// <summary>
         /// A property used to define tolerance to parabola interpolation.
         /// </summary>
-        public double Tolerance { get; set; }
+        public float Tolerance { get; set; }
 
 
         public long CountVertices { get; private set; }
@@ -101,7 +101,7 @@ namespace SharpBoostVoronoi
         /// </summary>
         public BoostVoronoi()
         {
-            InputPoints = new Dictionary<long, Point>();
+            InputPoints = new Dictionary<long, Vector2Int>();
             InputSegments = new Dictionary<long, Segment>();
             VoronoiWrapper = CreateVoronoiWraper();
             CountVertices = -1;
@@ -177,14 +177,14 @@ namespace SharpBoostVoronoi
                 var twinEdge = Edges[edge.Twin];
                 var cell = Cells[edge.Cell];
                 var twinCell = Cells[twinEdge.Cell];
+                
+                ComputeObstaclePoint(cell, edge, out Vector2 obsLeftStart, out Vector2 obsLeftEnd);
+                edge.LeftObstacleStart = obsLeftStart;
+                edge.LeftObstacleEnd = obsLeftEnd;
 
-                var obsLeft = ComputeObstaclePoint(cell, edge);
-                edge.LeftObstacleStart = obsLeft.Item1;
-                edge.LeftObstacleEnd = obsLeft.Item2;
-
-                var obsRight = ComputeObstaclePoint(twinCell, edge);
-                edge.RightObstacleStart = obsRight.Item1;
-                edge.RightObstacleEnd = obsRight.Item2;
+                ComputeObstaclePoint(twinCell, edge, out Vector2 obsRightStart, out Vector2 obsRightEnd);
+                edge.RightObstacleStart = obsRightStart;
+                edge.RightObstacleEnd = obsRightEnd;
 
                 twinEdge.LeftObstacleStart = edge.RightObstacleEnd;
                 twinEdge.LeftObstacleEnd = edge.RightObstacleStart;
@@ -192,24 +192,26 @@ namespace SharpBoostVoronoi
                 twinEdge.RightObstacleEnd = edge.LeftObstacleStart;
             }
         }
-        private Tuple<Point,Point> ComputeObstaclePoint(Cell cell,Edge edge)
+        private void ComputeObstaclePoint(Cell cell,Edge edge, out Vector2 start, out Vector2 end)
         {
             var startVertex = Vertices[edge.Start];
             var endVertex = Vertices[edge.End];
             if (cell.ContainsPoint)
             {
                 var pointSite = RetrieveInputPoint(cell);
-                return Tuple.Create(pointSite, pointSite);
+                start = pointSite;
+                end = pointSite;
             }
             else
             {
                 var lineSite = RetrieveInputSegment(cell);
-                var startLineSite = new Vertex(lineSite.Start.X, lineSite.Start.Y);
-                var endLineSite = new Vertex(lineSite.End.X, lineSite.End.Y);
-                var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex);
-                var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex);
+                var startLineSite = new Vector2(lineSite.Start.x, lineSite.Start.y);
+                var endLineSite = new Vector2(lineSite.End.x, lineSite.End.y);
+                var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex.ToVector2());
+                var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex.ToVector2());
 
-                return Tuple.Create(new Point(nearestPointOfStartVertex), new Point(nearestPointOfEndVertex));
+                start = nearestPointOfStartVertex;
+                end = nearestPointOfEndVertex;
             }
         }
         /// <summary>
@@ -225,7 +227,7 @@ namespace SharpBoostVoronoi
             if (index < -0 || index > this.CountVertices - 1)
                 throw new IndexOutOfRangeException();
             GetVertex(VoronoiWrapper, index, out double a1, out double a2, out long a3);
-            var x = Tuple.Create(a1, a2,a3);
+            var x = Tuple.Create((float)a1,(float)a2,a3);
             return new Vertex(index,x);
         }
 
@@ -272,18 +274,18 @@ namespace SharpBoostVoronoi
         /// <param name="y"></param>
         public void AddPoint(int x, int y)
         {
-            Point p = new Point(x,y);
+            Vector2Int p = new Vector2Int(x,y);
             InputPoints.Add(InputPoints.Count, p);
-            AddPoint(VoronoiWrapper,p.X, p.Y);
+            AddPoint(VoronoiWrapper,p.x, p.y);
         }
 
         /// <summary>
         /// Add a segment to the list of input segments
         /// </summary>
-        /// <param name="x1">X coordinate of the start point</param>
-        /// <param name="y1">Y coordinate of the start point</param>
-        /// <param name="x2">X coordinate of the end point</param>
-        /// <param name="y2">Y coordinate of the end point</param>
+        /// <param name="x1">x coordinate of the start point</param>
+        /// <param name="y1">y coordinate of the start point</param>
+        /// <param name="x2">x coordinate of the end point</param>
+        /// <param name="y2">y coordinate of the end point</param>
         //public void AddSegment(int x1, int y1, int x2, int y2)
         //{
         //    InputSegments.Add(new Segment(x1 * ScaleFactor,y1 * ScaleFactor,x2 * ScaleFactor,y2 * ScaleFactor));
@@ -293,10 +295,10 @@ namespace SharpBoostVoronoi
         /// <summary>
         /// Add a segment to the list of input segments
         /// </summary>
-        /// <param name="x1">X coordinate of the start point</param>
-        /// <param name="y1">Y coordinate of the start point</param>
-        /// <param name="x2">X coordinate of the end point</param>
-        /// <param name="y2">Y coordinate of the end point</param>
+        /// <param name="x1">x coordinate of the start point</param>
+        /// <param name="y1">y coordinate of the start point</param>
+        /// <param name="x2">x coordinate of the end point</param>
+        /// <param name="y2">y coordinate of the end point</param>
         public void AddSegment(int x1, int y1, int x2, int y2)
         {
             Segment s = new Segment(x1,y1,x2,y2);
@@ -304,10 +306,10 @@ namespace SharpBoostVoronoi
             InputSegments.Add(InputSegments.Count, s);
             AddSegment(
                 VoronoiWrapper,
-                s.Start.X,
-                s.Start.Y,
-                s.End.X,
-                s.End.Y
+                s.Start.x,
+                s.Start.y,
+                s.End.x,
+                s.End.y
             );
         }
 
@@ -322,7 +324,7 @@ namespace SharpBoostVoronoi
         /// <param name="edge">The curvy edge.</param>
         /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
         /// <returns></returns>
-        public List<Vertex> SampleCurvedEdge(Edge edge, double max_distance)
+        public List<Vector2> SampleCurvedEdge(Edge edge, float max_distance)
         {
             long pointCell = -1;
             long lineCell = -1;
@@ -331,15 +333,15 @@ namespace SharpBoostVoronoi
             if (max_distance <= 0)
                 throw new Exception("Max distance must be greater than 0");
 
-            Point pointSite = null;
-            Segment segmentSite = null;
+            Vector2Int pointSite;
+            Segment segmentSite;
 
-            Edge twin = this.GetEdge(edge.Twin);
-            Cell m_cell = this.GetCell(edge.Cell);
-            Cell m_reverse_cell = this.GetCell(twin.Cell);
+            Edge twin = this.Edges[edge.Twin];
+            Cell m_cell = this.Cells[edge.Cell];
+            Cell m_reverse_cell = this.Cells[twin.Cell];
 
             if (m_cell.ContainsSegment == true && m_reverse_cell.ContainsSegment == true)
-                return new List<Vertex>() { this.GetVertex(edge.Start), this.GetVertex(edge.End) };
+                return new List<Vector2>() { this.Vertices[edge.Start].ToVector2(), this.Vertices[edge.End].ToVector2() };
 
             if (m_cell.ContainsPoint)
             {
@@ -352,12 +354,12 @@ namespace SharpBoostVoronoi
                 pointCell = twin.Cell;
             }
 
-            pointSite = RetrieveInputPoint(this.GetCell(pointCell));
-            segmentSite = RetrieveInputSegment(this.GetCell(lineCell));
+            pointSite = RetrieveInputPoint(this.Cells[pointCell]);
+            segmentSite = RetrieveInputSegment(this.Cells[lineCell]);
 
-            List<Vertex> discretization = new List<Vertex>(){
-                this.GetVertex(edge.Start),
-                this.GetVertex(edge.End)
+            List<Vector2> discretization = new List<Vector2>(){
+                this.Vertices[edge.Start].ToVector2(),
+                this.Vertices[edge.End].ToVector2()
             };
 
             if (edge.IsLinear)
@@ -365,9 +367,9 @@ namespace SharpBoostVoronoi
 
 
             return ParabolaComputation.Densify(
-                new Vertex(pointSite.X, pointSite.Y),
-                new Vertex(segmentSite.Start.X , segmentSite.Start.Y),
-                new Vertex(segmentSite.End.X ,segmentSite.End.Y),
+                new Vector2(pointSite.x, pointSite.y),
+                new Vector2(segmentSite.Start.x , segmentSite.Start.y),
+                new Vector2(segmentSite.End.x ,segmentSite.End.y),
                 discretization[0],
                 discretization[1],
                 max_distance,
@@ -384,9 +386,9 @@ namespace SharpBoostVoronoi
         /// </summary>
         /// <param name="cell">The cell that contains the point site.</param>
         /// <returns>The input point site of the cell.</returns>
-        public Point RetrieveInputPoint(Cell cell)
+        public Vector2Int RetrieveInputPoint(Cell cell)
         {
-            Point pointNoScaled = null;
+            Vector2Int pointNoScaled;
             if (cell.SourceCategory == CellSourceCatory.SinglePoint)
                 pointNoScaled = InputPoints[cell.Site];
             else if (cell.SourceCategory == CellSourceCatory.SegmentStartPoint)
@@ -396,7 +398,7 @@ namespace SharpBoostVoronoi
             else
                 throw new Exception("This cells does not have a point as input site");
 
-            return new Point(pointNoScaled.X, pointNoScaled.Y);
+            return new Vector2Int(pointNoScaled.x, pointNoScaled.y);
         }
 
 
@@ -411,8 +413,8 @@ namespace SharpBoostVoronoi
         public Segment RetrieveInputSegment(Cell cell)
         {
             Segment segmentNotScaled = InputSegments[RetriveInputSegmentIndex(cell)];
-            return new Segment(new Point(segmentNotScaled.Start.X, segmentNotScaled.Start.Y),
-                new Point(segmentNotScaled.End.X, segmentNotScaled.End.Y));
+            return new Segment(new Vector2Int(segmentNotScaled.Start.x, segmentNotScaled.Start.y),
+                new Vector2Int(segmentNotScaled.End.x, segmentNotScaled.End.y));
         }
 
         private long RetriveInputSegmentIndex(Cell cell)

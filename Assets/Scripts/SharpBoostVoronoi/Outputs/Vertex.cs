@@ -11,37 +11,22 @@ namespace SharpBoostVoronoi.Output
     public class Vertex
     {
         public long ID;
-        public double X { get; set; }
-        public double Y { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
         public long IncidentEdge { get; set; }
         //public List<Point> NearestObstaclePoints { get; } = new List<Point>();
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="t">A tuple where the first value represents the X-axis and the second value the Y-axis</param>
-        public Vertex(long id,Tuple<double, double,long> t)
+        public Vertex(long id,Tuple<float, float, long> t)
         {
             ID = id;
             X = t.Item1;
             Y = t.Item2;
             IncidentEdge = t.Item3;
         }
-        public  Vertex(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="t">A tuple where the first value represents the X-axis and the second value the Y-axis</param>
-        /// <param name="scaleFactor">A number that will be used to divide the coordinates</param>
-        public Vertex(Tuple<double, double> t, int scaleFactor)
-        {
-            X = t.Item1 / scaleFactor;
-            Y = t.Item2 / scaleFactor;
-        }
+        
 
         public override bool Equals(object obj)
         {
@@ -66,6 +51,10 @@ namespace SharpBoostVoronoi.Output
         public double[] GetKDKey()
         {
             return new double[] { X, Y };
+        }
+        public Vector2 ToVector2()
+        {
+            return new Vector2(X, Y);
         }
     }
 }

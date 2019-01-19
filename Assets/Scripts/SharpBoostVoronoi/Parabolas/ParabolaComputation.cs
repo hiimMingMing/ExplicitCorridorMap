@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace SharpBoostVoronoi.Parabolas
 {
@@ -18,9 +19,9 @@ namespace SharpBoostVoronoi.Parabolas
         /// <param name="start">The first point</param>
         /// <param name="end">The second point</param>
         /// <returns>The angle in radians</returns>
-        static double GetLineAngleAsRadiant(Vertex start, Vertex end)
+        static float GetLineAngleAsRadiant(Vector2 start, Vector2 end)
         {
-            return Math.Atan2(end.Y - start.Y, end.X - start.X);
+            return Mathf.Atan2(end.y - start.y, end.x - start.x);
         }
 
 
@@ -32,9 +33,9 @@ namespace SharpBoostVoronoi.Parabolas
         /// <param name="focus">The focus of the parabola</param>
         /// <param name="directrix_y">The y value of the directx line</param>
         /// <returns>The y value associated with x</returns>
-        static double ParabolaY(double x, Vertex focus, double directrix_y)
+        static float ParabolaY(float x, Vector2 focus, float directrix_y)
         {
-            return (Math.Pow(x - focus.X, 2) + Math.Pow(focus.Y, 2) - Math.Pow(directrix_y, 2)) / (2 * (focus.Y - directrix_y));
+            return (Mathf.Pow(x - focus.x, 2) + Mathf.Pow(focus.y, 2) - Mathf.Pow(directrix_y, 2)) / (2 * (focus.y - directrix_y));
         }
 
 
@@ -50,7 +51,7 @@ namespace SharpBoostVoronoi.Parabolas
         /// <param name="max_distance">The maximum distance between 2 points on the parabola</param>
         /// <param name="tolerance">The maximum distance between 2 points on the parabola</param>
         /// <returns></returns>
-        public static List<Vertex> Densify(Vertex focus, Vertex dir_start, Vertex dir_end, Vertex par_start, Vertex par_end, double max_distance, double tolerance)
+        public static List<Vector2> Densify(Vector2 focus, Vector2 dir_start, Vector2 dir_end, Vector2 par_start, Vector2 par_end, float max_distance, float tolerance)
         {
 
             if (max_distance <= 0)
@@ -62,38 +63,38 @@ namespace SharpBoostVoronoi.Parabolas
             #region Rotate Input Points
 
             //Compute the information required to perform rotation
-            double shift_X = Math.Min(dir_start.X, dir_end.X);
-            double shift_Y = Math.Min(dir_start.Y, dir_end.Y);
-            double angle = GetLineAngleAsRadiant(dir_start, dir_end);
+            float shift_X = Mathf.Min(dir_start.x, dir_end.x);
+            float shift_Y = Mathf.Min(dir_start.y, dir_end.y);
+            float angle = GetLineAngleAsRadiant(dir_start, dir_end);
 
-            Vertex focus_rotated = Rotation.Rotate(
+            Vector2 focus_rotated = Rotation.Rotate(
                 focus, 
                 angle, 
                 shift_X, 
                 shift_Y
             );
 
-            Vertex dir_startPoint_rotated = Rotation.Rotate(
+            Vector2 dir_startPoint_rotated = Rotation.Rotate(
                 dir_start,
                 angle,
                 shift_X,
                 shift_Y
             );
 
-            Vertex dir_endPoint_rotated = Rotation.Rotate(
+            Vector2 dir_endPoint_rotated = Rotation.Rotate(
                 dir_end,
                 angle,
                 shift_X,
                 shift_Y);
 
-            Vertex par_startPoint_rotated = Rotation.Rotate(
+            Vector2 par_startPoint_rotated = Rotation.Rotate(
                 par_start, 
                 angle, 
                 shift_X, 
                 shift_Y
             );
             
-            Vertex par_endPoint_rotated = Rotation.Rotate(
+            Vector2 par_endPoint_rotated = Rotation.Rotate(
                 par_end, 
                 angle, 
                 shift_X, 
@@ -104,12 +105,12 @@ namespace SharpBoostVoronoi.Parabolas
 
             #region Validate the equation on first and last points given by Boost
             //Set parabola parameters
-            double directrix = dir_endPoint_rotated.Y;
-            double snapTolerance = 5;
+            float directrix = dir_endPoint_rotated.y;
+            float snapTolerance = 5;
 
 
-            List<Vertex> densified_rotated = new List<Vertex>();
-            Stack<Vertex> next = new Stack<Vertex>();
+            List<Vector2> densified_rotated = new List<Vector2>();
+            Stack<Vector2> next = new Stack<Vector2>();
 
             ParabolaProblemInformation nonRotatedInformation = new ParabolaProblemInformation(
                     focus,
@@ -120,7 +121,7 @@ namespace SharpBoostVoronoi.Parabolas
             );
 
 
-            double distanceFocusToDirectix = 0;
+            float distanceFocusToDirectix = 0;
             Distance.GetClosestPointOnLine(focus, dir_start, dir_end, out distanceFocusToDirectix);
             if (distanceFocusToDirectix == 0)
                 throw new FocusOnDirectixException(nonRotatedInformation);
@@ -133,32 +134,32 @@ namespace SharpBoostVoronoi.Parabolas
                 par_endPoint_rotated
             );
 
-            List<Tuple<Vertex, Vertex>> points = new List <Tuple<Vertex, Vertex>>();
+            List<Tuple<Vector2, Vector2>> points = new List <Tuple<Vector2, Vector2>>();
             points.Add(
-                Tuple.Create<Vertex, Vertex>(
+                Tuple.Create<Vector2, Vector2>(
                     par_startPoint_rotated, 
-                    new Vertex(par_startPoint_rotated.X, ParabolaY(par_startPoint_rotated.X, focus_rotated, directrix))
+                    new Vector2(par_startPoint_rotated.x, ParabolaY(par_startPoint_rotated.x, focus_rotated, directrix))
                  )
             );
 
             points.Add(
-                Tuple.Create<Vertex, Vertex>(
+                Tuple.Create<Vector2, Vector2>(
                     par_endPoint_rotated,
-                    new Vertex(par_endPoint_rotated.X, ParabolaY(par_endPoint_rotated.X, focus_rotated, directrix))
+                    new Vector2(par_endPoint_rotated.x, ParabolaY(par_endPoint_rotated.x, focus_rotated, directrix))
                  )
             );
 
             foreach (var point in points)
             {
-                double delta = point.Item1.Y > point.Item2.Y ?
-                        point.Item1.Y - point.Item2.Y : point.Item2.Y - point.Item1.Y;
+                float delta = point.Item1.y > point.Item2.y ?
+                        point.Item1.y - point.Item2.y : point.Item2.y - point.Item1.y;
 
                 if (delta > snapTolerance)
                 {
-                    GenerateParabolaIssueInformation(rotatedInformation, nonRotatedInformation, point.Item1, point.Item2, 0.001);
+                    GenerateParabolaIssueInformation(rotatedInformation, nonRotatedInformation, point.Item1, point.Item2, 0.001f);
                     throw new Exception(
                         String.Format(
-                            "The computed Y on the parabola for the starting / ending point is different from the rotated point returned by Boost. Difference: {0}",
+                            "The computed y on the parabola for the starting / ending point is different from the rotated point returned by Boost. Difference: {0}",
                             delta)
                          );
                 }
@@ -166,16 +167,16 @@ namespace SharpBoostVoronoi.Parabolas
             #endregion
 
             #region Compute Intermediate Points (Rotated)
-            Vertex previous = points[0].Item2;
+            Vector2 previous = points[0].Item2;
             densified_rotated.Add(previous);
             next.Push(points[1].Item2);
 
             while (next.Count > 0)
             {
-                Vertex current = next.Peek();
-                double mid_cord_x = (previous.X + current.X) / 2;
-                Vertex mid_curve = new Vertex(mid_cord_x, ParabolaY(mid_cord_x, focus_rotated, directrix));
-                double distance = Distance.ComputeDistanceBetweenPoints(current, previous);
+                Vector2 current = next.Peek();
+                float mid_cord_x = (previous.x + current.x) / 2;
+                Vector2 mid_curve = new Vector2(mid_cord_x, ParabolaY(mid_cord_x, focus_rotated, directrix));
+                float distance = Distance.ComputeDistanceBetweenPoints(current, previous);
                 if (distance > max_distance)
                 {
                     next.Push(mid_curve);
@@ -190,19 +191,19 @@ namespace SharpBoostVoronoi.Parabolas
             #endregion
 
             #region Unrotate and validate
-            List<Vertex> densified = densified_rotated.Select(w => Rotation.Unrotate(w, angle, shift_X, shift_Y)).ToList();
+            List<Vector2> densified = densified_rotated.Select(w => Rotation.Unrotate(w, angle, shift_X, shift_Y)).ToList();
             
             //reset the first and last points so they match exactly.
-            if (Math.Abs(densified[0].X - par_start.X) > snapTolerance ||
-                Math.Abs(densified[0].Y - par_start.Y) > snapTolerance)
-                throw new Exception(String.Format("Segmented curve start point is not correct. Tolerance exeeded in X ({0}) or Y ({1})",
-                    Math.Abs(densified[0].X - par_start.X), Math.Abs(densified[0].Y - par_start.Y)));
+            if (Mathf.Abs(densified[0].x - par_start.x) > snapTolerance ||
+                Mathf.Abs(densified[0].y - par_start.y) > snapTolerance)
+                throw new Exception(String.Format("Segmented curve start point is not correct. Tolerance exeeded in x ({0}) or y ({1})",
+                    Mathf.Abs(densified[0].x - par_start.x), Mathf.Abs(densified[0].y - par_start.y)));
             densified[0] = par_start;
 
-            if (Math.Abs(densified[densified.Count - 1].X - par_end.X) > snapTolerance ||
-                Math.Abs(densified[densified.Count - 1].Y - par_end.Y) > snapTolerance)
-                throw new Exception(String.Format("Segmented curve end point is not correct. Tolerance exeeded in X ({0}) or Y ({1})",
-                    Math.Abs(densified[densified.Count - 1].X - par_end.X), Math.Abs(densified[densified.Count - 1].Y - par_end.Y)));
+            if (Mathf.Abs(densified[densified.Count - 1].x - par_end.x) > snapTolerance ||
+                Mathf.Abs(densified[densified.Count - 1].y - par_end.y) > snapTolerance)
+                throw new Exception(String.Format("Segmented curve end point is not correct. Tolerance exeeded in x ({0}) or y ({1})",
+                    Mathf.Abs(densified[densified.Count - 1].x - par_end.x), Mathf.Abs(densified[densified.Count - 1].y - par_end.y)));
             densified[densified.Count - 1] = par_end;
             #endregion
             
@@ -218,38 +219,38 @@ namespace SharpBoostVoronoi.Parabolas
         /// <param name="boostPoint">The point on the parabola returned by Boost.</param>
         /// <param name="parabolaPoint">The point on the parabola computed.</param>
         /// <param name="tolerance">The tolerance used to decide if an exception need to be raise.</param>
-        private static void GenerateParabolaIssueInformation(ParabolaProblemInformation rotatedInformation, ParabolaProblemInformation nonRotatedInformation, Vertex boostPoint, Vertex parabolaPoint, double tolerance)
+        private static void GenerateParabolaIssueInformation(ParabolaProblemInformation rotatedInformation, ParabolaProblemInformation nonRotatedInformation, Vector2 boostPoint, Vector2 parabolaPoint, float tolerance)
         {
             if (tolerance < 0)
                 throw new ArgumentOutOfRangeException(String.Format("Tolenrance must be greater than 0"));
 
-            double minX = Math.Min(Math.Min(Math.Min(rotatedInformation.DirectixSegmentStart.X, rotatedInformation.DirectixSegmentStart.X), boostPoint.X), parabolaPoint.X);
-            double maxX = Math.Max(Math.Max(Math.Max(rotatedInformation.DirectixSegmentStart.X, rotatedInformation.DirectixSegmentStart.X), boostPoint.X), parabolaPoint.X);
+            float minX = Mathf.Min(Mathf.Min(Mathf.Min(rotatedInformation.DirectixSegmentStart.x, rotatedInformation.DirectixSegmentStart.x), boostPoint.x), parabolaPoint.x);
+            float maxX = Mathf.Max(Mathf.Max(Mathf.Max(rotatedInformation.DirectixSegmentStart.x, rotatedInformation.DirectixSegmentStart.x), boostPoint.x), parabolaPoint.x);
 
             //Compute the distance between the input parabola point
-            double distanceBoostPointToFocus = Distance.ComputeDistanceBetweenPoints(boostPoint, rotatedInformation.FocusPoint);
-            double distanceBoostPointToDirectix = 0;
+            float distanceBoostPointToFocus = Distance.ComputeDistanceBetweenPoints(boostPoint, rotatedInformation.FocusPoint);
+            float distanceBoostPointToDirectix = 0;
             Distance.GetClosestPointOnLine(
-                    new Vertex(minX, rotatedInformation.DirectixSegmentEnd.Y),
-                    new Vertex(maxX, rotatedInformation.DirectixSegmentEnd.Y),
+                    new Vector2(minX, rotatedInformation.DirectixSegmentEnd.y),
+                    new Vector2(maxX, rotatedInformation.DirectixSegmentEnd.y),
                     boostPoint, 
                     out distanceBoostPointToDirectix
             );
 
 
-            double distanceComputedPointToFocus = Distance.ComputeDistanceBetweenPoints(parabolaPoint, rotatedInformation.FocusPoint);
-            double distanceComputedPointToDirectix = 0;
+            float distanceComputedPointToFocus = Distance.ComputeDistanceBetweenPoints(parabolaPoint, rotatedInformation.FocusPoint);
+            float distanceComputedPointToDirectix = 0;
             Distance.GetClosestPointOnLine(
-                    new Vertex(minX, rotatedInformation.DirectixSegmentEnd.Y),
-                    new Vertex(maxX, rotatedInformation.DirectixSegmentEnd.Y),
+                    new Vector2(minX, rotatedInformation.DirectixSegmentEnd.y),
+                    new Vector2(maxX, rotatedInformation.DirectixSegmentEnd.y),
                     parabolaPoint,
                     out distanceComputedPointToDirectix
             );
 
-            double distanceDiff = distanceComputedPointToFocus > distanceComputedPointToDirectix ?
+            float distanceDiff = distanceComputedPointToFocus > distanceComputedPointToDirectix ?
                 distanceComputedPointToFocus - distanceComputedPointToDirectix : distanceComputedPointToDirectix - distanceComputedPointToFocus;
 
-            if (distanceDiff < tolerance || Double.IsNaN(distanceDiff) || Double.IsInfinity(distanceDiff))
+            if (distanceDiff < tolerance || float.IsNaN(distanceDiff) || float.IsInfinity(distanceDiff))
                 throw new UnsolvableVertexException(nonRotatedInformation, rotatedInformation, boostPoint, parabolaPoint,
                     distanceBoostPointToFocus, distanceComputedPointToFocus, distanceBoostPointToDirectix, distanceComputedPointToDirectix);
 

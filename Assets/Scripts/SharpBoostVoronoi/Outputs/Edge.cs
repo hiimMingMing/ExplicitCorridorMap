@@ -11,10 +11,10 @@ namespace SharpBoostVoronoi.Output
         /// </summary>
         public long Start { get; set; }
 
-        public Point LeftObstacleStart { get; set; }
-        public Point RightObstacleStart { get; set; }
-        public Point LeftObstacleEnd { get; set; }
-        public Point RightObstacleEnd { get; set; }
+        public Vector2 LeftObstacleStart { get; set; }
+        public Vector2 RightObstacleStart { get; set; }
+        public Vector2 LeftObstacleEnd { get; set; }
+        public Vector2 RightObstacleEnd { get; set; }
         /// <summary>
         /// The index of the end vertex of this segment.
         /// </summary>
