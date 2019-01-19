@@ -22,6 +22,15 @@ public class MedialAxisEditor : Editor
     List<Point> portalsLeft;
     List<Point> portalsRight;
     List<Point> shortestPath; 
+    void AddRect(List<Segment> segments, RectInt rect)
+    {
+
+        segments.Add(new Segment(rect.x, rect.y, rect.x, rect.yMax));
+        segments.Add(new Segment(rect.x, rect.yMax, rect.xMax, rect.yMax));
+        segments.Add(new Segment(rect.xMax, rect.yMax, rect.xMax, rect.y));
+        segments.Add(new Segment(rect.xMax, rect.y, rect.x, rect.y));
+
+    }
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -35,70 +44,28 @@ public class MedialAxisEditor : Editor
 
         if (GUILayout.Button("Bake"))
         {
-            Point p0 = new Point(200, 250);
-            Point p1 = new Point(400, 250);
-            List<Point> InputPoints = new List<Point>();
-            List<Segment> InputSegments = new List<Segment> {
-                new Segment(new Point(0,0), new Point(0,500)),
-                new Segment(new Point(0,0), new Point(500,0)),
-                new Segment(new Point(500,0), new Point(500,500)),
-                new Segment(new Point(0,500), new Point(500,500)),
-                new Segment(new Point(50,50), new Point(50,450)),
-                new Segment(new Point(50,50), new Point(450,50)),
-                new Segment(new Point(450,50), new Point(450,450)),
-                new Segment(new Point(50,450), new Point(450,450)),
-                new Segment(new Point(50,50), p0),
-                new Segment(new Point(50,450), p0),
-                new Segment(p0,p1),
-                new Segment(p1,new Point(50,50))
-            };
-            /*AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA*/
-            //Point p0 = new Point(200, 250);
-            //Point p1 = new Point(400, 250);
+            //populate segment
+            List<Segment> InputSegments = new List<Segment>();
+            AddRect(InputSegments, new RectInt(0, 0, 500, 500));
+            AddRect(InputSegments, new RectInt(50, 50, 80, 80));
+            AddRect(InputSegments, new RectInt(200, 100, 200, 100));
+            AddRect(InputSegments, new RectInt(75, 225, 60, 250));
+            AddRect(InputSegments, new RectInt(250, 250, 60, 200));
+            AddRect(InputSegments, new RectInt(360, 300, 100, 100));
 
-            //List<Point> InputPoints = new List<Point>();
-            //List<Segment> InputSegments = new List<Segment> {
-            //    new Segment(new Point(0,0), new Point(0,500)),
-            //    new Segment(new Point(0,0), new Point(500,0)),
-            //    new Segment(new Point(0,0), new Point(500,500)),
-            //    new Segment(new Point(500,0), new Point(500,500)),
-            //    new Segment(new Point(0,500), new Point(500,500)),
-            //};
-            /*AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA*/
-            //List<Point> InputPoints = new List<Point>() { new Point(250, 250) };
-            //List<Segment> InputSegments = new List<Segment> {
-            //    new Segment(new Point(0,0), new Point(0,500)),
-            //    new Segment(new Point(0,0), new Point(500,0)),
-            //    new Segment(new Point(500,0), new Point(500,500)),
-            //    new Segment(new Point(0,500), new Point(500,500)),
-            //};
-            var watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
+            //var watch = new System.Diagnostics.Stopwatch();
+            //watch.Start();
             VoronoiSolution = new BoostVoronoi();
-            foreach (var point in InputPoints)
-            {
-                VoronoiSolution.AddPoint(point.X, point.Y);
-            }
             foreach (var segment in InputSegments)
             {
                 VoronoiSolution.AddSegment(segment.Start.X, segment.Start.Y, segment.End.X, segment.End.Y);
             }
             VoronoiSolution.Construct();
-            //foreach (var e in VoronoiSolution.Edges.Values)
-            //{
-            //    if (!e.IsFinite || !e.IsPrimary)
-            //        continue;
-            //    Debug.Log(e.ID + " " + e.Twin);
-            //}
-            watch.Stop();
-            //Debug.Log("Voronoi Edge Count: " + VoronoiSolution.CountEdges);
-            //Debug.Log("Voronoi Vertex Count: " + VoronoiSolution.CountVertices);
-            //Debug.Log("Voronoi Cell Count: " + VoronoiSolution.CountCells);
+            //watch.Stop();
             //Debug.Log("Time: " + watch.ElapsedMilliseconds);
 
             var start = VoronoiSolution.Vertices[startIndex];
             var goal = VoronoiSolution.Vertices[goalIndex];
-            //Debug.Log(goal.Equals(goal));
             Debug.Log("Find path from " + startIndex + " to " + goalIndex);
             edgeList = Astar.FindPath(VoronoiSolution, start, goal);
             Debug.Log("Path length:" + edgeList.Count);
@@ -202,7 +169,7 @@ public class MedialAxisEditor : Editor
         //        DrawObstaclePoint(edge);
         //    }
         //}
-        if (drawNearestObstaclePoints && edgeList != null && portalsLeft!=null)
+        if (drawNearestObstaclePoints && edgeList != null && portalsLeft!=null && shortestPath!= null)
         {
             //foreach (var edge in edgeList)
             //{
@@ -233,6 +200,7 @@ public class MedialAxisEditor : Editor
     List<Point> GetShortestPath(List<Point> portalsLeft, List<Point> portalsRight)
     {
         List<Point> path = new List<Point>();
+        if (portalsLeft.Count == 0) return path;
         Point portalApex, portalLeft, portalRight;
         int apexIndex = 0, leftIndex = 0, rightIndex = 0;
         portalApex = portalsLeft[0];
@@ -395,7 +363,7 @@ public class MedialAxisEditor : Editor
         }
         else
         {
-            List<Vertex> discretizedEdge = VoronoiSolution.SampleCurvedEdge(outputSegment, 2);
+            List<Vertex> discretizedEdge = VoronoiSolution.SampleCurvedEdge(outputSegment, 10);
             for (int i = 1; i < discretizedEdge.Count; i++)
             {
                 float X1 = (float)discretizedEdge[i - 1].X;
