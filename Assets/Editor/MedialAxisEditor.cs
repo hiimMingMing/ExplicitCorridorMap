@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using SharpBoostVoronoi;
@@ -18,6 +19,9 @@ public class MedialAxisEditor : Editor
     int startIndex = 0;
     int goalIndex = 0;
     List<Edge> edgeList = null;
+    List<Point> portalsLeft;
+    List<Point> portalsRight;
+    List<Point> shortestPath; 
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -101,6 +105,15 @@ public class MedialAxisEditor : Editor
             foreach (var e in edgeList)
             {
                 Debug.Log(e.Start + "-" + e.End);
+            }
+            portalsLeft = new List<Point>();
+            portalsRight = new List<Point>();
+            ComputePortals(portalsLeft, portalsRight);
+            shortestPath = GetShortestPath(portalsLeft, portalsRight);
+            Debug.Log("SP:"+shortestPath.Count);
+            foreach(var p in shortestPath)
+            {
+                Debug.Log(p);
             }
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
@@ -189,41 +202,141 @@ public class MedialAxisEditor : Editor
         //        DrawObstaclePoint(edge);
         //    }
         //}
-        if (drawNearestObstaclePoints && edgeList != null)
+        if (drawNearestObstaclePoints && edgeList != null && portalsLeft!=null)
         {
-            foreach (var edge in edgeList)
+            //foreach (var edge in edgeList)
+            //{
+            //    DrawObstaclePoint(edge);
+            //}
+
+            //Debug.Log("PorCountt:" + portalsLeft.Count);
+            for (int i = 0; i < portalsLeft.Count; i++)
             {
-                DrawObstaclePoint(edge);
+                DrawPortal(portalsLeft[i], portalsRight[i]);
             }
-            List<Point> portalsLeft = new List<Point>();
-            List<Point> portalsRight = new List<Point>();
 
-            for (int i = 0; i < edgeList.Count; i++)
+            var path = shortestPath.ConvertAll(x => new Vector3(x.X, x.Y)).ToArray();
+            Handles.color = Color.red;
+            Handles.DrawPolyLine(path);
+        }
+    }
+    int CrossProduct(Point a,Point b, Point c)
+    {
+        int ax = b.X - a.X;
+        int ay = b.Y - a.Y;
+        int bx = c.X - a.X;
+        int by = c.Y - a.Y;
+        return bx * ay - ax * by;
+    }
+
+
+    List<Point> GetShortestPath(List<Point> portalsLeft, List<Point> portalsRight)
+    {
+        List<Point> path = new List<Point>();
+        Point portalApex, portalLeft, portalRight;
+        int apexIndex = 0, leftIndex = 0, rightIndex = 0;
+        portalApex = portalsLeft[0];
+        portalLeft = portalsLeft[0];
+        portalRight = portalsRight[0];
+        path.Add(portalApex);
+        for(int i = 1; i < portalsLeft.Count; i++)
+        {
+            var left = portalsLeft[i];
+            var right = portalsRight[i];
+            // Update right vertex.
+            if (CrossProduct(portalApex,portalRight,right) <= 0)
             {
-                var edge = edgeList[i];
-                if (i != 0)
+                if(portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0)
                 {
-                    var left1 = edge.LeftObstacleStart;
-                    var right1 = edge.RightObstacleStart;
-                    portalsLeft.Add(left1);
-                    portalsRight.Add(right1);
-                    DrawPortal(left1,right1);
-
+                    // Tighten the funnel.
+                    portalRight = right;
+                    rightIndex = i;
                 }
-                if (i == edgeList.Count - 1) break;
-                var edgeNext = edgeList[i + 1];
-                if(edge.LeftObstacleEnd.Equals(edgeNext.LeftObstacleStart) &&
-                    edge.RightObstacleEnd.Equals(edgeNext.RightObstacleStart))
+                else
                 {
+                    path.Add( portalLeft);
+                    // Make current left the new apex.
+                    portalApex = portalLeft;
+                    apexIndex = leftIndex;
+                    // Reset portal
+                    portalLeft = portalApex;
+                    portalRight = portalApex;
+                    leftIndex = apexIndex;
+                    rightIndex = apexIndex;
+                    // Restart scan
+                    i = apexIndex;
                     continue;
                 }
-                var left2 = edge.LeftObstacleEnd;
-                var right2 = edge.RightObstacleEnd;
-                portalsLeft.Add(left2);
-                portalsRight.Add(right2);
-                DrawPortal(left2, right2);
             }
-            //Debug.Log("PorCountt:" + portalsLeft.Count);
+            // Update left vertex.
+            if (CrossProduct(portalApex, portalLeft, left) >= 0)
+            {
+                if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0)
+                {
+                    // Tighten the funnel.
+                    portalLeft = left;
+                    leftIndex = i;
+                }
+                else
+                {
+                    // Left over right, insert right to path and restart scan from portal right point.
+                    path.Add(portalRight);
+                    // Make current right the new apex.
+                    portalApex = portalRight;
+                    apexIndex = rightIndex;
+                    // Reset portal
+                    portalLeft = portalApex;
+                    portalRight = portalApex;
+                    leftIndex = apexIndex;
+                    rightIndex = apexIndex;
+                    // Restart scan
+                    i = apexIndex;
+                    continue;
+                }
+            }//if
+        }//for
+        path.Add(portalsLeft[portalsLeft.Count - 1]);
+        return path;
+    }//funtion
+    void ComputePortals(List<Point> portalsLeft, List<Point> portalsRight)
+    {
+
+        for (int i = 0; i < edgeList.Count; i++)
+        {
+            var edge = edgeList[i];
+            if (i != 0)
+            {
+                var left1 = edge.LeftObstacleStart;
+                var right1 = edge.RightObstacleStart;
+                portalsLeft.Add(left1);
+                portalsRight.Add(right1);
+
+            }
+            else
+            {
+                var start =VoronoiSolution.Vertices[ edge.Start];
+                var point = new Point(start);
+                portalsLeft.Add(point);
+                portalsRight.Add(point);
+            }
+            if (i == edgeList.Count - 1)
+            {
+                var end = VoronoiSolution.Vertices[edge.End];
+                var point = new Point(end);
+                portalsLeft.Add(point);
+                portalsRight.Add(point);
+                break;
+            }
+            var edgeNext = edgeList[i + 1];
+            if (edge.LeftObstacleEnd.Equals(edgeNext.LeftObstacleStart) &&
+                edge.RightObstacleEnd.Equals(edgeNext.RightObstacleStart))
+            {
+                continue;
+            }
+            var left2 = edge.LeftObstacleEnd;
+            var right2 = edge.RightObstacleEnd;
+            portalsLeft.Add(left2);
+            portalsRight.Add(right2);
         }
     }
     void DrawPortal(Point begin, Point end)
