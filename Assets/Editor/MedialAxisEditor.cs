@@ -12,7 +12,7 @@ using KdTree.Math;
 [CustomEditor(typeof(MedialAxis))]
 public class MedialAxisEditor : Editor
 {
-    BoostVoronoi VoronoiSolution { get; set; }
+    ExplicitCorridorMap ecm;
     float inputPointRadius = 12f;
     float outputPointRadius = 6f;
     int segmentCount = 100000;
@@ -56,22 +56,22 @@ public class MedialAxisEditor : Editor
 
             //var watch = new System.Diagnostics.Stopwatch();
             //watch.Start();
-            VoronoiSolution = new BoostVoronoi();
+            ecm = new ExplicitCorridorMap();
             foreach (var segment in InputSegments)
             {
-                VoronoiSolution.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
+                ecm.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
             }
-            VoronoiSolution.Construct();
+            ecm.Construct();
             //watch.Stop();
             //Debug.Log("Time: " + watch.ElapsedMilliseconds);
 
-            //startIndex = UnityEngine.Random.Range(0, VoronoiSolution.Vertices.Count);
-            //goalIndex = UnityEngine.Random.Range(0, VoronoiSolution.Vertices.Count);
+            //startIndex = UnityEngine.Random.Range(0, ecm.Vertices.Count);
+            //goalIndex = UnityEngine.Random.Range(0, ecm.Vertices.Count);
 
-            var start = VoronoiSolution.Vertices[startIndex];
-            var goal = VoronoiSolution.Vertices[goalIndex];
+            var start = ecm.Vertices[startIndex];
+            var goal = ecm.Vertices[goalIndex];
             Debug.Log("Find path from " + startIndex + " to " + goalIndex);
-            edgeList = Astar.FindPath(VoronoiSolution, start, goal);
+            edgeList = Astar.FindPath(ecm, start, goal);
             Debug.Log("Path length:" + edgeList.Count);
             //foreach (var e in edgeList)
             //{
@@ -83,7 +83,7 @@ public class MedialAxisEditor : Editor
             shortestPath = GetShortestPath(portalsLeft, portalsRight);
 
             //var kdTree = new KdTree<double, Vertex>(2, new DoubleMath());
-            //foreach(var v in VoronoiSolution.Vertices.Values)
+            //foreach(var v in ecm.Vertices.Values)
             //{
             //    kdTree.Add(v.GetKDKey(), v);
             //}
@@ -111,29 +111,29 @@ public class MedialAxisEditor : Editor
     }
     //private void OnSceneGUI()
     //{
-    //    if (VoronoiSolution == null) return;
-    //    var v = VoronoiSolution.Vertices[10];
+    //    if (ecm == null) return;
+    //    var v = ecm.Vertices[10];
     //    //if (v == null) return;
     //    //Handles.color = Color.magenta;
     //    //DrawVertex(v);
-    //    var e = VoronoiSolution.Edges[v.IncidentEdge];
+    //    var e = ecm.Edges[v.IncidentEdge];
     //    int c = 0;
     //    do
     //    {
     //        c++;
     //        DrawEdge(e);
-    //        e = VoronoiSolution.Edges[e.RotNext];
+    //        e = ecm.Edges[e.RotNext];
     //    }
-    //    while (e != VoronoiSolution.Edges[v.IncidentEdge]);
+    //    while (e != ecm.Edges[v.IncidentEdge]);
     //    Debug.Log(c);
     //    //DrawObstaclePoint(e);
-    //    //var e2 = VoronoiSolution.Edges[e.Twin];
+    //    //var e2 = ecm.Edges[e.Twin];
     //    //DrawEdge(e2);
 
 
     //    /*CELL*/
-    //    //var c = VoronoiSolution.Cells[e.Cell];
-    //    //var ie = VoronoiSolution.Edges[c.IncidentEdge];
+    //    //var c = ecm.Cells[e.Cell];
+    //    //var ie = ecm.Edges[c.IncidentEdge];
     //    //int count = 0;
     //    //do
     //    //{
@@ -141,24 +141,24 @@ public class MedialAxisEditor : Editor
     //    //    DrawEdge(ie);
     //    //    DrawObstaclePoint(ie);
 
-    //    //    ie = VoronoiSolution.Edges[ie.Next];
+    //    //    ie = ecm.Edges[ie.Next];
     //    //}
-    //    //while (ie != VoronoiSolution.Edges[c.IncidentEdge]);
-    //    //var e2 = VoronoiSolution.Edges[e.Next];
+    //    //while (ie != ecm.Edges[c.IncidentEdge]);
+    //    //var e2 = ecm.Edges[e.Next];
     //    //DrawEdge(e2);
     //}
     void OnSceneGUI()
     {
-        if (VoronoiSolution == null) return;
+        if (ecm == null) return;
         //Draw input point
         Handles.color = Color.yellow;
-        foreach (var inputPoint in VoronoiSolution.InputPoints.Values)
+        foreach (var inputPoint in ecm.InputPoints.Values)
         {
             var position = new Vector3(inputPoint.x, inputPoint.y);
             Handles.DrawSolidDisc(position, Vector3.forward, inputPointRadius);
         }
         //Draw input segment
-        foreach (var inputSegment in VoronoiSolution.InputSegments.Values)
+        foreach (var inputSegment in ecm.InputSegments.Values)
         {
             var startPoint = new Vector3(inputSegment.Start.x, inputSegment.Start.y);
             var endPoint = new Vector3(inputSegment.End.x, inputSegment.End.y);
@@ -169,7 +169,7 @@ public class MedialAxisEditor : Editor
 
         //Draw ouput edge and vertex
         Handles.color = Color.blue;
-        foreach (var edge in VoronoiSolution.Edges.Values)
+        foreach (var edge in ecm.Edges.Values)
         {
             DrawEdge(edge);
         }
@@ -177,7 +177,7 @@ public class MedialAxisEditor : Editor
         //Draw Nearest Obstacle Point
         if (drawNearestObstaclePoints)
         {
-            foreach (var edge in VoronoiSolution.Edges.Values)
+            foreach (var edge in ecm.Edges.Values)
             {
                 DrawObstaclePoint(edge);
             }
@@ -294,14 +294,14 @@ public class MedialAxisEditor : Editor
             }
             else
             {
-                var start = VoronoiSolution.Vertices[ edge.Start];
+                var start = ecm.Vertices[ edge.Start];
                 var point = start.ToVector2();
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
             }
             if (i == edgeList.Count - 1)
             {
-                var end = VoronoiSolution.Vertices[edge.End];
+                var end = ecm.Vertices[edge.End];
                 var point = end.ToVector2();
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
@@ -328,8 +328,8 @@ public class MedialAxisEditor : Editor
     void DrawObstaclePoint(Edge edge)
     {
         if (!edge.IsFinite || !edge.IsPrimary) return ;
-        var startVertex = VoronoiSolution.Vertices[edge.Start].ToVector2();
-        var endVertex = VoronoiSolution.Vertices[edge.End].ToVector2();
+        var startVertex = ecm.Vertices[edge.Start].ToVector2();
+        var endVertex = ecm.Vertices[edge.End].ToVector2();
         var begin = startVertex;
         var obsLeft = edge.LeftObstacleStart;
         var obsRight = edge.RightObstacleStart;
@@ -359,8 +359,8 @@ public class MedialAxisEditor : Editor
         //if (!outputSegment.IsFinite) return;
         if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
             return;
-        Vertex start = VoronoiSolution.Vertices[outputSegment.Start];
-        Vertex end = VoronoiSolution.Vertices[outputSegment.End];
+        Vertex start = ecm.Vertices[outputSegment.Start];
+        Vertex end = ecm.Vertices[outputSegment.End];
 
         if (outputSegment.IsLinear)
         {
@@ -375,7 +375,7 @@ public class MedialAxisEditor : Editor
         }
         else
         {
-            List<Vector2> discretizedEdge = VoronoiSolution.SampleCurvedEdge(outputSegment, 10);
+            List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(outputSegment, 10);
             var curve = discretizedEdge.ConvertAll(x=>(Vector3)x).ToArray();
             Handles.color = Color.blue;
             Handles.DrawPolyLine(curve);
@@ -406,25 +406,24 @@ public class MedialAxisEditor : Editor
             Debug.Log(String.Format("Testing with {0} points and {1} segments", inputPoints.Count, inputSegments.Count));
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
-            using (BoostVoronoi bv = new BoostVoronoi())
-            {
-                foreach (var point in inputPoints)
-                    bv.AddPoint(point.x, point.y);
+            var bv = new ExplicitCorridorMap();
+            foreach (var point in inputPoints)
+                bv.AddPoint(point.x, point.y);
 
-                foreach (var segment in inputSegments)
-                    bv.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
-
+            foreach (var segment in inputSegments)
+                bv.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
 
 
-                bv.Construct();
 
-                // Stop timing.
-                stopwatch.Stop();
-                Debug.Log(String.Format("Vertices: {0}, Edges: {1}, Cells: {2}", bv.CountVertices, bv.CountEdges, bv.CountCells));
-                Debug.Log("Time elapsed:" + stopwatch.Elapsed.ToString(@"dd\.hh\:mm\:ss"));
+            bv.Construct();
 
-                //bv.Clear();
-            }
+            // Stop timing.
+            stopwatch.Stop();
+            Debug.Log(String.Format("Vertices: {0}, Edges: {1}, Cells: {2}", bv.Vertices.Count, bv.Edges.Count, bv.Cells.Count));
+            Debug.Log("Time elapsed:" + stopwatch.Elapsed.ToString(@"dd\.hh\:mm\:ss"));
+
+            //bv.Clear();
+            
             inputPoints.Clear();
             inputSegments.Clear();
 
