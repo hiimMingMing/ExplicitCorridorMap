@@ -4,11 +4,11 @@ namespace ExplicitCorridorMap.Voronoi
 {
     public class VoronoiEdge
     {
-        public long ID;
+        public int ID;
         /// <summary>
         /// The index of the start vertex of this segment.
         /// </summary>
-        public long Start { get; set; }
+        public int Start { get; set; }
 
         public Vector2 LeftObstacleStart { get; set; }
         public Vector2 RightObstacleStart { get; set; }
@@ -17,7 +17,7 @@ namespace ExplicitCorridorMap.Voronoi
         /// <summary>
         /// The index of the end vertex of this segment.
         /// </summary>
-        public long End { get; set; }
+        public int End { get; set; }
 
 
         /// <summary>
@@ -38,17 +38,12 @@ namespace ExplicitCorridorMap.Voronoi
         /// <summary>
         /// The index of the cell associated with this segment
         /// </summary>
-        public long Cell { get; set; }
+        public int Cell { get; set; }
 
         /// <summary>
         /// The index of the twin cell associated with this segment
         /// </summary>
-        public long Twin { get; set; }
-
-        public long Next { get; set; }
-        public long Prev { get; set; }
-        public long RotNext { get; set; }
-        public long RotPrev { get; set; }
+        public int Twin { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -56,20 +51,16 @@ namespace ExplicitCorridorMap.Voronoi
         /// <param name="t">A tuple returned by the CLR wrapper.</param>
 
 
-        public VoronoiEdge(long id, Tuple<long, long, bool, bool, bool, Tuple<long, long, long, long, long, long>> t)
+        public VoronoiEdge(int id,int start,int end,bool isPrimary,bool isLinear,bool isFinite,int twin,int cell)
         {
             ID = id;
-            Start = t.Item1;
-            End = t.Item2;
-            IsPrimary = t.Item3;
-            IsLinear = t.Item4;
-            IsFinite = t.Item5;
-            Twin = t.Item6.Item1;
-            Cell = t.Item6.Item2;
-            Next = t.Item6.Item3;
-            Prev = t.Item6.Item4;
-            RotNext = t.Item6.Item5;
-            RotPrev = t.Item6.Item6;
+            Start = start;
+            End = end;
+            IsPrimary = isPrimary;
+            IsLinear = isLinear;
+            IsFinite = isFinite;
+            Twin = twin;
+            Cell = cell;
         }
     }
 }

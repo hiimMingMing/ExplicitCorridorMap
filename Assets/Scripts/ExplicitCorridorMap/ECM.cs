@@ -11,26 +11,26 @@ namespace ExplicitCorridorMap
 {
     public class ECM
     {
-        public Dictionary<long, Vector2Int> InputPoints { get; private set; }
-        public Dictionary<long, Segment> InputSegments { get; private set; }
-        public Dictionary<long, Vertex> Vertices { get; }
-        public Dictionary<long, Edge> Edges { get; }
+        public Dictionary<int, Vector2Int> InputPoints { get; private set; }
+        public Dictionary<int, Segment> InputSegments { get; private set; }
+        public Dictionary<int, Vertex> Vertices { get; }
+        public Dictionary<int, Edge> Edges { get; }
 
         public List<RectInt> Obstacles { get; } 
         public ECM(List<RectInt> obstacles)
         {
-            InputPoints = new Dictionary<long, Vector2Int>();
-            InputSegments = new Dictionary<long, Segment>();
-            Vertices = new Dictionary<long, Vertex>();
-            Edges = new Dictionary<long, Edge>();
+            InputPoints = new Dictionary<int, Vector2Int>();
+            InputSegments = new Dictionary<int, Segment>();
+            Vertices = new Dictionary<int, Vertex>();
+            Edges = new Dictionary<int, Edge>();
             Obstacles = obstacles;
         }
         public ECM()
         {
-            InputPoints = new Dictionary<long, Vector2Int>();
-            InputSegments = new Dictionary<long, Segment>();
-            Vertices = new Dictionary<long, Vertex>();
-            Edges = new Dictionary<long, Edge>();
+            InputPoints = new Dictionary<int, Vector2Int>();
+            InputSegments = new Dictionary<int, Segment>();
+            Vertices = new Dictionary<int, Vertex>();
+            Edges = new Dictionary<int, Edge>();
             Obstacles = new List<RectInt>();
         }
         public void Construct()
@@ -46,7 +46,7 @@ namespace ExplicitCorridorMap
                 var CountEdges = bv.CountEdges;
                 var CountCells = bv.CountCells;
 
-                for (long i = 0; i < CountVertices; i++)
+                for (int i = 0; i < CountVertices; i++)
                 {
                     var vertex = bv.GetVertex(i);
                     foreach(var obs in Obstacles)
@@ -214,11 +214,11 @@ namespace ExplicitCorridorMap
         public Vector2Int RetrieveInputPoint(Edge cell)
         {
             Vector2Int pointNoScaled;
-            if (cell.SourceCategory == SourceCatory.SinglePoint)
+            if (cell.SourceCategory == SourceCategory.SinglePoint)
                 pointNoScaled = InputPoints[cell.SiteID];
-            else if (cell.SourceCategory == SourceCatory.SegmentStartPoint)
+            else if (cell.SourceCategory == SourceCategory.SegmentStartPoint)
                 pointNoScaled = InputSegments[RetriveInputSegmentIndex(cell)].Start;
-            else if (cell.SourceCategory == SourceCatory.SegmentEndPoint)
+            else if (cell.SourceCategory == SourceCategory.SegmentEndPoint)
                 pointNoScaled = InputSegments[RetriveInputSegmentIndex(cell)].End;
             else
                 throw new Exception("This cells does not have a point as input site");
@@ -242,9 +242,9 @@ namespace ExplicitCorridorMap
                 new Vector2Int(segmentNotScaled.End.x, segmentNotScaled.End.y));
         }
 
-        private long RetriveInputSegmentIndex(Edge cell)
+        private int RetriveInputSegmentIndex(Edge cell)
         {
-            if (cell.SourceCategory == SourceCatory.SinglePoint)
+            if (cell.SourceCategory == SourceCategory.SinglePoint)
                 throw new Exception("Attempting to retrive an input segment on a cell that was built around a point");
             return cell.SiteID - InputPoints.Count;
         }

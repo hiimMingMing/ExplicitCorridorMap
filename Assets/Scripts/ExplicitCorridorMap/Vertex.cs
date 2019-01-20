@@ -9,9 +9,8 @@ namespace ExplicitCorridorMap
 {
     public class Vertex
     {
-        public long ID;
+        public int ID;
         public Vector2 Position;
-        public long IncidentEdge { get; set; }
         public float X { get => Position.x; set => Position.x = value; }
         public float Y { get => Position.y; set => Position.y = value; }
         public List<Edge> Edges { get; set; }
@@ -22,11 +21,10 @@ namespace ExplicitCorridorMap
         /// Constructor.
         /// </summary>
         /// <param name="t">A tuple where the first value represents the X-axis and the second value the Y-axis</param>
-        public Vertex(long id,Tuple<float, float, long> t)
+        public Vertex(int id,float x, float y)
         {
             ID = id;
-            Position = new Vector2(t.Item1,t.Item2);
-            IncidentEdge = t.Item3;
+            Position = new Vector2(x,y);
             Edges = new List<Edge>();
             IsInside = false;
         }

@@ -23,11 +23,11 @@ namespace ExplicitCorridorMap.Voronoi
         [DllImport("BoostVoronoi")]
         private static extern void Clear(IntPtr v);
         [DllImport("BoostVoronoi")]
-        private static extern long GetCountVertices(IntPtr v);
+        private static extern int GetCountVertices(IntPtr v);
         [DllImport("BoostVoronoi")]
-        private static extern long GetCountEdges(IntPtr v);
+        private static extern int GetCountEdges(IntPtr v);
         [DllImport("BoostVoronoi")]
-        private static extern long GetCountCells(IntPtr v);
+        private static extern int GetCountCells(IntPtr v);
         [DllImport("BoostVoronoi")]
         private static extern void CreateVertexMap(IntPtr v);
         [DllImport("BoostVoronoi")]
@@ -35,31 +35,11 @@ namespace ExplicitCorridorMap.Voronoi
         [DllImport("BoostVoronoi")]
         private static extern void CreateCellMap(IntPtr v);
         [DllImport("BoostVoronoi")]
-        private static extern void GetVertex(IntPtr v, long index, 
-            out double a1,
-            out double a2,
-            out long a3);
+        private static extern void GetVertex(IntPtr v, int index, out double x,out double y);
         [DllImport("BoostVoronoi")]
-        private static extern void GetEdge(IntPtr v, long index, 
-            out long a1,
-            out long a2,
-            out bool a3,
-            out bool a4,
-            out bool a5,
-            out long a6,
-            out long a7,
-            out long a8,
-            out long a9,
-            out long a10,
-            out long a11);
+        private static extern void GetEdge(IntPtr v, int index, out int start, out int end, out bool isPrimary,out bool isLinear, out bool isFinite,out int twin,out int cell);
         [DllImport("BoostVoronoi")]
-        private static extern void GetCell(IntPtr v, long index, 
-            out long a1,
-            out short a2,
-            out bool a3,
-            out bool a4,
-            out bool a5,
-            out long a6);
+        private static extern void GetCell(IntPtr v, int index, out int site,out short sourceCategory,out bool containsPoint,out bool containsSegment,out bool isDegnerate );
         #endregion
         public bool disposed = false;
 
@@ -78,9 +58,9 @@ namespace ExplicitCorridorMap.Voronoi
         public float Tolerance { get; set; }
 
 
-        public long CountVertices { get; private set; }
-        public long CountEdges { get; private set; }
-        public long CountCells { get; private set; }
+        public int CountVertices { get; private set; }
+        public int CountEdges { get; private set; }
+        public int CountCells { get; private set; }
         
 
         /// <summary>
@@ -134,8 +114,8 @@ namespace ExplicitCorridorMap.Voronoi
             CreateEdgeMap(VoronoiWrapper);
             CreateCellMap(VoronoiWrapper);
 
-            //long maxEdgeSize = VoronoiWrapper.GetEdgeMapMaxSize();
-            //long maxEdgeIndexSize = VoronoiWrapper.GetEdgeIndexMapMaxSize();
+            //int maxEdgeSize = VoronoiWrapper.GetEdgeMapMaxSize();
+            //int maxEdgeIndexSize = VoronoiWrapper.GetEdgeIndexMapMaxSize();
 
             this.CountVertices = GetCountVertices(VoronoiWrapper);
             this.CountEdges = GetCountEdges(VoronoiWrapper);
@@ -152,35 +132,29 @@ namespace ExplicitCorridorMap.Voronoi
             Clear(VoronoiWrapper);
         }
 
-        public Vertex GetVertex(long index)
+        public Vertex GetVertex(int index)
         {
             if (index < 0 || index > this.CountVertices - 1)
                 throw new IndexOutOfRangeException();
-            GetVertex(VoronoiWrapper, index, out double a1, out double a2, out long a3);
-            var x = Tuple.Create((float)a1,(float)a2,a3);
-            return new Vertex(index,x);
+            GetVertex(VoronoiWrapper, index, out double x, out double y);
+            return new Vertex(index,(float)x,(float)y);
         }
 
 
-        public VoronoiEdge GetEdge(long index)
+        public VoronoiEdge GetEdge(int index)
         {
             if (index < 0 || index > this.CountEdges - 1)
                 throw new IndexOutOfRangeException();
-            GetEdge(VoronoiWrapper, index, out long a1, out long a2, out bool a3, out bool a4, out bool a5, out long a6, out long a7, out long a8, out long a9, out long a10, out long a11);
-            var relation = Tuple.Create(a6,a7,a8, a9, a10, a11);
-            var x = Tuple.Create( a1, a2, a3, a4,a5, relation);
-            return new VoronoiEdge(index,x);
+            GetEdge(VoronoiWrapper, index, out int start, out int end, out bool isPrimary, out bool isLinear, out bool isFinite, out int twin, out int cell);
+            return new VoronoiEdge(index,start,end,isPrimary,isLinear,isFinite,twin,cell);
         }
 
-        public VoronoiCell GetCell(long index)
+        public VoronoiCell GetCell(int index)
         {
             if (index < 0 || index > this.CountCells - 1)
                 throw new IndexOutOfRangeException();
-            long[] array1 = new long[BUFFER_SIZE];
-            long[] array2 = new long[BUFFER_SIZE];
-            GetCell(VoronoiWrapper, index, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out long a6);
-            var x = Tuple.Create(a1, a2,a3, a4, a5, a6);
-            return new VoronoiCell(index,x);
+            GetCell(VoronoiWrapper, index, out int site, out short sourceCategory, out bool containsPoint, out bool containsSegment, out bool isDegnerate);
+            return new VoronoiCell(index,site,sourceCategory,containsPoint,containsSegment,isDegnerate);
         }
 
 

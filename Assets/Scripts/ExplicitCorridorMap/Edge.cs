@@ -10,7 +10,7 @@ namespace ExplicitCorridorMap
 {
     public class Edge
     {
-        public long ID;
+        public int ID;
         /// <summary>
         /// The index of the start vertex of this segment.
         /// </summary>
@@ -24,10 +24,10 @@ namespace ExplicitCorridorMap
         public Vector2 LeftObstacleEnd { get; set; }
         public Vector2 RightObstacleEnd { get; set; }
 
-        public long SiteID { get; set; }
+        public int SiteID { get; set; }
         public bool ContainsPoint { get; set; }
         public bool ContainsSegment { get; set; }
-        public SourceCatory SourceCategory { get; set; }
+        public SourceCategory SourceCategory { get; set; }
         public Edge(Vertex start, Vertex end, VoronoiEdge e, VoronoiCell c)
         {
             Start = start;

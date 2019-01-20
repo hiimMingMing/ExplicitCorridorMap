@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace ExplicitCorridorMap.Voronoi
 {
-    public enum SourceCatory:short { Unknown = -1, SinglePoint = 0, SegmentStartPoint = 1, SegmentEndPoint = 2, InitialSegment = 3, ReverseSegment = 4, GeometryShift = 5, BitMask = 6};
+    public enum SourceCategory:short { Unknown = -1, SinglePoint = 0, SegmentStartPoint = 1, SegmentEndPoint = 2, InitialSegment = 3, ReverseSegment = 4, GeometryShift = 5, BitMask = 6};
 
     public class VoronoiCell
     {
 
-        public long ID;
+        public int ID;
         /// <summary>
         /// The index of the source feature
         /// </summary>
-        public long Site { get; set; }
+        public int Site { get; set; }
 
         /// <summary>
         /// True if the cell is made from a point
@@ -26,11 +26,7 @@ namespace ExplicitCorridorMap.Voronoi
         /// True if the cell is made from a segment
         /// </summary>
         public bool ContainsSegment { get; set; }
-
-        public long IncidentEdge { get; set; }
-
-
-
+        
         /// <summary>
         /// Returns true if the cell doesn't have an incident edge. Can happen if a few input segments share a common endpoint.
         /// </summary>
@@ -39,20 +35,19 @@ namespace ExplicitCorridorMap.Voronoi
         /// <summary>
         /// The type of element used to create the edge.
         /// </summary>
-        public SourceCatory SourceCategory { get; set; }
+        public SourceCategory SourceCategory { get; set; }
 
         
 
 
-        public VoronoiCell(long id, Tuple< long, short, bool, bool, bool, long> t)
+        public VoronoiCell(int id,int site,short sourceCategory,bool containsPoint,bool containsSegment,bool isDegnerate)
         {
             ID = id;
-            Site = t.Item1;
-            SourceCategory = (SourceCatory)t.Item2;
-            ContainsPoint = t.Item3;
-            ContainsSegment = t.Item4;
-            IsDegnerate = t.Item5;
-            IncidentEdge = t.Item6;
+            Site = site;
+            SourceCategory = (SourceCategory)sourceCategory;
+            ContainsPoint = containsPoint;
+            ContainsSegment = containsSegment;
+            IsDegnerate = isDegnerate;
         }
 
     }
