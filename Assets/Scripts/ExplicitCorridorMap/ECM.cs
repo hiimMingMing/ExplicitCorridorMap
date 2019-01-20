@@ -86,8 +86,8 @@ namespace ExplicitCorridorMap
                 var lineSite = RetrieveInputSegment(cell);
                 var startLineSite = new Vector2(lineSite.Start.x, lineSite.Start.y);
                 var endLineSite = new Vector2(lineSite.End.x, lineSite.End.y);
-                var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex.ToVector2());
-                var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex.ToVector2());
+                var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, startVertex.Position);
+                var nearestPointOfEndVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, endVertex.Position);
 
                 start = nearestPointOfStartVertex;
                 end = nearestPointOfEndVertex;
@@ -131,7 +131,7 @@ namespace ExplicitCorridorMap
             Cell m_reverse_cell = this.Cells[twin.Cell];
 
             if (m_cell.ContainsSegment == true && m_reverse_cell.ContainsSegment == true)
-                return new List<Vector2>() { this.Vertices[edge.Start].ToVector2(), this.Vertices[edge.End].ToVector2() };
+                return new List<Vector2>() { this.Vertices[edge.Start].Position, this.Vertices[edge.End].Position };
 
             if (m_cell.ContainsPoint)
             {
@@ -148,8 +148,8 @@ namespace ExplicitCorridorMap
             segmentSite = RetrieveInputSegment(this.Cells[lineCell]);
 
             List<Vector2> discretization = new List<Vector2>(){
-                this.Vertices[edge.Start].ToVector2(),
-                this.Vertices[edge.End].ToVector2()
+                this.Vertices[edge.Start].Position,
+                this.Vertices[edge.End].Position
             };
 
             if (edge.IsLinear)

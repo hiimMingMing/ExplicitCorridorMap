@@ -10,9 +10,11 @@ namespace ExplicitCorridorMap
     public class Vertex
     {
         public long ID;
-        public float X { get; set; }
-        public float Y { get; set; }
+        public Vector2 Position;
         public long IncidentEdge { get; set; }
+        public float X { get => Position.x; set => Position.x = value; }
+        public float Y { get => Position.y; set => Position.y = value; }
+
         //public List<Point> NearestObstaclePoints { get; } = new List<Point>();
         /// <summary>
         /// Constructor.
@@ -21,8 +23,7 @@ namespace ExplicitCorridorMap
         public Vertex(long id,Tuple<float, float, long> t)
         {
             ID = id;
-            X = t.Item1;
-            Y = t.Item2;
+            Position = new Vector2(t.Item1,t.Item2);
             IncidentEdge = t.Item3;
         }
         
@@ -32,11 +33,11 @@ namespace ExplicitCorridorMap
             if (obj == null) return false;
             var p = obj as Vertex;
             if (p == null) return false;
-            return X == p.X && Y == p.Y;
+            return Position.Equals(p.Position);
         }
         public override int GetHashCode()
         {
-            return (int)X^(int)Y;
+            return Position.GetHashCode();
         }
         /// <summary>
         /// Returns a concatenation of the coordinates, separated by a comma
@@ -50,10 +51,6 @@ namespace ExplicitCorridorMap
         public double[] GetKDKey()
         {
             return new double[] { X, Y };
-        }
-        public Vector2 ToVector2()
-        {
-            return new Vector2(X, Y);
         }
     }
 }

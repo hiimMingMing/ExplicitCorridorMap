@@ -92,9 +92,10 @@ public class MedialAxisEditor : Editor
             //    var vertex = node.Value;
             //    Debug.Log(vertex.ID + "[" + vertex.X + "," + vertex.Y +"]");
             //}
-            var a = new Vector2Int(3, 4);
-            var b = new Vector2Int(3, 5);
-            Debug.Log(a == b);
+            //var a = new Vertex(1,Tuple.Create(3.14f, 3.14f, 1L));
+            //var b = new Vertex(2, Tuple.Create(3.14f, 3.14f, 1L));
+            //Debug.Log(a == b);
+            //Debug.Log(a.Equals(b));
 
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
@@ -294,14 +295,14 @@ public class MedialAxisEditor : Editor
             else
             {
                 var start = ecm.Vertices[ edge.Start];
-                var point = start.ToVector2();
+                var point = start.Position;
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
             }
             if (i == edgeList.Count - 1)
             {
                 var end = ecm.Vertices[edge.End];
-                var point = end.ToVector2();
+                var point = end.Position;
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
                 break;
@@ -327,8 +328,8 @@ public class MedialAxisEditor : Editor
     void DrawObstaclePoint(Edge edge)
     {
         if (!edge.IsFinite || !edge.IsPrimary) return ;
-        var startVertex = ecm.Vertices[edge.Start].ToVector2();
-        var endVertex = ecm.Vertices[edge.End].ToVector2();
+        var startVertex = ecm.Vertices[edge.Start].Position;
+        var endVertex = ecm.Vertices[edge.End].Position;
         var begin = startVertex;
         var obsLeft = edge.LeftObstacleStart;
         var obsRight = edge.RightObstacleStart;
