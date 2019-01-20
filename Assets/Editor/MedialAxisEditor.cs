@@ -7,7 +7,7 @@ using System;
 using KdTree;
 using KdTree.Math;
 using ExplicitCorridorMap;
-
+using Advanced.Algorithms.Geometry;
 [CustomEditor(typeof(MedialAxis))]
 public class MedialAxisEditor : Editor
 {
@@ -46,16 +46,22 @@ public class MedialAxisEditor : Editor
         {
             //populate segment
             List<Segment> InputSegments = new List<Segment>();
-            AddRect(InputSegments, new RectInt(0, 0, 500, 500));
-            AddRect(InputSegments, new RectInt(50, 50, 80, 80));
-            AddRect(InputSegments, new RectInt(200, 100, 200, 100));
-            AddRect(InputSegments, new RectInt(75, 225, 60, 250));
-            AddRect(InputSegments, new RectInt(250, 250, 60, 200));
-            AddRect(InputSegments, new RectInt(360, 300, 100, 100));
+            var obstacles = new List<RectInt>();
+            obstacles.Add( new RectInt(50, 50, 80, 80));
+            obstacles.Add( new RectInt(200, 100, 200, 100));
+            obstacles.Add( new RectInt(75, 225, 60, 250));
+            obstacles.Add( new RectInt(250, 250, 60, 200));
+            obstacles.Add( new RectInt(360, 300, 100, 100));
 
+            //add border
+            AddRect(InputSegments,new RectInt(0, 0, 500, 500));
+            foreach (var r in obstacles)
+            {
+                AddRect(InputSegments, r);
+            }
             //var watch = new System.Diagnostics.Stopwatch();
             //watch.Start();
-            ecm = new ECM();
+            ecm = new ECM(obstacles);
             foreach (var segment in InputSegments)
             {
                 ecm.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
@@ -96,6 +102,16 @@ public class MedialAxisEditor : Editor
             //var b = new Vertex(2, Tuple.Create(3.14f, 3.14f, 1L));
             //Debug.Log(a == b);
             //Debug.Log(a.Equals(b));
+            var ps = new List<Point>();
+            ps.Add(new Point(0, 0));
+            ps.Add(new Point(0, 100));
+            ps.Add(new Point(100, 100));
+            ps.Add(new Point(100, 0));
+            var polygon = new Polygon(ps);
+            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(0, 0)));
+            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(0, 100)));
+            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(100, 100)));
+            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(100, 0)));
 
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
@@ -352,7 +368,7 @@ public class MedialAxisEditor : Editor
     {
         var position = new Vector3((float)vertex.X, (float)vertex.Y);
         Handles.DrawSolidDisc(position, Vector3.forward, outputPointRadius);
-        Handles.Label(position,vertex.ID+"");
+        Handles.Label(position,vertex.ID+" "+vertex.isInside);
     }
     void DrawEdge(Edge outputSegment)
     {

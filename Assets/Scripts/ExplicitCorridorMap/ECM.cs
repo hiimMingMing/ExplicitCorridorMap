@@ -12,13 +12,27 @@ namespace ExplicitCorridorMap
     {
         public Dictionary<long, Vector2Int> InputPoints { get; private set; }
         public Dictionary<long, Segment> InputSegments { get; private set; }
-        public Dictionary<long, Vertex> Vertices { get; } = new Dictionary<long, Vertex>();
-        public Dictionary<long, Edge> Edges { get; } = new Dictionary<long, Edge>();
-        public Dictionary<long, Cell> Cells { get; } = new Dictionary<long, Cell>();
+        public Dictionary<long, Vertex> Vertices { get; }
+        public Dictionary<long, Edge> Edges { get; } 
+        public Dictionary<long, Cell> Cells { get; } 
+        public List<RectInt> Obstacles { get; } 
+        public ECM(List<RectInt> obstacles)
+        {
+            InputPoints = new Dictionary<long, Vector2Int>();
+            InputSegments = new Dictionary<long, Segment>();
+            Vertices = new Dictionary<long, Vertex>();
+            Edges = new Dictionary<long, Edge>();
+            Cells = new Dictionary<long, Cell>();
+            Obstacles = obstacles;
+        }
         public ECM()
         {
             InputPoints = new Dictionary<long, Vector2Int>();
             InputSegments = new Dictionary<long, Segment>();
+            Vertices = new Dictionary<long, Vertex>();
+            Edges = new Dictionary<long, Edge>();
+            Cells = new Dictionary<long, Cell>();
+            Obstacles = new List<RectInt>();
         }
         public void Construct()
         {
@@ -36,6 +50,14 @@ namespace ExplicitCorridorMap
                 for (long i = 0; i < CountVertices; i++)
                 {
                     var vertex = bv.GetVertex(i);
+                    vertex.isInside = false;
+                    foreach(var obs in Obstacles)
+                    {
+                        if (obs.Contains(Vector2Int.CeilToInt(vertex.Position))){
+                            vertex.isInside = true;
+                            break;
+                        }
+                    }
                     Vertices.Add(i, vertex);
                 }
                 for (long i = 0; i < CountEdges; i++)
