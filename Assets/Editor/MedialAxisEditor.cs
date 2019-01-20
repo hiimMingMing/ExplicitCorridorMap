@@ -48,10 +48,10 @@ public class MedialAxisEditor : Editor
             List<Segment> InputSegments = new List<Segment>();
             var obstacles = new List<RectInt>();
             obstacles.Add( new RectInt(50, 50, 80, 80));
-            obstacles.Add( new RectInt(200, 100, 200, 100));
-            obstacles.Add( new RectInt(75, 225, 60, 250));
-            obstacles.Add( new RectInt(250, 250, 60, 200));
-            obstacles.Add( new RectInt(360, 300, 100, 100));
+            obstacles.Add(new RectInt(200, 100, 200, 100));
+            obstacles.Add(new RectInt(75, 225, 60, 250));
+            obstacles.Add(new RectInt(250, 250, 60, 200));
+            obstacles.Add(new RectInt(360, 300, 100, 100));
 
             //add border
             AddRect(InputSegments,new RectInt(0, 0, 500, 500));
@@ -77,7 +77,7 @@ public class MedialAxisEditor : Editor
             var goal = ecm.Vertices[goalIndex];
             Debug.Log("Find path from " + startIndex + " to " + goalIndex);
             edgeList = Astar.FindPath(ecm, start, goal);
-            Debug.Log("Path length:" + edgeList.Count);
+            //Debug.Log("Path length:" + edgeList.Count);
             //foreach (var e in edgeList)
             //{
             //    Debug.Log(e.Start + "-" + e.End);
@@ -87,31 +87,6 @@ public class MedialAxisEditor : Editor
             ComputePortals(portalsLeft, portalsRight);
             shortestPath = GetShortestPath(portalsLeft, portalsRight);
 
-            //var kdTree = new KdTree<double, Vertex>(2, new DoubleMath());
-            //foreach(var v in ecm.Vertices.Values)
-            //{
-            //    kdTree.Add(v.GetKDKey(), v);
-            //}
-            //var nodes = kdTree.GetNearestNeighbours(new double[] {200,100},4);
-            //foreach(var node in nodes)
-            //{
-            //    var vertex = node.Value;
-            //    Debug.Log(vertex.ID + "[" + vertex.X + "," + vertex.Y +"]");
-            //}
-            //var a = new Vertex(1,Tuple.Create(3.14f, 3.14f, 1L));
-            //var b = new Vertex(2, Tuple.Create(3.14f, 3.14f, 1L));
-            //Debug.Log(a == b);
-            //Debug.Log(a.Equals(b));
-            var ps = new List<Point>();
-            ps.Add(new Point(0, 0));
-            ps.Add(new Point(0, 100));
-            ps.Add(new Point(100, 100));
-            ps.Add(new Point(100, 0));
-            var polygon = new Polygon(ps);
-            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(0, 0)));
-            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(0, 100)));
-            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(100, 100)));
-            Debug.Log(PointInsidePolygon.IsInside(polygon, new Point(100, 0)));
 
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
@@ -125,44 +100,6 @@ public class MedialAxisEditor : Editor
         }
 
     }
-    //private void OnSceneGUI()
-    //{
-    //    if (ecm == null) return;
-    //    var v = ecm.Vertices[10];
-    //    //if (v == null) return;
-    //    //Handles.color = Color.magenta;
-    //    //DrawVertex(v);
-    //    var e = ecm.Edges[v.IncidentEdge];
-    //    int c = 0;
-    //    do
-    //    {
-    //        c++;
-    //        DrawEdge(e);
-    //        e = ecm.Edges[e.RotNext];
-    //    }
-    //    while (e != ecm.Edges[v.IncidentEdge]);
-    //    Debug.Log(c);
-    //    //DrawObstaclePoint(e);
-    //    //var e2 = ecm.Edges[e.Twin];
-    //    //DrawEdge(e2);
-
-
-    //    /*CELL*/
-    //    //var c = ecm.Cells[e.Cell];
-    //    //var ie = ecm.Edges[c.IncidentEdge];
-    //    //int count = 0;
-    //    //do
-    //    //{
-    //    //    count++;
-    //    //    DrawEdge(ie);
-    //    //    DrawObstaclePoint(ie);
-
-    //    //    ie = ecm.Edges[ie.Next];
-    //    //}
-    //    //while (ie != ecm.Edges[c.IncidentEdge]);
-    //    //var e2 = ecm.Edges[e.Next];
-    //    //DrawEdge(e2);
-    //}
     void OnSceneGUI()
     {
         if (ecm == null) return;
@@ -184,12 +121,19 @@ public class MedialAxisEditor : Editor
         }
 
         //Draw ouput edge and vertex
-        Handles.color = Color.blue;
-        foreach (var edge in ecm.Edges.Values)
+        //Handles.color = Color.blue;
+        //foreach (var edge in ecm.Edges.Values)
+        //{
+        //    DrawEdge(edge);
+        //}
+        //Debug.Log(ecm.Vertices.Count);
+        foreach (var vertex in ecm.Vertices.Values)
         {
-            DrawEdge(edge);
+            foreach (var edge in vertex.Edges)
+            {
+                DrawEdge(edge);
+            }
         }
-
         //Draw Nearest Obstacle Point
         if (drawNearestObstaclePoints)
         {
@@ -198,7 +142,7 @@ public class MedialAxisEditor : Editor
                 DrawObstaclePoint(edge);
             }
         }
-        if (edgeList != null && portalsLeft!=null && shortestPath!= null)
+        if (edgeList != null && portalsLeft != null && shortestPath != null)
         {
             //foreach (var edge in edgeList)
             //{
@@ -310,14 +254,14 @@ public class MedialAxisEditor : Editor
             }
             else
             {
-                var start = ecm.Vertices[ edge.Start];
+                var start = edge.Start;
                 var point = start.Position;
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
             }
             if (i == edgeList.Count - 1)
             {
-                var end = ecm.Vertices[edge.End];
+                var end = edge.End;
                 var point = end.Position;
                 portalsLeft.Add(point);
                 portalsRight.Add(point);
@@ -343,9 +287,8 @@ public class MedialAxisEditor : Editor
     }
     void DrawObstaclePoint(Edge edge)
     {
-        if (!edge.IsFinite || !edge.IsPrimary) return ;
-        var startVertex = ecm.Vertices[edge.Start].Position;
-        var endVertex = ecm.Vertices[edge.End].Position;
+        var startVertex = edge.Start.Position;
+        var endVertex = edge.End.Position;
         var begin = startVertex;
         var obsLeft = edge.LeftObstacleStart;
         var obsRight = edge.RightObstacleStart;
@@ -368,17 +311,17 @@ public class MedialAxisEditor : Editor
     {
         var position = new Vector3((float)vertex.X, (float)vertex.Y);
         Handles.DrawSolidDisc(position, Vector3.forward, outputPointRadius);
-        Handles.Label(position,vertex.ID+" "+vertex.isInside);
+        Handles.Label(position,vertex.ID+"");
     }
-    void DrawEdge(Edge outputSegment)
+    void DrawEdge(Edge edge)
     {
         //if (!outputSegment.IsFinite) return;
-        if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
-            return;
-        Vertex start = ecm.Vertices[outputSegment.Start];
-        Vertex end = ecm.Vertices[outputSegment.End];
+        //if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
+        //    return;
+        Vertex start = edge.Start;
+        Vertex end = edge.End;
 
-        if (outputSegment.IsLinear)
+        if (edge.IsLinear)
         {
             var startPoint = new Vector3((float)start.X, (float)start.Y);
             var endPoint = new Vector3((float)end.X, (float)end.Y);
@@ -391,8 +334,8 @@ public class MedialAxisEditor : Editor
         }
         else
         {
-            List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(outputSegment, 10);
-            var curve = discretizedEdge.ConvertAll(x=>(Vector3)x).ToArray();
+            List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(edge, 10);
+            var curve = discretizedEdge.ConvertAll(x => (Vector3)x).ToArray();
             Handles.color = Color.blue;
             Handles.DrawPolyLine(curve);
 
@@ -435,7 +378,7 @@ public class MedialAxisEditor : Editor
 
             // Stop timing.
             stopwatch.Stop();
-            Debug.Log(String.Format("Vertices: {0}, Edges: {1}, Cells: {2}", bv.Vertices.Count, bv.Edges.Count, bv.Cells.Count));
+            Debug.Log(String.Format("Vertices: {0}", bv.Vertices.Count));
             Debug.Log("Time elapsed:" + stopwatch.Elapsed.ToString(@"dd\.hh\:mm\:ss"));
 
             //bv.Clear();

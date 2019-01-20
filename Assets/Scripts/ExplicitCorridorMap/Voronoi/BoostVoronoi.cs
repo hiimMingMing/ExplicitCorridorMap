@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace ExplicitCorridorMap
+namespace ExplicitCorridorMap.Voronoi
 {
     internal class BoostVoronoi : IDisposable
     {
@@ -154,7 +154,7 @@ namespace ExplicitCorridorMap
 
         public Vertex GetVertex(long index)
         {
-            if (index < -0 || index > this.CountVertices - 1)
+            if (index < 0 || index > this.CountVertices - 1)
                 throw new IndexOutOfRangeException();
             GetVertex(VoronoiWrapper, index, out double a1, out double a2, out long a3);
             var x = Tuple.Create((float)a1,(float)a2,a3);
@@ -162,25 +162,25 @@ namespace ExplicitCorridorMap
         }
 
 
-        public Edge GetEdge(long index)
+        public VoronoiEdge GetEdge(long index)
         {
-            if (index < -0 || index > this.CountEdges - 1)
+            if (index < 0 || index > this.CountEdges - 1)
                 throw new IndexOutOfRangeException();
             GetEdge(VoronoiWrapper, index, out long a1, out long a2, out bool a3, out bool a4, out bool a5, out long a6, out long a7, out long a8, out long a9, out long a10, out long a11);
             var relation = Tuple.Create(a6,a7,a8, a9, a10, a11);
             var x = Tuple.Create( a1, a2, a3, a4,a5, relation);
-            return new Edge(index,x);
+            return new VoronoiEdge(index,x);
         }
 
-        public Cell GetCell(long index)
+        public VoronoiCell GetCell(long index)
         {
-            if (index < -0 || index > this.CountCells - 1)
+            if (index < 0 || index > this.CountCells - 1)
                 throw new IndexOutOfRangeException();
             long[] array1 = new long[BUFFER_SIZE];
             long[] array2 = new long[BUFFER_SIZE];
             GetCell(VoronoiWrapper, index, out long a1, out short a2, out bool a3, out bool a4, out bool a5, out long a6);
             var x = Tuple.Create(a1, a2,a3, a4, a5, a6);
-            return new Cell(index,x);
+            return new VoronoiCell(index,x);
         }
 
 

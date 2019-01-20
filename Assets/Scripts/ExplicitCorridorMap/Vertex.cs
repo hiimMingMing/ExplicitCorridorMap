@@ -14,9 +14,9 @@ namespace ExplicitCorridorMap
         public long IncidentEdge { get; set; }
         public float X { get => Position.x; set => Position.x = value; }
         public float Y { get => Position.y; set => Position.y = value; }
-        public List<long> Edges { get; set; }
+        public List<Edge> Edges { get; set; }
 
-        public bool isInside;
+        public bool IsInside { get; set; }
         //public List<Point> NearestObstaclePoints { get; } = new List<Point>();
         /// <summary>
         /// Constructor.
@@ -27,7 +27,8 @@ namespace ExplicitCorridorMap
             ID = id;
             Position = new Vector2(t.Item1,t.Item2);
             IncidentEdge = t.Item3;
-            Edges = new List<long>();
+            Edges = new List<Edge>();
+            IsInside = false;
         }
         
 

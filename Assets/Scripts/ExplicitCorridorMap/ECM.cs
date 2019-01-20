@@ -1,4 +1,5 @@
 ﻿using ExplicitCorridorMap.Maths;
+using ExplicitCorridorMap.Voronoi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,8 @@ namespace ExplicitCorridorMap
         public Dictionary<long, Vector2Int> InputPoints { get; private set; }
         public Dictionary<long, Segment> InputSegments { get; private set; }
         public Dictionary<long, Vertex> Vertices { get; }
-        public Dictionary<long, Edge> Edges { get; } 
-        public Dictionary<long, Cell> Cells { get; } 
+        public Dictionary<long, Edge> Edges { get; }
+
         public List<RectInt> Obstacles { get; } 
         public ECM(List<RectInt> obstacles)
         {
@@ -22,7 +23,6 @@ namespace ExplicitCorridorMap
             InputSegments = new Dictionary<long, Segment>();
             Vertices = new Dictionary<long, Vertex>();
             Edges = new Dictionary<long, Edge>();
-            Cells = new Dictionary<long, Cell>();
             Obstacles = obstacles;
         }
         public ECM()
@@ -31,7 +31,6 @@ namespace ExplicitCorridorMap
             InputSegments = new Dictionary<long, Segment>();
             Vertices = new Dictionary<long, Vertex>();
             Edges = new Dictionary<long, Edge>();
-            Cells = new Dictionary<long, Cell>();
             Obstacles = new List<RectInt>();
         }
         public void Construct()
@@ -50,38 +49,54 @@ namespace ExplicitCorridorMap
                 for (long i = 0; i < CountVertices; i++)
                 {
                     var vertex = bv.GetVertex(i);
-                    vertex.isInside = false;
                     foreach(var obs in Obstacles)
                     {
                         if (obs.Contains(Vector2Int.CeilToInt(vertex.Position))){
-                            vertex.isInside = true;
+                            vertex.IsInside = true;
                             break;
                         }
                     }
                     Vertices.Add(i, vertex);
                 }
-                for (long i = 0; i < CountEdges; i++)
+                //add edges to vertex
+                for(int i=0 ; i< CountEdges;i += 2)
                 {
                     var edge = bv.GetEdge(i);
-                    Edges.Add(i, edge);
+                    if (!edge.IsFinite || !edge.IsPrimary) continue;
+                    var start = Vertices[edge.Start];
+                    var end = Vertices[edge.End];
+                    if (start.IsInside || end.IsInside) continue;
+
+                    var twinEdge = bv.GetEdge(i + 1);
+                    var cell = bv.GetCell(edge.Cell);
+                    var twinCell = bv.GetCell(twinEdge.Cell);
+                    //init 2 twin ecm edge
+                    var ecmEdge = new Edge(start, end, edge,cell);
+                    var ecmEdgeTwin = new Edge(end, start, twinEdge,twinCell);
+
+                    ecmEdge.Twin = ecmEdgeTwin;
+                    ecmEdgeTwin.Twin = ecmEdge;
+                    start.Edges.Add(ecmEdge);
+                    end.Edges.Add(ecmEdgeTwin);
+                    Edges.Add(i, ecmEdge);
+                    Edges.Add(i+1, ecmEdgeTwin);
+
                 }
-                for (long i = 0; i < CountCells; i++)
+                foreach (var vertex in Vertices.Values.ToList())
                 {
-                    var cell = bv.GetCell(i);
-                    Cells.Add(i, cell);
+                    if (vertex.Edges.Count == 0) Vertices.Remove(vertex.ID);
                 }
+
                 foreach (var edge in Edges.Values)
                 {
-                    if (edge.ID % 2 == 1 || !edge.IsFinite || !edge.IsPrimary) continue;
-                    var twinEdge = Edges[edge.Twin];
-                    var cell = Cells[edge.Cell];
-                    var twinCell = Cells[twinEdge.Cell];
+                    if (edge.ID % 2 == 1 ) continue;
+                    var twinEdge = edge.Twin;
 
-                    ComputeObstaclePoint(cell, edge, out Vector2 obsLeftStart, out Vector2 obsLeftEnd);
+                    ComputeObstaclePoint(edge, edge, out Vector2 obsLeftStart, out Vector2 obsLeftEnd);
                     edge.LeftObstacleStart = obsLeftStart;
                     edge.LeftObstacleEnd = obsLeftEnd;
 
-                    ComputeObstaclePoint(twinCell, edge, out Vector2 obsRightStart, out Vector2 obsRightEnd);
+                    ComputeObstaclePoint(twinEdge, edge, out Vector2 obsRightStart, out Vector2 obsRightEnd);
                     edge.RightObstacleStart = obsRightStart;
                     edge.RightObstacleEnd = obsRightEnd;
 
@@ -93,10 +108,10 @@ namespace ExplicitCorridorMap
             }
             
         }
-        private void ComputeObstaclePoint(Cell cell, Edge edge, out Vector2 start, out Vector2 end)
+        private void ComputeObstaclePoint(Edge cell, Edge edge, out Vector2 start, out Vector2 end)
         {
-            var startVertex = Vertices[edge.Start];
-            var endVertex = Vertices[edge.End];
+            var startVertex = edge.Start;
+            var endVertex = edge.End;
             if (cell.ContainsPoint)
             {
                 var pointSite = RetrieveInputPoint(cell);
@@ -138,8 +153,8 @@ namespace ExplicitCorridorMap
         /// <returns></returns>
         public List<Vector2> SampleCurvedEdge(Edge edge, float max_distance)
         {
-            long pointCell = -1;
-            long lineCell = -1;
+            Edge pointCell = null;
+            Edge lineCell = null;
 
             //Max distance to be refined
             if (max_distance <= 0)
@@ -148,30 +163,28 @@ namespace ExplicitCorridorMap
             Vector2Int pointSite;
             Segment segmentSite;
 
-            Edge twin = this.Edges[edge.Twin];
-            Cell m_cell = this.Cells[edge.Cell];
-            Cell m_reverse_cell = this.Cells[twin.Cell];
+            Edge twin = edge.Twin;
 
-            if (m_cell.ContainsSegment == true && m_reverse_cell.ContainsSegment == true)
-                return new List<Vector2>() { this.Vertices[edge.Start].Position, this.Vertices[edge.End].Position };
+            if (edge.ContainsSegment == true && twin.ContainsSegment == true)
+                return new List<Vector2>() { edge.Start.Position, edge.End.Position };
 
-            if (m_cell.ContainsPoint)
+            if (edge.ContainsPoint)
             {
-                pointCell = edge.Cell;
-                lineCell = twin.Cell;
+                pointCell = edge;
+                lineCell = twin;
             }
             else
             {
-                lineCell = edge.Cell;
-                pointCell = twin.Cell;
+                lineCell = edge;
+                pointCell = twin;
             }
 
-            pointSite = RetrieveInputPoint(this.Cells[pointCell]);
-            segmentSite = RetrieveInputSegment(this.Cells[lineCell]);
+            pointSite = RetrieveInputPoint(pointCell);
+            segmentSite = RetrieveInputSegment(lineCell);
 
             List<Vector2> discretization = new List<Vector2>(){
-                this.Vertices[edge.Start].Position,
-                this.Vertices[edge.End].Position
+                edge.Start.Position,
+                edge.End.Position
             };
 
             if (edge.IsLinear)
@@ -198,14 +211,14 @@ namespace ExplicitCorridorMap
         /// </summary>
         /// <param name="cell">The cell that contains the point site.</param>
         /// <returns>The input point site of the cell.</returns>
-        public Vector2Int RetrieveInputPoint(Cell cell)
+        public Vector2Int RetrieveInputPoint(Edge cell)
         {
             Vector2Int pointNoScaled;
-            if (cell.SourceCategory == CellSourceCatory.SinglePoint)
-                pointNoScaled = InputPoints[cell.Site];
-            else if (cell.SourceCategory == CellSourceCatory.SegmentStartPoint)
+            if (cell.SourceCategory == SourceCatory.SinglePoint)
+                pointNoScaled = InputPoints[cell.SiteID];
+            else if (cell.SourceCategory == SourceCatory.SegmentStartPoint)
                 pointNoScaled = InputSegments[RetriveInputSegmentIndex(cell)].Start;
-            else if (cell.SourceCategory == CellSourceCatory.SegmentEndPoint)
+            else if (cell.SourceCategory == SourceCatory.SegmentEndPoint)
                 pointNoScaled = InputSegments[RetriveInputSegmentIndex(cell)].End;
             else
                 throw new Exception("This cells does not have a point as input site");
@@ -222,18 +235,18 @@ namespace ExplicitCorridorMap
         /// </summary>
         /// <param name="cell">The cell that contains the segment site.</param>
         /// <returns>The input segment site of the cell.</returns>
-        public Segment RetrieveInputSegment(Cell cell)
+        public Segment RetrieveInputSegment(Edge cell)
         {
             Segment segmentNotScaled = InputSegments[RetriveInputSegmentIndex(cell)];
             return new Segment(new Vector2Int(segmentNotScaled.Start.x, segmentNotScaled.Start.y),
                 new Vector2Int(segmentNotScaled.End.x, segmentNotScaled.End.y));
         }
 
-        private long RetriveInputSegmentIndex(Cell cell)
+        private long RetriveInputSegmentIndex(Edge cell)
         {
-            if (cell.SourceCategory == CellSourceCatory.SinglePoint)
+            if (cell.SourceCategory == SourceCatory.SinglePoint)
                 throw new Exception("Attempting to retrive an input segment on a cell that was built around a point");
-            return cell.Site - InputPoints.Count;
+            return cell.SiteID - InputPoints.Count;
         }
 
         #endregion

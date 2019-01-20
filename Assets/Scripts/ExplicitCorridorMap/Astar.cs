@@ -9,18 +9,14 @@ namespace ExplicitCorridorMap
         {
             var path = Astar.FindPathVertex(graph, start, goal);
             var edgeList = new List<Edge>();
+            
             for (int i = 0; i < path.Count - 1; i++)
             {
-                var originalEdge = graph.Edges[path[i].IncidentEdge];
-                var neighborEdge = originalEdge;
-                do
+                foreach( var edge in path[i].Edges)
                 {
-                    if (!neighborEdge.IsFinite || !neighborEdge.IsPrimary) continue;
-                    var end = graph.Vertices[neighborEdge.End];
-                    if (end.Equals(path[i + 1])) edgeList.Add(neighborEdge);
+                    var end = edge.End;
+                    if (end.Equals(path[i + 1])) edgeList.Add(edge);
                 }
-                //proceed to next edge
-                while ((neighborEdge = graph.Edges[neighborEdge.RotNext]) != originalEdge);
             }
             return edgeList;
 
@@ -47,22 +43,17 @@ namespace ExplicitCorridorMap
                 openSet.Remove(current);
                 closeSet.Add(current);
 
-                var originalEdge = graph.Edges[current.IncidentEdge];
-                var neighborEdge = originalEdge;
-                do
+                foreach(var edge in current.Edges)
                 {
-                    if (!neighborEdge.IsFinite || !neighborEdge.IsPrimary) continue;
-                    var neigborVertex = graph.Vertices[neighborEdge.End];
+                    var neigborVertex = edge.End;
                     if (closeSet.Contains(neigborVertex)) continue;
                     var tentativeGScore = gScore[current] + HeuristicCost(current, neigborVertex);
                     if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
                     else if (tentativeGScore >= gScore[neigborVertex]) continue;
                     cameFrom[neigborVertex] = current;
                     gScore[neigborVertex] = tentativeGScore;
-                    fScore[neigborVertex] = tentativeGScore + HeuristicCost(neigborVertex, goal);                    
+                    fScore[neigborVertex] = tentativeGScore + HeuristicCost(neigborVertex, goal);
                 }
-                //proceed to next edge
-                while ((neighborEdge = graph.Edges[neighborEdge.RotNext]) != originalEdge);
             }
             return result;
 
