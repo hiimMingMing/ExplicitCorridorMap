@@ -6,6 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using KdTree;
+using KdTree.Math;
+using Advanced.Algorithms.Geometry;
 
 namespace ExplicitCorridorMap
 {
@@ -16,7 +19,8 @@ namespace ExplicitCorridorMap
         public Dictionary<int, Vertex> Vertices { get; }
         public Dictionary<int, Edge> Edges { get; }
 
-        public List<RectInt> Obstacles { get; } 
+        public List<RectInt> Obstacles { get; }
+        private KdTree<float, Vertex> KdTree { get; }
         public ECM(List<RectInt> obstacles)
         {
             InputPoints = new Dictionary<int, Vector2Int>();
@@ -24,6 +28,7 @@ namespace ExplicitCorridorMap
             Vertices = new Dictionary<int, Vertex>();
             Edges = new Dictionary<int, Edge>();
             Obstacles = obstacles;
+            KdTree = new KdTree<float, Vertex>(2, new FloatMath());
         }
         public ECM()
         {
@@ -105,8 +110,49 @@ namespace ExplicitCorridorMap
                     twinEdge.RightObstacleStart = edge.LeftObstacleEnd;
                     twinEdge.RightObstacleEnd = edge.LeftObstacleStart;
                 }
+                //contruct kdtree
+                foreach(var v in Vertices.Values)
+                {
+                    KdTree.Add(v.GetKDKey(), v);
+                }
             }
             
+        }
+        public Edge GetNearestEdge(Vector2 point)
+        {
+            var v = GetNearestVertex(point);
+            //Edge nearestEdge = null;
+            //float minDistance = float.MaxValue;
+            foreach(var edge in v.Edges)
+            {
+                var polyPointV2 = new List<Vector2>
+                {
+                    edge.LeftObstacleStart,
+                    edge.Start.Position,
+                    edge.RightObstacleStart,
+                    edge.RightObstacleEnd,
+                    edge.End.Position,
+                    edge.LeftObstacleEnd
+                };
+                var polyPoint = polyPointV2.ConvertAll(x => new Point(x.x, x.y));
+                var polygon = new Polygon(polyPoint);
+                var isInside = PointInsidePolygon.IsInside(polygon, new Point(point.x, point.y));
+
+                if (isInside) return edge;
+                //Distance.GetClosestPointOnLine(edge.Start.Position, edge.End.Position, point, out float d);
+                //if(d < minDistance)
+                //{
+                //    minDistance = d;
+                //    nearestEdge = edge;
+                //}
+            }
+            return null;
+        }
+        public Vertex GetNearestVertex(Vector2 point)
+        {
+            var pointArray = new float[] { point.x, point.y };
+            var nodes = KdTree.GetNearestNeighbours(pointArray, 1);
+            return nodes[0].Value;
         }
         private void ComputeObstaclePoint(Edge cell, Edge edge, out Vector2 start, out Vector2 end)
         {

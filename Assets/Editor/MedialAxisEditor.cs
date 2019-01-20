@@ -11,6 +11,7 @@ using Advanced.Algorithms.Geometry;
 [CustomEditor(typeof(MedialAxis))]
 public class MedialAxisEditor : Editor
 {
+    Vector2 StartPosition;
     ECM ecm;
     float inputPointRadius = 12f;
     float outputPointRadius = 6f;
@@ -34,7 +35,8 @@ public class MedialAxisEditor : Editor
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
-
+        var ma = (MedialAxis)target;
+        StartPosition = ma.StartPoint.position;
         //OpenVoronoi openVoronoi = target as OpenVoronoi;
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
@@ -87,7 +89,8 @@ public class MedialAxisEditor : Editor
             ComputePortals(portalsLeft, portalsRight);
             shortestPath = GetShortestPath(portalsLeft, portalsRight);
 
-
+            var nn = ecm.GetNearestVertex(new Vector2(200,200));
+            Debug.Log(nn.ID);
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");
@@ -100,10 +103,12 @@ public class MedialAxisEditor : Editor
         }
 
     }
+
     void OnSceneGUI()
     {
         if (ecm == null) return;
         //Draw input point
+
         Handles.color = Color.yellow;
         foreach (var inputPoint in ecm.InputPoints.Values)
         {
@@ -159,6 +164,10 @@ public class MedialAxisEditor : Editor
             Handles.color = Color.red;
             Handles.DrawPolyLine(path);
         }
+
+        var ne = ecm.GetNearestEdge(StartPosition);
+        Debug.Log("NE:"+ne.Start.ID + "-" + ne.End.ID);
+
     }
     float CrossProduct(Vector2 a, Vector2 b, Vector2 c)
     {

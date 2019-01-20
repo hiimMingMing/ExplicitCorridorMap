@@ -50,9 +50,9 @@ namespace ExplicitCorridorMap
             return String.Format("{0}, {1}", X, Y);
         }
 
-        public double[] GetKDKey()
+        public float[] GetKDKey()
         {
-            return new double[] { X, Y };
+            return new float[] { X, Y };
         }
     }
 }
