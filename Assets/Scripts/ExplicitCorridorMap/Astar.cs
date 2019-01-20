@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using SharpBoostVoronoi.Output;
 
-namespace SharpBoostVoronoi
+namespace ExplicitCorridorMap
 {
     public class Astar
     {
-        public static List<Edge> FindPath(ExplicitCorridorMap graph, Vertex start, Vertex goal)
+        public static List<Edge> FindPath(ECM graph, Vertex start, Vertex goal)
         {
             var path = Astar.FindPathVertex(graph, start, goal);
             var edgeList = new List<Edge>();
@@ -26,11 +25,11 @@ namespace SharpBoostVoronoi
             return edgeList;
 
         }
-        private static List<Vertex> FindPathVertex(ExplicitCorridorMap graph, Vertex start, Vertex goal)
+        private static List<Vertex> FindPathVertex(ECM graph, Vertex start, Vertex goal)
         {
             return FindPathVertexReversed(graph, goal, start);
         }
-        private static List<Vertex> FindPathVertexReversed(ExplicitCorridorMap graph, Vertex start, Vertex goal)
+        private static List<Vertex> FindPathVertexReversed(ECM graph, Vertex start, Vertex goal)
         {
             var openSet = new HashSet<Vertex>();
             openSet.Add(start);

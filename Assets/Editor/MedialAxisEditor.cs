@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
-using SharpBoostVoronoi;
-using SharpBoostVoronoi.Input;
-using SharpBoostVoronoi.Output;
 using System;
 using KdTree;
 using KdTree.Math;
+using ExplicitCorridorMap;
+
 [CustomEditor(typeof(MedialAxis))]
 public class MedialAxisEditor : Editor
 {
-    ExplicitCorridorMap ecm;
+    ECM ecm;
     float inputPointRadius = 12f;
     float outputPointRadius = 6f;
     int segmentCount = 100000;
@@ -56,7 +55,7 @@ public class MedialAxisEditor : Editor
 
             //var watch = new System.Diagnostics.Stopwatch();
             //watch.Start();
-            ecm = new ExplicitCorridorMap();
+            ecm = new ECM();
             foreach (var segment in InputSegments)
             {
                 ecm.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
@@ -406,7 +405,7 @@ public class MedialAxisEditor : Editor
             Debug.Log(String.Format("Testing with {0} points and {1} segments", inputPoints.Count, inputSegments.Count));
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
-            var bv = new ExplicitCorridorMap();
+            var bv = new ECM();
             foreach (var point in inputPoints)
                 bv.AddPoint(point.x, point.y);
 

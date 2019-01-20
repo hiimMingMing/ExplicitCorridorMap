@@ -1,5 +1,5 @@
-﻿using SharpBoostVoronoi.Output;
-using SharpBoostVoronoi.Parabolas;
+﻿using ExplicitCorridorMap;
+using ExplicitCorridorMap.Maths;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SharpBoostVoronoi.Exceptions
+namespace ExplicitCorridorMap.Exceptions
 {
     public class UnsolvableVertexException:Exception, IParabolaException
     {

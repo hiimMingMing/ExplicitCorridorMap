@@ -1,14 +1,11 @@
-﻿using SharpBoostVoronoi.Parabolas;
-using SharpBoostVoronoi.Exceptions;
-using SharpBoostVoronoi.Input;
-using SharpBoostVoronoi.Output;
-using SharpBoostVoronoi.Maths;
+﻿using ExplicitCorridorMap.Exceptions;
+using ExplicitCorridorMap.Maths;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace SharpBoostVoronoi
+namespace ExplicitCorridorMap
 {
     internal class BoostVoronoi : IDisposable
     {

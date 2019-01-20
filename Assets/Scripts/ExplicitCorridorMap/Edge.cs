@@ -1,7 +1,6 @@
 ﻿using System;
-using SharpBoostVoronoi.Input;
 using UnityEngine;
-namespace SharpBoostVoronoi.Output
+namespace ExplicitCorridorMap
 {
     public class Edge
     {

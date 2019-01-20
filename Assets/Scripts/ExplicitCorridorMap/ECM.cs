@@ -1,7 +1,4 @@
-﻿using SharpBoostVoronoi.Input;
-using SharpBoostVoronoi.Maths;
-using SharpBoostVoronoi.Output;
-using SharpBoostVoronoi.Parabolas;
+﻿using ExplicitCorridorMap.Maths;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,16 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SharpBoostVoronoi
+namespace ExplicitCorridorMap
 {
-    public class ExplicitCorridorMap
+    public class ECM
     {
         public Dictionary<long, Vector2Int> InputPoints { get; private set; }
         public Dictionary<long, Segment> InputSegments { get; private set; }
         public Dictionary<long, Vertex> Vertices { get; } = new Dictionary<long, Vertex>();
         public Dictionary<long, Edge> Edges { get; } = new Dictionary<long, Edge>();
         public Dictionary<long, Cell> Cells { get; } = new Dictionary<long, Cell>();
-        public ExplicitCorridorMap()
+        public ECM()
         {
             InputPoints = new Dictionary<long, Vector2Int>();
             InputSegments = new Dictionary<long, Segment>();

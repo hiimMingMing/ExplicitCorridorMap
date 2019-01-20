@@ -1,7 +1,4 @@
-﻿using SharpBoostVoronoi.Exceptions;
-using SharpBoostVoronoi.Input;
-using SharpBoostVoronoi.Maths;
-using SharpBoostVoronoi.Output;
+﻿using ExplicitCorridorMap.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SharpBoostVoronoi.Parabolas
+namespace ExplicitCorridorMap.Maths
 {
     public class ParabolaComputation
     {

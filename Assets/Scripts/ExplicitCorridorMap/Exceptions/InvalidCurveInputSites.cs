@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SharpBoostVoronoi.Exceptions
+namespace ExplicitCorridorMap.Exceptions
 {
     class InvalidCurveInputSites : Exception
     {
