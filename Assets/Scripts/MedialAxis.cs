@@ -6,6 +6,7 @@ public class MedialAxis : MonoBehaviour
 {
     public Transform StartPoint;
     public Transform EndPoint;
+    public Transform Cubes;
 
     // Start is called before the first frame update
     void Start()

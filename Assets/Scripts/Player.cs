@@ -6,7 +6,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public float speed = 200;
-    public Transform[] cubes;
+    public Transform cubes;
     // Start is called before the first frame update
     private List<RectInt> Obstacles = new List<RectInt>();
     private ECM ecm;
@@ -17,13 +17,13 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        foreach(var cube in cubes)
+        foreach (Transform cube in cubes)
         {
             int w = (int)cube.localScale.x;
             int h = (int)cube.localScale.y;
             int x = (int)cube.position.x;
             int y = (int)cube.position.y;
-            Obstacles.Add(new RectInt(x-w/2,y-h/2,w,h));
+            Obstacles.Add(new RectInt(x - w / 2, y - h / 2, w, h));
         }
         ecm = new ECM(Obstacles);
         //add border
@@ -38,10 +38,6 @@ public class Player : MonoBehaviour
             var finalTarget = Camera.main.ScreenToWorldPoint( Input.mousePosition);
             wayPointList = Astar.FindPath(ecm, transform.position, finalTarget);
             currentWayPoint = 1;
-            foreach(var v in wayPointList)
-            {
-                Debug.Log(v);
-            }
         }
         if (currentWayPoint < wayPointList.Count)
         {

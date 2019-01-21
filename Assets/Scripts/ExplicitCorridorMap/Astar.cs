@@ -1,22 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace ExplicitCorridorMap
 {
     public class Astar
     {
-        public static List<Vector2> FindPath(ECM ecm,Vector2 startPosition, Vector2 endPosition)
+        public static List<Vector2> FindPath(ECM ecm,Vector2 startPosition, Vector2 goalPosition)
         {
-            var startNearestVertex = ecm.GetNearestVertex(startPosition);
-            var goalNearestVertex = ecm.GetNearestVertex(endPosition);
-            var edgeList = Astar.FindEdgePathFromVertexToVertex(ecm, startNearestVertex, goalNearestVertex);
-            ComputePortals(edgeList, startPosition, endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
+            var startNearestEdge = ecm.GetNearestEdge(startPosition);
+            var goalNearestEdge = ecm.GetNearestEdge(goalPosition);
+            var startVertex = FindBestVertexOnEdge(startNearestEdge, startPosition, goalPosition);
+            var endVertex = FindBestVertexOnEdge(goalNearestEdge, goalPosition, startPosition);
+
+            var edgeList = Astar.FindEdgePathFromVertexToVertex(ecm, startVertex, endVertex);
+            ComputePortals(edgeList, startPosition, goalPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
+        }
+        private static Vertex FindBestVertexOnEdge(Edge edge,Vector2 start, Vector2 goal)
+        {
+            var fStartVertex = HeuristicCost(start, edge.Start.Position) + HeuristicCost(edge.Start.Position, goal);
+            var fEndVertex = HeuristicCost(start, edge.End.Position) + HeuristicCost(edge.End.Position, goal);
+            if (fStartVertex < fEndVertex) return edge.Start;
+            else return edge.End;
         }
         private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, Vertex start, Vertex goal)
         {
             var path = Astar.FindPathFromVertexToVertex(graph, start, goal);
+            path.Reverse();
             var edgeList = new List<Edge>();
             
             for (int i = 0; i < path.Count - 1; i++)
@@ -31,10 +43,6 @@ namespace ExplicitCorridorMap
 
         }
         private static List<Vertex> FindPathFromVertexToVertex(ECM graph, Vertex start, Vertex goal)
-        {
-            return FindPathVertexReversed(graph, goal, start);
-        }
-        private static List<Vertex> FindPathVertexReversed(ECM graph, Vertex start, Vertex goal)
         {
             var openSet = new HashSet<Vertex>();
             openSet.Add(start);
@@ -80,7 +88,13 @@ namespace ExplicitCorridorMap
         }
         private static double HeuristicCost(Vertex start, Vertex goal)
         {
-            var h = Math.Pow(start.X - goal.X, 2) + Math.Pow(start.Y - goal.Y, 2);
+            return HeuristicCost(start.Position, goal.Position);
+        }
+        private static double HeuristicCost(Vector2 start, Vector2 goal)
+        {
+            var dx = start.x - goal.x;
+            var dy = start.y - goal.y;
+            var h = dx * dx + dy * dy;
             return h;
         }
         private static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, double> fScore)

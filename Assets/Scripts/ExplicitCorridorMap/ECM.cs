@@ -125,11 +125,7 @@ namespace ExplicitCorridorMap
         }
         public Edge GetNearestEdge(Vector2 point)
         {
-            var v = GetNearestVertex(point);
-            if (v.Position == point) throw new Exception("EQ");
-            //Edge nearestEdge = null;
-            //float minDistance = float.MaxValue;
-            foreach(var edge in v.Edges)
+            foreach(var edge in Edges.Values)
             {
                 var polyPointV2 = new List<Vector2>
                 {
@@ -143,12 +139,6 @@ namespace ExplicitCorridorMap
                 var isInside = Geometry.ContainsPoint(polyPointV2, point);
 
                 if (isInside) return edge;
-                //Distance.GetClosestPointOnLine(edge.Start.Position, edge.End.Position, point, out float d);
-                //if(d < minDistance)
-                //{
-                //    minDistance = d;
-                //    nearestEdge = edge;
-                //}
             }
             return null;
         }

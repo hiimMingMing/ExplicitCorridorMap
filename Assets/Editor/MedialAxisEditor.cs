@@ -9,8 +9,6 @@ using ExplicitCorridorMap;
 [CustomEditor(typeof(MedialAxis))]
 public class MedialAxisEditor : Editor
 {
-    Vector2 StartPosition;
-    Vector2 EndPosition;
 
     ECM ecm;
     float inputPointRadius = 6f;
@@ -23,9 +21,9 @@ public class MedialAxisEditor : Editor
     {
         DrawDefaultInspector();
         var ma = (MedialAxis)target;
-        StartPosition = ma.StartPoint.position;
-        EndPosition = ma.EndPoint.position;
-
+        var StartPosition = ma.StartPoint.position;
+        var EndPosition = ma.EndPoint.position;
+        var cubes = ma.Cubes;
         //OpenVoronoi openVoronoi = target as OpenVoronoi;
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
@@ -35,18 +33,21 @@ public class MedialAxisEditor : Editor
         {
             //populate segment
             var obstacles = new List<RectInt>();
-            obstacles.Add( new RectInt(50, 50, 80, 80));
-            obstacles.Add(new RectInt(200, 100, 200, 100));
-            obstacles.Add(new RectInt(75, 225, 60, 250));
-            obstacles.Add(new RectInt(250, 250, 60, 200));
-            obstacles.Add(new RectInt(360, 300, 100, 100));
+            foreach (Transform cube in cubes)
+            {
+                int w = (int)cube.localScale.x;
+                int h = (int)cube.localScale.y;
+                int x = (int)cube.position.x;
+                int y = (int)cube.position.y;
+                obstacles.Add(new RectInt(x - w / 2, y - h / 2, w, h));
+            }
 
             ecm = new ECM(obstacles);
             //add border
             ecm.AddRect(new RectInt(0, 0, 500, 500));
             ecm.Construct();
 
-            shortestPath = Astar.FindPath(ecm,StartPosition, EndPosition);
+            shortestPath = Astar.FindPath(ecm, StartPosition, EndPosition);
             
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
