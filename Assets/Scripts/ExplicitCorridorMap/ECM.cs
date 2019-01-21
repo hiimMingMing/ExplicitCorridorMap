@@ -196,7 +196,6 @@ namespace ExplicitCorridorMap
             AddSegment(new Segment(rect.xMax, rect.yMax, rect.xMax, rect.y));
             AddSegment(new Segment(rect.xMax, rect.y, rect.x, rect.y));
         }
-
         #region Code to discretize curves
         //The code below is a simple port to C# of the C++ code in the links below
         //http://www.boost.org/doc/libs/1_54_0/libs/polygon/example/voronoi_visualizer.cpp
