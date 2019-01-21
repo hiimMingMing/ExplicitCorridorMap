@@ -40,5 +40,9 @@ namespace ExplicitCorridorMap
             ContainsSegment = c.ContainsSegment;
             SourceCategory = c.SourceCategory;
         }
+        public override string ToString()
+        {
+            return string.Format("{0}-{1}", Start, End);
+        }
     }
 }

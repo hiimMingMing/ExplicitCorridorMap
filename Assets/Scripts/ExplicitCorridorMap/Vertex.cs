@@ -47,7 +47,7 @@ namespace ExplicitCorridorMap
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("{0}  [{1},{2}]",ID, X, Y);
+            return ID.ToString();
         }
 
         public float[] GetKDKey()

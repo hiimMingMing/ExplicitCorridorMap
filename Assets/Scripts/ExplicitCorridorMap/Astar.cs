@@ -11,10 +11,15 @@ namespace ExplicitCorridorMap
         {
             var startNearestEdge = ecm.GetNearestEdge(startPosition);
             var goalNearestEdge = ecm.GetNearestEdge(goalPosition);
+            //if (startNearestEdge == goalNearestEdge || startNearestEdge == goalNearestEdge.Twin) return new List<Vector2> { startPosition, goalPosition };
             var startVertex = FindBestVertexOnEdge(startNearestEdge, startPosition, goalPosition);
             var endVertex = FindBestVertexOnEdge(goalNearestEdge, goalPosition, startPosition);
 
             var edgeList = Astar.FindEdgePathFromVertexToVertex(ecm, startVertex, endVertex);
+            //foreach (var e in edgeList)
+            //{
+            //    Debug.Log(e);
+            //}
             ComputePortals(edgeList, startPosition, goalPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }
@@ -48,9 +53,9 @@ namespace ExplicitCorridorMap
             openSet.Add(start);
             var closeSet = new HashSet<Vertex>();
             var cameFrom = new Dictionary<Vertex, Vertex>();
-            var gScore = new Dictionary<Vertex, double>();
+            var gScore = new Dictionary<Vertex, float>();
             gScore[start] = 0;
-            var fScore = new Dictionary<Vertex, double>();
+            var fScore = new Dictionary<Vertex, float>();
             fScore[start] = HeuristicCost(start, goal);
             List<Vertex> result = new List<Vertex>();
             while (openSet.Count != 0)
@@ -86,20 +91,20 @@ namespace ExplicitCorridorMap
             }
             return totalPath;
         }
-        private static double HeuristicCost(Vertex start, Vertex goal)
+        private static float HeuristicCost(Vertex start, Vertex goal)
         {
             return HeuristicCost(start.Position, goal.Position);
         }
-        private static double HeuristicCost(Vector2 start, Vector2 goal)
+        private static float HeuristicCost(Vector2 start, Vector2 goal)
         {
             var dx = start.x - goal.x;
             var dy = start.y - goal.y;
             var h = dx * dx + dy * dy;
             return h;
         }
-        private static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, double> fScore)
+        private static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, float> fScore)
         {
-            double min = Double.MaxValue;
+            float min = float.MaxValue;
             Vertex result = null;
             foreach (var v in hashSet)
             {
@@ -122,62 +127,129 @@ namespace ExplicitCorridorMap
             portalLeft = portalsLeft[0];
             portalRight = portalsRight[0];
             path.Add(portalApex);
-            for (int i = 1; i < portalsLeft.Count; i++)
+
+            var left1 = portalsLeft[1];
+            var right1 = portalsRight[1];
+            //heuristic
+            if (HeuristicCost(portalApex, left1) > HeuristicCost(portalApex, right1))
             {
-                var left = portalsLeft[i];
-                var right = portalsRight[i];
-                // Update right vertex.
-                if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
+                for (int i = 1; i < portalsLeft.Count; i++)
                 {
-                    if (portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
+                    var left = portalsLeft[i];
+                    var right = portalsRight[i];
+                    // Update left vertex.
+                    if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
                     {
-                        // Tighten the funnel.
-                        portalRight = right;
-                        rightIndex = i;
-                    }
-                    else
+                        if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
+                        {
+                            // Tighten the funnel.
+                            portalLeft = left;
+                            leftIndex = i;
+                        }
+                        else
+                        {
+                            // Left over right, insert right to path and restart scan from portal right point.
+                            path.Add(portalRight);
+                            // Make current right the new apex.
+                            portalApex = portalRight;
+                            apexIndex = rightIndex;
+                            // Reset portal
+                            portalLeft = portalApex;
+                            portalRight = portalApex;
+                            leftIndex = apexIndex;
+                            rightIndex = apexIndex;
+                            // Restart scan
+                            i = apexIndex;
+                            continue;
+                        }
+                    }//if
+                    // Update right vertex.
+                    if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
                     {
-                        path.Add(portalLeft);
-                        // Make current left the new apex.
-                        portalApex = portalLeft;
-                        apexIndex = leftIndex;
-                        // Reset portal
-                        portalLeft = portalApex;
-                        portalRight = portalApex;
-                        leftIndex = apexIndex;
-                        rightIndex = apexIndex;
-                        // Restart scan
-                        i = apexIndex;
-                        continue;
+                        if (portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
+                        {
+                            // Tighten the funnel.
+                            portalRight = right;
+                            rightIndex = i;
+                        }
+                        else
+                        {
+                            path.Add(portalLeft);
+                            // Make current left the new apex.
+                            portalApex = portalLeft;
+                            apexIndex = leftIndex;
+                            // Reset portal
+                            portalLeft = portalApex;
+                            portalRight = portalApex;
+                            leftIndex = apexIndex;
+                            rightIndex = apexIndex;
+                            // Restart scan
+                            i = apexIndex;
+                            continue;
+                        }
                     }
-                }
-                // Update left vertex.
-                if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
+                    
+                }//for
+            }
+            else
+            {
+                for (int i = 1; i < portalsLeft.Count; i++)
                 {
-                    if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
+                    var left = portalsLeft[i];
+                    var right = portalsRight[i];
+                    // Update right vertex.
+                    if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
                     {
-                        // Tighten the funnel.
-                        portalLeft = left;
-                        leftIndex = i;
+                        if (portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
+                        {
+                            // Tighten the funnel.
+                            portalRight = right;
+                            rightIndex = i;
+                        }
+                        else
+                        {
+                            path.Add(portalLeft);
+                            // Make current left the new apex.
+                            portalApex = portalLeft;
+                            apexIndex = leftIndex;
+                            // Reset portal
+                            portalLeft = portalApex;
+                            portalRight = portalApex;
+                            leftIndex = apexIndex;
+                            rightIndex = apexIndex;
+                            // Restart scan
+                            i = apexIndex;
+                            continue;
+                        }
                     }
-                    else
+                    // Update left vertex.
+                    if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
                     {
-                        // Left over right, insert right to path and restart scan from portal right point.
-                        path.Add(portalRight);
-                        // Make current right the new apex.
-                        portalApex = portalRight;
-                        apexIndex = rightIndex;
-                        // Reset portal
-                        portalLeft = portalApex;
-                        portalRight = portalApex;
-                        leftIndex = apexIndex;
-                        rightIndex = apexIndex;
-                        // Restart scan
-                        i = apexIndex;
-                        continue;
-                    }
-                }//if
-            }//for
+                        if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
+                        {
+                            // Tighten the funnel.
+                            portalLeft = left;
+                            leftIndex = i;
+                        }
+                        else
+                        {
+                            // Left over right, insert right to path and restart scan from portal right point.
+                            path.Add(portalRight);
+                            // Make current right the new apex.
+                            portalApex = portalRight;
+                            apexIndex = rightIndex;
+                            // Reset portal
+                            portalLeft = portalApex;
+                            portalRight = portalApex;
+                            leftIndex = apexIndex;
+                            rightIndex = apexIndex;
+                            // Restart scan
+                            i = apexIndex;
+                            continue;
+                        }
+                    }//if
+                }//for
+            }
             path.Add(portalsLeft[portalsLeft.Count - 1]);
             return path;
         }//funtion
@@ -185,6 +257,8 @@ namespace ExplicitCorridorMap
         {
             portalsLeft = new List<Vector2>();
             portalsRight = new List<Vector2>();
+            portalsLeft.Add(startPosition);
+            portalsRight.Add(startPosition);
             for (int i = 0; i < edgeList.Count; i++)
             {
                 var edge = edgeList[i];
@@ -192,18 +266,18 @@ namespace ExplicitCorridorMap
                 {
                     var left1 = edge.LeftObstacleStart;
                     var right1 = edge.RightObstacleStart;
-                    portalsLeft.Add(left1);
-                    portalsRight.Add(right1);
-                }
-                else
-                {
-                    portalsLeft.Add(startPosition);
-                    portalsRight.Add(startPosition);
+                    //heuristic
+                    var containStart = Geometry.PolygonContainsPoint(edge.Start.Position, left1, right1, startPosition);
+                    var containEnd = Geometry.PolygonContainsPoint(edge.Start.Position, left1, right1, endPosition);
+                    if (!containStart&&!containEnd)
+                    {
+                        portalsLeft.Add(left1);
+                        portalsRight.Add(right1);
+                    }
                 }
                 if (i == edgeList.Count - 1)
                 {
-                    portalsLeft.Add(endPosition);
-                    portalsRight.Add(endPosition);
+                    
                     break;
                 }
                 var edgeNext = edgeList[i + 1];
@@ -214,9 +288,17 @@ namespace ExplicitCorridorMap
                 }
                 var left2 = edge.LeftObstacleEnd;
                 var right2 = edge.RightObstacleEnd;
-                portalsLeft.Add(left2);
-                portalsRight.Add(right2);
+                //heuristic
+                var containStart2 = Geometry.PolygonContainsPoint(edge.End.Position, left2, right2, startPosition);
+                var containEnd2 = Geometry.PolygonContainsPoint(edge.End.Position, left2, right2, endPosition);
+                if (!containStart2 && !containEnd2)
+                {
+                    portalsLeft.Add(left2);
+                    portalsRight.Add(right2);
+                }
             }
+            portalsLeft.Add(endPosition);
+            portalsRight.Add(endPosition);
         }
         private static float CrossProduct(Vector2 a, Vector2 b, Vector2 c)
         {

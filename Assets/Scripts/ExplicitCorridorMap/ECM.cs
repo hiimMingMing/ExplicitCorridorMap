@@ -136,11 +136,11 @@ namespace ExplicitCorridorMap
                     edge.End.Position,
                     edge.LeftObstacleEnd
                 };
-                var isInside = Geometry.ContainsPoint(polyPointV2, point);
+                var isInside = Geometry.PolygonContainsPoint(polyPointV2, point);
 
                 if (isInside) return edge;
             }
-            return null;
+            return GetNearestVertex(point).Edges[0];
         }
         public Vertex GetNearestVertex(Vector2 point)
         {
