@@ -36,7 +36,7 @@ public class Player : MonoBehaviour
     {
         if(Input.GetMouseButtonDown(0)){
             var finalTarget = Camera.main.ScreenToWorldPoint( Input.mousePosition);
-            wayPointList = Astar.FindPath(ecm, transform.position, finalTarget);
+            wayPointList = PathFinding.FindPath(ecm, transform.position, finalTarget);
             currentWayPoint = 1;
         }
         if (currentWayPoint < wayPointList.Count)

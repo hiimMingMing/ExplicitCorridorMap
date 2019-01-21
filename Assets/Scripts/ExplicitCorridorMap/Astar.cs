@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ExplicitCorridorMap
 {
-    public class Astar
+    public class PathFinding
     {
         public static List<Vector2> FindPath(ECM ecm,Vector2 startPosition, Vector2 goalPosition)
         {
@@ -15,7 +15,7 @@ namespace ExplicitCorridorMap
             var startVertex = FindBestVertexOnEdge(startNearestEdge, startPosition, goalPosition);
             var endVertex = FindBestVertexOnEdge(goalNearestEdge, goalPosition, startPosition);
 
-            var edgeList = Astar.FindEdgePathFromVertexToVertex(ecm, startVertex, endVertex);
+            var edgeList = FindEdgePathFromVertexToVertex(ecm, startVertex, endVertex);
             //foreach (var e in edgeList)
             //{
             //    Debug.Log(e);
@@ -32,16 +32,15 @@ namespace ExplicitCorridorMap
         }
         private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, Vertex start, Vertex goal)
         {
-            var path = Astar.FindPathFromVertexToVertex(graph, start, goal);
-            path.Reverse();
+            var path = PathFinding.FindPathFromVertexToVertex(graph, start, goal);
             var edgeList = new List<Edge>();
             
-            for (int i = 0; i < path.Count - 1; i++)
+            for (int i = path.Count - 1; i > 0; i--)
             {
                 foreach( var edge in path[i].Edges)
                 {
                     var end = edge.End;
-                    if (end.Equals(path[i + 1])) edgeList.Add(edge);
+                    if (end.Equals(path[i - 1])) edgeList.Add(edge);
                 }
             }
             return edgeList;

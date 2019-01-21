@@ -47,7 +47,7 @@ public class MedialAxisEditor : Editor
             ecm.AddRect(new RectInt(0, 0, 500, 500));
             ecm.Construct();
 
-            shortestPath = Astar.FindPath(ecm, StartPosition, EndPosition);
+            shortestPath = PathFinding.FindPath(ecm, StartPosition, EndPosition);
             
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
