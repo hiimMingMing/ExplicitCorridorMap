@@ -29,6 +29,11 @@ namespace ExplicitCorridorMap
             Edges = new Dictionary<int, Edge>();
             Obstacles = obstacles;
             KdTree = new KdTree<float, Vertex>(2, new FloatMath());
+
+            foreach (var rect in obstacles)
+            {
+                AddRect(rect);
+            }
         }
         public ECM()
         {
@@ -180,11 +185,18 @@ namespace ExplicitCorridorMap
             Vector2Int p = new Vector2Int(x, y);
             InputPoints[InputPoints.Count] =  p;
         }
-        public void AddSegment(int x1, int y1, int x2, int y2)
+        public void AddSegment(Segment s)
         {
-            Segment s = new Segment(x1, y1, x2, y2);
             InputSegments[InputSegments.Count] = s;
         }
+        public void AddRect(RectInt rect)
+        {
+            AddSegment(new Segment(rect.x, rect.y, rect.x, rect.yMax));
+            AddSegment(new Segment(rect.x, rect.yMax, rect.xMax, rect.yMax));
+            AddSegment(new Segment(rect.xMax, rect.yMax, rect.xMax, rect.y));
+            AddSegment(new Segment(rect.xMax, rect.y, rect.x, rect.y));
+        }
+
         #region Code to discretize curves
         //The code below is a simple port to C# of the C++ code in the links below
         //http://www.boost.org/doc/libs/1_54_0/libs/polygon/example/voronoi_visualizer.cpp

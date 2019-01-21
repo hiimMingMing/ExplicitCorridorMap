@@ -17,21 +17,11 @@ public class MedialAxisEditor : Editor
     float outputPointRadius = 3f;
     int segmentCount = 100000;
     bool drawNearestObstaclePoints = false;
-    int startIndex = 0;
-    int goalIndex = 0;
     List<Edge> edgeList = null;
     List<Vector2> portalsLeft;
     List<Vector2> portalsRight;
     List<Vector2> shortestPath; 
-    void AddRect(List<Segment> segments, RectInt rect)
-    {
-
-        segments.Add(new Segment(rect.x, rect.y, rect.x, rect.yMax));
-        segments.Add(new Segment(rect.x, rect.yMax, rect.xMax, rect.yMax));
-        segments.Add(new Segment(rect.xMax, rect.yMax, rect.xMax, rect.y));
-        segments.Add(new Segment(rect.xMax, rect.y, rect.x, rect.y));
-
-    }
+    
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -43,13 +33,10 @@ public class MedialAxisEditor : Editor
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
         drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", drawNearestObstaclePoints);
-        startIndex = EditorGUILayout.IntField("StarIndex", startIndex);
-        goalIndex = EditorGUILayout.IntField("GoalIndex", goalIndex);
 
         if (GUILayout.Button("Bake"))
         {
             //populate segment
-            List<Segment> InputSegments = new List<Segment>();
             var obstacles = new List<RectInt>();
             obstacles.Add( new RectInt(50, 50, 80, 80));
             obstacles.Add(new RectInt(200, 100, 200, 100));
@@ -57,47 +44,16 @@ public class MedialAxisEditor : Editor
             obstacles.Add(new RectInt(250, 250, 60, 200));
             obstacles.Add(new RectInt(360, 300, 100, 100));
 
-            //add border
-            AddRect(InputSegments,new RectInt(0, 0, 500, 500));
-            foreach (var r in obstacles)
-            {
-                AddRect(InputSegments, r);
-            }
-            //var watch = new System.Diagnostics.Stopwatch();
-            //watch.Start();
             ecm = new ECM(obstacles);
-            foreach (var segment in InputSegments)
-            {
-                ecm.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
-            }
+            //add border
+            ecm.AddRect(new RectInt(0, 0, 500, 500));
             ecm.Construct();
-            //watch.Stop();
-            //Debug.Log("Time: " + watch.ElapsedMilliseconds);
-
-            //startIndex = UnityEngine.Random.Range(0, ecm.Vertices.Count);
-            //goalIndex = UnityEngine.Random.Range(0, ecm.Vertices.Count);
-
-            var start = ecm.Vertices[startIndex];
-            var goal = ecm.Vertices[goalIndex];
-            Debug.Log("Find path from " + startIndex + " to " + goalIndex);
-            //edgeList = Astar.FindPath(ecm, start, goal);
-            //ComputePortals(edgeList,out List<Vector2> pL,out List<Vector2> pR);
-            //portalsLeft = pL;
-            //portalsRight = pR;
-            //shortestPath = GetShortestPath(portalsLeft, portalsRight);
+            
 
             var startNearestVertex = ecm.GetNearestVertex(StartPosition);
             var goalNearestVertex = ecm.GetNearestVertex(EndPosition);
 
             edgeList = Astar.FindPath(ecm, startNearestVertex, goalNearestVertex);
-            //if (edgeList.Count != 0)
-            //{
-            //    if (!edgeList[0].Equals(nearestEdge)) edgeList.Insert(0, nearestEdge);
-            //}
-            //if (edgeList.Count != 0)
-            //{
-            //    if (!edgeList[edgeList.Count-1].Equals()) edgeList.Insert(0, nearestEdge);
-            //}
             foreach (var e in edgeList)
             {
                 Debug.Log(e.Start.ID + "-" + e.End.ID);
@@ -392,10 +348,8 @@ public class MedialAxisEditor : Editor
                 bv.AddPoint(point.x, point.y);
 
             foreach (var segment in inputSegments)
-                bv.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
-
-
-
+                bv.AddSegment(segment);
+            
             bv.Construct();
 
             // Stop timing.
