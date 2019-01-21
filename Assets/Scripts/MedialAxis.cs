@@ -5,6 +5,8 @@ using UnityEngine;
 public class MedialAxis : MonoBehaviour
 {
     public Transform StartPoint;
+    public Transform EndPoint;
+
     // Start is called before the first frame update
     void Start()
     {

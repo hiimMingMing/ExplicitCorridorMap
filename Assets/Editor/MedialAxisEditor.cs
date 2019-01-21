@@ -4,17 +4,17 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System;
-using KdTree;
-using KdTree.Math;
 using ExplicitCorridorMap;
-using Advanced.Algorithms.Geometry;
+
 [CustomEditor(typeof(MedialAxis))]
 public class MedialAxisEditor : Editor
 {
     Vector2 StartPosition;
+    Vector2 EndPosition;
+
     ECM ecm;
-    float inputPointRadius = 12f;
-    float outputPointRadius = 6f;
+    float inputPointRadius = 6f;
+    float outputPointRadius = 3f;
     int segmentCount = 100000;
     bool drawNearestObstaclePoints = false;
     int startIndex = 0;
@@ -37,6 +37,8 @@ public class MedialAxisEditor : Editor
         DrawDefaultInspector();
         var ma = (MedialAxis)target;
         StartPosition = ma.StartPoint.position;
+        EndPosition = ma.EndPoint.position;
+
         //OpenVoronoi openVoronoi = target as OpenVoronoi;
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
@@ -78,19 +80,34 @@ public class MedialAxisEditor : Editor
             var start = ecm.Vertices[startIndex];
             var goal = ecm.Vertices[goalIndex];
             Debug.Log("Find path from " + startIndex + " to " + goalIndex);
-            edgeList = Astar.FindPath(ecm, start, goal);
-            //Debug.Log("Path length:" + edgeList.Count);
-            //foreach (var e in edgeList)
+            //edgeList = Astar.FindPath(ecm, start, goal);
+            //ComputePortals(edgeList,out List<Vector2> pL,out List<Vector2> pR);
+            //portalsLeft = pL;
+            //portalsRight = pR;
+            //shortestPath = GetShortestPath(portalsLeft, portalsRight);
+
+            var startNearestVertex = ecm.GetNearestVertex(StartPosition);
+            var goalNearestVertex = ecm.GetNearestVertex(EndPosition);
+
+            edgeList = Astar.FindPath(ecm, startNearestVertex, goalNearestVertex);
+            //if (edgeList.Count != 0)
             //{
-            //    Debug.Log(e.Start + "-" + e.End);
+            //    if (!edgeList[0].Equals(nearestEdge)) edgeList.Insert(0, nearestEdge);
             //}
-            portalsLeft = new List<Vector2>();
-            portalsRight = new List<Vector2>();
-            ComputePortals(portalsLeft, portalsRight);
+            //if (edgeList.Count != 0)
+            //{
+            //    if (!edgeList[edgeList.Count-1].Equals()) edgeList.Insert(0, nearestEdge);
+            //}
+            foreach (var e in edgeList)
+            {
+                Debug.Log(e.Start.ID + "-" + e.End.ID);
+            }
+            ComputePortals(edgeList, StartPosition, EndPosition ,out List<Vector2> pL, out List<Vector2> pR);
+            portalsLeft = pL;
+            portalsRight = pR;
             shortestPath = GetShortestPath(portalsLeft, portalsRight);
 
-            var nn = ecm.GetNearestVertex(new Vector2(200,200));
-            Debug.Log(nn.ID);
+            
         }
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         EditorGUILayout.LabelField("Test with random segments");
@@ -165,8 +182,7 @@ public class MedialAxisEditor : Editor
             Handles.DrawPolyLine(path);
         }
 
-        var ne = ecm.GetNearestEdge(StartPosition);
-        Debug.Log("NE:"+ne.Start.ID + "-" + ne.End.ID);
+       
 
     }
     float CrossProduct(Vector2 a, Vector2 b, Vector2 c)
@@ -248,9 +264,10 @@ public class MedialAxisEditor : Editor
         path.Add(portalsLeft[portalsLeft.Count - 1]);
         return path;
     }//funtion
-    void ComputePortals(List<Vector2> portalsLeft, List<Vector2> portalsRight)
+    void ComputePortals(List<Edge> edgeList,Vector2 startPosition, Vector2 endPosition ,out List<Vector2> portalsLeft,out List<Vector2> portalsRight)
     {
-
+        portalsLeft = new List<Vector2>();
+        portalsRight = new List<Vector2>();
         for (int i = 0; i < edgeList.Count; i++)
         {
             var edge = edgeList[i];
@@ -263,17 +280,13 @@ public class MedialAxisEditor : Editor
             }
             else
             {
-                var start = edge.Start;
-                var point = start.Position;
-                portalsLeft.Add(point);
-                portalsRight.Add(point);
+                portalsLeft.Add(startPosition);
+                portalsRight.Add(startPosition);
             }
             if (i == edgeList.Count - 1)
             {
-                var end = edge.End;
-                var point = end.Position;
-                portalsLeft.Add(point);
-                portalsRight.Add(point);
+                portalsLeft.Add(endPosition);
+                portalsRight.Add(endPosition);
                 break;
             }
             var edgeNext = edgeList[i + 1];

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using KdTree;
 using KdTree.Math;
-using Advanced.Algorithms.Geometry;
+
 
 namespace ExplicitCorridorMap
 {
@@ -121,6 +121,7 @@ namespace ExplicitCorridorMap
         public Edge GetNearestEdge(Vector2 point)
         {
             var v = GetNearestVertex(point);
+            if (v.Position == point) throw new Exception("EQ");
             //Edge nearestEdge = null;
             //float minDistance = float.MaxValue;
             foreach(var edge in v.Edges)
@@ -134,9 +135,7 @@ namespace ExplicitCorridorMap
                     edge.End.Position,
                     edge.LeftObstacleEnd
                 };
-                var polyPoint = polyPointV2.ConvertAll(x => new Point(x.x, x.y));
-                var polygon = new Polygon(polyPoint);
-                var isInside = PointInsidePolygon.IsInside(polygon, new Point(point.x, point.y));
+                var isInside = Geometry.ContainsPoint(polyPointV2, point);
 
                 if (isInside) return edge;
                 //Distance.GetClosestPointOnLine(edge.Start.Position, edge.End.Position, point, out float d);
