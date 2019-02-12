@@ -11,9 +11,7 @@ namespace ExplicitCorridorMap
     public class Edge
     {
         public int ID;
-        /// <summary>
-        /// The index of the start vertex of this segment.
-        /// </summary>
+        public List<Vector2> Cell { get; set; }
         public Vertex Start { get; set; }
         public Vertex End { get; set; }
         public Edge Twin { get; set; }
@@ -43,6 +41,18 @@ namespace ExplicitCorridorMap
         public override string ToString()
         {
             return string.Format("{0}-{1}", Start, End);
+        }
+        public void ComputeCell()
+        {
+            Cell = new List<Vector2>
+                {
+                    LeftObstacleStart,
+                    Start.Position,
+                    RightObstacleStart,
+                    RightObstacleEnd,
+                    End.Position,
+                    LeftObstacleEnd
+                };
         }
     }
 }

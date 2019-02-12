@@ -114,6 +114,9 @@ namespace ExplicitCorridorMap
                     twinEdge.LeftObstacleEnd = edge.RightObstacleStart;
                     twinEdge.RightObstacleStart = edge.LeftObstacleEnd;
                     twinEdge.RightObstacleEnd = edge.LeftObstacleStart;
+
+                    edge.ComputeCell();
+                    twinEdge.ComputeCell();
                 }
                 //contruct kdtree
                 foreach(var v in Vertices.Values)
@@ -127,16 +130,7 @@ namespace ExplicitCorridorMap
         {
             foreach(var edge in Edges.Values)
             {
-                var polyPointV2 = new List<Vector2>
-                {
-                    edge.LeftObstacleStart,
-                    edge.Start.Position,
-                    edge.RightObstacleStart,
-                    edge.RightObstacleEnd,
-                    edge.End.Position,
-                    edge.LeftObstacleEnd
-                };
-                var isInside = Geometry.PolygonContainsPoint(polyPointV2, point);
+                var isInside = Geometry.PolygonContainsPoint(edge.Cell, point);
 
                 if (isInside) return edge;
             }
