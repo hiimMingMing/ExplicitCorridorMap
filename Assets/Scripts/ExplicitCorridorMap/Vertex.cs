@@ -16,11 +16,7 @@ namespace ExplicitCorridorMap
         public List<Edge> Edges { get; set; }
 
         public bool IsInside { get; set; }
-        //public List<Point> NearestObstaclePoints { get; } = new List<Point>();
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="t">A tuple where the first value represents the X-axis and the second value the Y-axis</param>
+
         public Vertex(int id,float x, float y)
         {
             ID = id;
@@ -41,10 +37,6 @@ namespace ExplicitCorridorMap
         {
             return Position.GetHashCode();
         }
-        /// <summary>
-        /// Returns a concatenation of the coordinates, separated by a comma
-        /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             return ID.ToString();

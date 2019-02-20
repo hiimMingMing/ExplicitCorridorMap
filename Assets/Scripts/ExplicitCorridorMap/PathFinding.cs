@@ -11,15 +11,10 @@ namespace ExplicitCorridorMap
         {
             var startNearestEdge = ecm.GetNearestEdge(startPosition);
             var goalNearestEdge = ecm.GetNearestEdge(goalPosition);
-            //if (startNearestEdge == goalNearestEdge || startNearestEdge == goalNearestEdge.Twin) return new List<Vector2> { startPosition, goalPosition };
             var startVertex = FindBestVertexOnEdge(startNearestEdge, startPosition, goalPosition);
             var endVertex = FindBestVertexOnEdge(goalNearestEdge, goalPosition, startPosition);
 
             var edgeList = FindEdgePathFromVertexToVertex(ecm, startVertex, endVertex);
-            //foreach (var e in edgeList)
-            //{
-            //    Debug.Log(e);
-            //}
             ComputePortals(edgeList, startPosition, goalPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }
@@ -46,6 +41,7 @@ namespace ExplicitCorridorMap
             return edgeList;
 
         }
+        //Simple Astar Algorithm
         private static List<Vertex> FindPathFromVertexToVertex(ECM graph, Vertex start, Vertex goal)
         {
             var openSet = new HashSet<Vertex>();
@@ -116,6 +112,16 @@ namespace ExplicitCorridorMap
             }
             return result;
         }
+        private static float CrossProduct(Vector2 a, Vector2 b, Vector2 c)
+        {
+            float ax = b.x - a.x;
+            float ay = b.y - a.y;
+            float bx = c.x - a.x;
+            float by = c.y - a.y;
+            return bx * ay - ax * by;
+        }
+
+        //Simple Stupid Funnel Algorithm
         private static List<Vector2> GetShortestPath(List<Vector2> portalsLeft, List<Vector2> portalsRight)
         {
             List<Vector2> path = new List<Vector2>();
@@ -299,13 +305,6 @@ namespace ExplicitCorridorMap
             portalsLeft.Add(endPosition);
             portalsRight.Add(endPosition);
         }
-        private static float CrossProduct(Vector2 a, Vector2 b, Vector2 c)
-        {
-            float ax = b.x - a.x;
-            float ay = b.y - a.y;
-            float bx = c.x - a.x;
-            float by = c.y - a.y;
-            return bx * ay - ax * by;
-        }
+        
     }
 }

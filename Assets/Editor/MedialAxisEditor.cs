@@ -13,7 +13,6 @@ public class MedialAxisEditor : Editor
     ECM ecm;
     float inputPointRadius = 6f;
     float outputPointRadius = 3f;
-    int segmentCount = 100000;
     bool drawNearestObstaclePoints = true;
     List<Vector2> shortestPath; 
     
@@ -47,17 +46,8 @@ public class MedialAxisEditor : Editor
             ecm.AddRect(new RectInt(0, 0, 500, 500));
             ecm.Construct();
 
-            shortestPath = PathFinding.FindPath(ecm, StartPosition, EndPosition);
+            //shortestPath = PathFinding.FindPath(ecm, StartPosition, EndPosition);
             
-        }
-        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-        EditorGUILayout.LabelField("Test with random segments");
-        segmentCount = EditorGUILayout.IntField("Number of Segments", segmentCount);
-        if (GUILayout.Button("Test"))
-        {
-            var points = new List<Vector2Int>();
-            var segments = PopulateSegment(100, segmentCount/100);
-            ConstructAndMeasure(ref points, ref segments);
         }
 
     }
@@ -185,47 +175,7 @@ public class MedialAxisEditor : Editor
             DrawVertex(end);
         }
     }
-    List<Segment> PopulateSegment(int maxX, int maxY)
-    {
-        List<Segment> segments = new List<Segment>();
-        for (int i = 0; i < maxX; i++)
-        {
-            for (int j = 0; j < maxY; j++)
-            {
-                segments.Add(new Segment(new Vector2Int(i, j), new Vector2Int(i, j + 1)));
-                //segments.Add(new Segment(new Point(i, j), new Point(i + 1, j)));
-                //segments.Add(new Segment(new Point(i, j), new Point(i + 1, j + 1)));
-            }
-        }
-        return segments;
-    }
 
-    void ConstructAndMeasure(ref List<Vector2Int> inputPoints, ref List<Segment> inputSegments)
-        {
-            Debug.Log(String.Format("Testing with {0} points and {1} segments", inputPoints.Count, inputSegments.Count));
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-            var bv = new ECM();
-            foreach (var point in inputPoints)
-                bv.AddPoint(point.x, point.y);
-
-            foreach (var segment in inputSegments)
-                bv.AddSegment(segment);
-            
-            bv.Construct();
-
-            // Stop timing.
-            stopwatch.Stop();
-            Debug.Log(String.Format("Vertices: {0}", bv.Vertices.Count));
-            Debug.Log("Time elapsed:" + stopwatch.Elapsed.ToString(@"dd\.hh\:mm\:ss"));
-
-            //bv.Clear();
-            
-            inputPoints.Clear();
-            inputSegments.Clear();
-
-
-        }
     
 }
 
