@@ -269,8 +269,8 @@ namespace ExplicitCorridorMap
                 var edge = edgeList[i];
                 if (i != 0)
                 {
-                    var left1 = edge.LeftObstacleStart;
-                    var right1 = edge.RightObstacleStart;
+                    var left1 = edge.LeftObstacleOfStart;
+                    var right1 = edge.RightObstacleOfStart;
                     //heuristic
                     var containStart = Geometry.PolygonContainsPoint(edge.Start.Position, left1, right1, startPosition);
                     var containEnd = Geometry.PolygonContainsPoint(edge.Start.Position, left1, right1, endPosition);
@@ -286,13 +286,13 @@ namespace ExplicitCorridorMap
                     break;
                 }
                 var edgeNext = edgeList[i + 1];
-                if (edge.LeftObstacleEnd.Equals(edgeNext.LeftObstacleStart) ||
-                    edge.RightObstacleEnd.Equals(edgeNext.RightObstacleStart))
+                if (edge.LeftObstacleOfEnd.Equals(edgeNext.LeftObstacleOfStart) ||
+                    edge.RightObstacleOfEnd.Equals(edgeNext.RightObstacleOfStart))
                 {
                     continue;
                 }
-                var left2 = edge.LeftObstacleEnd;
-                var right2 = edge.RightObstacleEnd;
+                var left2 = edge.LeftObstacleOfEnd;
+                var right2 = edge.RightObstacleOfEnd;
                 //heuristic
                 var containStart2 = Geometry.PolygonContainsPoint(edge.End.Position, left2, right2, startPosition);
                 var containEnd2 = Geometry.PolygonContainsPoint(edge.End.Position, left2, right2, endPosition);

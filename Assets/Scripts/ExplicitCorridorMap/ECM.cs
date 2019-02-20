@@ -103,17 +103,17 @@ namespace ExplicitCorridorMap
                     var twinEdge = edge.Twin;
 
                     ComputeObstaclePoint(edge, edge, out Vector2 obsLeftStart, out Vector2 obsLeftEnd);
-                    edge.LeftObstacleStart = obsLeftStart;
-                    edge.LeftObstacleEnd = obsLeftEnd;
+                    edge.LeftObstacleOfStart = obsLeftStart;
+                    edge.LeftObstacleOfEnd = obsLeftEnd;
 
                     ComputeObstaclePoint(twinEdge, edge, out Vector2 obsRightStart, out Vector2 obsRightEnd);
-                    edge.RightObstacleStart = obsRightStart;
-                    edge.RightObstacleEnd = obsRightEnd;
+                    edge.RightObstacleOfStart = obsRightStart;
+                    edge.RightObstacleOfEnd = obsRightEnd;
 
-                    twinEdge.LeftObstacleStart = edge.RightObstacleEnd;
-                    twinEdge.LeftObstacleEnd = edge.RightObstacleStart;
-                    twinEdge.RightObstacleStart = edge.LeftObstacleEnd;
-                    twinEdge.RightObstacleEnd = edge.LeftObstacleStart;
+                    twinEdge.LeftObstacleOfStart = edge.RightObstacleOfEnd;
+                    twinEdge.LeftObstacleOfEnd = edge.RightObstacleOfStart;
+                    twinEdge.RightObstacleOfStart = edge.LeftObstacleOfEnd;
+                    twinEdge.RightObstacleOfEnd = edge.LeftObstacleOfStart;
 
                     edge.ComputeCell();
                     twinEdge.ComputeCell();

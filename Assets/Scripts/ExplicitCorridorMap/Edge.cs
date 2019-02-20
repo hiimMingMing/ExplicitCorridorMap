@@ -17,10 +17,10 @@ namespace ExplicitCorridorMap
         public Edge Twin { get; set; }
         public bool IsLinear { get; set; }
 
-        public Vector2 LeftObstacleStart { get; set; }
-        public Vector2 RightObstacleStart { get; set; }
-        public Vector2 LeftObstacleEnd { get; set; }
-        public Vector2 RightObstacleEnd { get; set; }
+        public Vector2 LeftObstacleOfStart { get; set; }
+        public Vector2 RightObstacleOfStart { get; set; }
+        public Vector2 LeftObstacleOfEnd { get; set; }
+        public Vector2 RightObstacleOfEnd { get; set; }
 
         public int SiteID { get; set; }
         public bool ContainsPoint { get; set; }
@@ -46,12 +46,12 @@ namespace ExplicitCorridorMap
         {
             Cell = new List<Vector2>
                 {
-                    LeftObstacleStart,
+                    LeftObstacleOfStart,
                     Start.Position,
-                    RightObstacleStart,
-                    RightObstacleEnd,
+                    RightObstacleOfStart,
+                    RightObstacleOfEnd,
                     End.Position,
-                    LeftObstacleEnd
+                    LeftObstacleOfEnd
                 };
         }
     }

@@ -120,8 +120,8 @@ public class MedialAxisEditor : Editor
         var startVertex = edge.Start.Position;
         var endVertex = edge.End.Position;
         var begin = startVertex;
-        var obsLeft = edge.LeftObstacleStart;
-        var obsRight = edge.RightObstacleStart;
+        var obsLeft = edge.LeftObstacleOfStart;
+        var obsRight = edge.RightObstacleOfStart;
 
         Handles.color = Color.green;
         Handles.DrawLine(begin, obsLeft);
@@ -129,8 +129,8 @@ public class MedialAxisEditor : Editor
         Handles.DrawLine(begin, obsRight);
 
         begin = endVertex;
-        obsLeft = edge.LeftObstacleEnd;
-        obsRight = edge.RightObstacleEnd;
+        obsLeft = edge.LeftObstacleOfEnd;
+        obsRight = edge.RightObstacleOfEnd;
         Handles.color = Color.green;
         Handles.DrawLine(begin, obsLeft);
         Handles.color = Color.cyan;
