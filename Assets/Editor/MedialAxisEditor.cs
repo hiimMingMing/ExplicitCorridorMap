@@ -14,7 +14,7 @@ public class MedialAxisEditor : Editor
     float inputPointRadius = 6f;
     float outputPointRadius = 3f;
     bool drawNearestObstaclePoints = true;
-    List<Vector2> shortestPath; 
+    List<Vector2> shortestPath = null; 
     
     public override void OnInspectorGUI()
     {
