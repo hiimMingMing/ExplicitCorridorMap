@@ -704,7 +704,8 @@ namespace _2DMath
         /// <param name="ECM"></param>
         /// <param name="polygon"></param>
         /// <returns>Return ECM cell that contain p* and n*, and alse return p1,p2 edge of polygon that contain p*</returns>
-        static Tuple<ExplicitCorridorMap.Edge,Vector2,Vector2> FindStartCell(ExplicitCorridorMap.ECM ECM, List<Vector2> polygon) {
+        /// Tuple<ExplicitCorridorMap.Edge,Vector2,Vector2>
+        static void FindStartCell(ExplicitCorridorMap.ECM ECM, List<Vector2> polygon) {
 
 
             //Find the ECM edge that contain start point
@@ -742,17 +743,18 @@ namespace _2DMath
 
 
 
-                    CalculateIntersectionBetweenLinesInsidePolygon(new List<Vector2> {
-                        currentEdge.Start.Position,
-                        currentEdge.LeftObstacleOfStart,
-                        currentEdge.LeftObstacleOfEnd,
-                        currentEdge.End.Position,
-                        currentEdge.RightObstacleOfEnd,
-                        currentEdge.RightObstacleOfStart},);
+                    //CalculateIntersectionBetweenLinesInsidePolygon(new List<Vector2> {
+                    //    currentEdge.Start.Position,
+                    //    currentEdge.LeftObstacleOfStart,
+                    //    currentEdge.LeftObstacleOfEnd,
+                    //    currentEdge.End.Position,
+                    //    currentEdge.RightObstacleOfEnd,
+                    //    currentEdge.RightObstacleOfStart},);
                   
                 }
            
             }
+            //return new Tuple<ExplicitCorridorMap.Edge, Vector2, Vector2>();
         }
     }
 
