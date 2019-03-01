@@ -18,7 +18,7 @@ namespace ExplicitCorridorMap
         public Dictionary<int, Segment> InputSegments { get; private set; }
         public Dictionary<int, Vertex> Vertices { get; }
         public Dictionary<int, Edge> Edges { get; }
-
+        
         public List<RectInt> Obstacles { get; }
         private KdTree<float, Vertex> KdTree { get; }
         public ECM(List<RectInt> obstacles)

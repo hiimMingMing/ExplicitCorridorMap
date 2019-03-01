@@ -16,9 +16,10 @@ namespace ExplicitCorridorMap.Maths
         /// <param name="start">The first point</param>
         /// <param name="end">The second point</param>
         /// <returns>The angle in radians</returns>
-        static float GetLineAngleAsRadiant(Vector2 start, Vector2 end)
+        public static float GetLineAngleAsRadiant(Vector2 start, Vector2 end)
         {
             return Mathf.Atan2(end.y - start.y, end.x - start.x);
+            
         }
 
 
@@ -30,7 +31,7 @@ namespace ExplicitCorridorMap.Maths
         /// <param name="focus">The focus of the parabola</param>
         /// <param name="directrix_y">The y value of the directx line</param>
         /// <returns>The y value associated with x</returns>
-        static float ParabolaY(float x, Vector2 focus, float directrix_y)
+        public static float ParabolaY(float x, Vector2 focus, float directrix_y)
         {
             return (Mathf.Pow(x - focus.x, 2) + Mathf.Pow(focus.y, 2) - Mathf.Pow(directrix_y, 2)) / (2 * (focus.y - directrix_y));
         }

@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace ExplicitCorridorMap
 {
-    public class Edge
+    public class Edge 
     {
         public int ID;
         public List<Vector2> Cell { get; set; }
@@ -16,7 +16,7 @@ namespace ExplicitCorridorMap
         public Vertex End { get; set; }
         public Edge Twin { get; set; }
         public bool IsLinear { get; set; }
-
+     
         public Vector2 LeftObstacleOfStart { get; set; }
         public Vector2 RightObstacleOfStart { get; set; }
         public Vector2 LeftObstacleOfEnd { get; set; }
