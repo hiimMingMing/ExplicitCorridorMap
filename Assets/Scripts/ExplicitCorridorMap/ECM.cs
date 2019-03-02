@@ -130,9 +130,11 @@ namespace ExplicitCorridorMap
         {
             foreach(var edge in Edges.Values)
             {
-                var isInside = Geometry.PolygonContainsPoint(edge.Cell, point);
-
-                if (isInside) return edge;
+                if (edge.ID % 2 == 0)
+                {
+                    var isInside = Geometry.PolygonContainsPoint(edge.Cell, point);
+                    if (isInside) return edge;
+                }
             }
             return GetNearestVertex(point).Edges[0];
         }

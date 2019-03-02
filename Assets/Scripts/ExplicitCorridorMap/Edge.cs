@@ -46,12 +46,12 @@ namespace ExplicitCorridorMap
         {
             Cell = new List<Vector2>
                 {
-                    LeftObstacleOfStart,
                     Start.Position,
                     RightObstacleOfStart,
                     RightObstacleOfEnd,
                     End.Position,
-                    LeftObstacleOfEnd
+                    LeftObstacleOfEnd,
+                    LeftObstacleOfStart
                 };
         }
     }
