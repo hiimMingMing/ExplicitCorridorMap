@@ -99,24 +99,8 @@ namespace ExplicitCorridorMap
 
                 foreach (var edge in Edges.Values)
                 {
-                    if (edge.ID % 2 == 1 ) continue;
-                    var twinEdge = edge.Twin;
-
-                    ComputeObstaclePoint(edge, edge, out Vector2 obsLeftStart, out Vector2 obsLeftEnd);
-                    edge.LeftObstacleOfStart = obsLeftStart;
-                    edge.LeftObstacleOfEnd = obsLeftEnd;
-
-                    ComputeObstaclePoint(twinEdge, edge, out Vector2 obsRightStart, out Vector2 obsRightEnd);
-                    edge.RightObstacleOfStart = obsRightStart;
-                    edge.RightObstacleOfEnd = obsRightEnd;
-
-                    twinEdge.LeftObstacleOfStart = edge.RightObstacleOfEnd;
-                    twinEdge.LeftObstacleOfEnd = edge.RightObstacleOfStart;
-                    twinEdge.RightObstacleOfStart = edge.LeftObstacleOfEnd;
-                    twinEdge.RightObstacleOfEnd = edge.LeftObstacleOfStart;
-
-                    edge.ComputeCell();
-                    twinEdge.ComputeCell();
+                    if (edge.ID % 2 == 0 ) ComputeObstaclePoint(edge);
+                    
                 }
                 //contruct kdtree
                 foreach(var v in Vertices.Values)
@@ -143,6 +127,26 @@ namespace ExplicitCorridorMap
             var pointArray = new float[] { point.x, point.y };
             var nodes = KdTree.GetNearestNeighbours(pointArray, 1);
             return nodes[0].Value;
+        }
+        public void ComputeObstaclePoint(Edge edge)
+        {
+            var twinEdge = edge.Twin;
+
+            ComputeObstaclePoint(edge, edge, out Vector2 obsLeftStart, out Vector2 obsLeftEnd);
+            edge.LeftObstacleOfStart = obsLeftStart;
+            edge.LeftObstacleOfEnd = obsLeftEnd;
+
+            ComputeObstaclePoint(twinEdge, edge, out Vector2 obsRightStart, out Vector2 obsRightEnd);
+            edge.RightObstacleOfStart = obsRightStart;
+            edge.RightObstacleOfEnd = obsRightEnd;
+
+            twinEdge.LeftObstacleOfStart = edge.RightObstacleOfEnd;
+            twinEdge.LeftObstacleOfEnd = edge.RightObstacleOfStart;
+            twinEdge.RightObstacleOfStart = edge.LeftObstacleOfEnd;
+            twinEdge.RightObstacleOfEnd = edge.LeftObstacleOfStart;
+
+            edge.ComputeCell();
+            twinEdge.ComputeCell();
         }
         private void ComputeObstaclePoint(Edge cell, Edge edge, out Vector2 start, out Vector2 end)
         {
