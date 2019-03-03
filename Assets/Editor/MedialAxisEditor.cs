@@ -15,8 +15,9 @@ public class MedialAxisEditor : Editor
     float inputPointRadius = 6f;
     float outputPointRadius = 3f;
     bool drawNearestObstaclePoints = true;
-    List<Vector2> shortestPath = null; 
-    
+    List<Vector2> shortestPath = null;
+    List<Vector2> portalsLeft;
+    List<Vector2> portalsRight;
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -47,8 +48,12 @@ public class MedialAxisEditor : Editor
             ecm.AddRect(new RectInt(0, 0, 500, 500));
             ecm.Construct();
 
-            //shortestPath = PathFinding.FindPath(ecm, StartPosition, EndPosition);
-            
+            shortestPath = PathFinding.FindPathDebug(ecm, StartPosition, EndPosition, out portalsLeft,out portalsRight);
+            //foreach(var v in shortestPath)
+            //{
+            //    Debug.Log(v);
+            //}
+            Debug.Log("NumPortal: "+portalsLeft.Count);
         }
 }
 
@@ -74,12 +79,6 @@ public class MedialAxisEditor : Editor
         }
 
         //Draw ouput edge and vertex
-        //Handles.color = Color.blue;
-        //foreach (var edge in ecm.Edges.Values)
-        //{
-        //    DrawEdge(edge);
-        //}
-        //Debug.Log(ecm.Vertices.Count);
         foreach (var vertex in ecm.Vertices.Values)
         {
             foreach (var edge in vertex.Edges)
@@ -101,7 +100,13 @@ public class MedialAxisEditor : Editor
             Handles.color = Color.red;
             Handles.DrawPolyLine(path);
         }
-        
+        if(portalsLeft != null)
+        {
+            for(int i = 0; i < portalsLeft.Count; i++)
+            {
+                DrawPortal(portalsLeft[i], portalsRight[i]);
+            }
+        }
     }
     
 
@@ -109,7 +114,7 @@ public class MedialAxisEditor : Editor
     
     void DrawPortal(Vector2 begin, Vector2 end)
     {
-        Handles.color = Color.white;
+        Handles.color = Color.magenta;
         Handles.DrawLine(begin,end);
 
     }
