@@ -5,10 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using RBush;
 
 namespace ExplicitCorridorMap
 {
-    public class Edge 
+    public class Edge : ISpatialData
     {
         public int ID;
         public List<Vector2> Cell { get; set; }
@@ -26,6 +27,9 @@ namespace ExplicitCorridorMap
         public bool ContainsPoint { get; set; }
         public bool ContainsSegment { get; set; }
         public SourceCategory SourceCategory { get; set; }
+
+        private Envelope _envelope;
+        public ref readonly Envelope Envelope => ref _envelope;
         public Edge(Vertex start, Vertex end, VoronoiEdge e, VoronoiCell c)
         {
             Start = start;
@@ -53,6 +57,18 @@ namespace ExplicitCorridorMap
                     LeftObstacleOfEnd,
                     LeftObstacleOfStart
                 };
+            float minX = float.PositiveInfinity;
+            float minY = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float maxY = float.NegativeInfinity;
+            foreach(var v in Cell)
+            {
+                if (v.x < minX) minX = v.x;
+                else if (v.x > maxX) maxX = v.x;
+                if (v.y < minY) minY = v.y;
+                else if (v.y > maxY) maxY = v.y;
+            }
+            _envelope = new Envelope(minX, minY, maxX, maxY);
         }
     }
 }

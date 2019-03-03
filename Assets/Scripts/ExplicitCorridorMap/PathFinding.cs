@@ -15,6 +15,10 @@ namespace ExplicitCorridorMap
             var endVertex = FindBestVertexOnEdge(goalNearestEdge, goalPosition, startPosition);
 
             var edgeList = FindEdgePathFromVertexToVertex(ecm, startVertex, endVertex);
+            //foreach(var edge in edgeList)
+            //{
+            //    Debug.Log(edge);
+            //}
             ComputePortals(edgeList, startPosition, goalPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }

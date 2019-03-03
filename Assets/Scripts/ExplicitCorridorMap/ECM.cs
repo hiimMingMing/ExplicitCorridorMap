@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using KdTree;
 using KdTree.Math;
-
+using RBush;
 
 namespace ExplicitCorridorMap
 {
@@ -21,6 +21,7 @@ namespace ExplicitCorridorMap
         
         public List<RectInt> Obstacles { get; }
         private KdTree<float, Vertex> KdTree { get; }
+        private RBush<Edge> RTree { get; }
         public ECM(List<RectInt> obstacles)
         {
             InputPoints = new Dictionary<int, Vector2Int>();
@@ -29,7 +30,7 @@ namespace ExplicitCorridorMap
             Edges = new Dictionary<int, Edge>();
             Obstacles = obstacles;
             KdTree = new KdTree<float, Vertex>(2, new FloatMath());
-
+            RTree = new RBush<Edge>(3);
             foreach (var rect in obstacles)
             {
                 AddRect(rect);
@@ -96,11 +97,14 @@ namespace ExplicitCorridorMap
                 {
                     if (vertex.Edges.Count == 0) Vertices.Remove(vertex.ID);
                 }
-
+                //Compute nearest bstacle point and contruct RTree
                 foreach (var edge in Edges.Values)
                 {
-                    if (edge.ID % 2 == 0 ) ComputeObstaclePoint(edge);
-                    
+                    if (edge.ID % 2 == 0)
+                    {
+                        ComputeObstaclePoint(edge);
+                        RTree.Insert(edge);
+                    }
                 }
                 //contruct kdtree
                 foreach(var v in Vertices.Values)
@@ -112,13 +116,10 @@ namespace ExplicitCorridorMap
         }
         public Edge GetNearestEdge(Vector2 point)
         {
-            foreach(var edge in Edges.Values)
+            var edges = RTree.Search(new Envelope(point.x, point.y, point.x, point.y));
+            foreach(var edge in edges)
             {
-                if (edge.ID % 2 == 0)
-                {
-                    var isInside = Geometry.PolygonContainsPoint(edge.Cell, point);
-                    if (isInside) return edge;
-                }
+                if (Geometry.PolygonContainsPoint(edge.Cell, point)) return edge;
             }
             return GetNearestVertex(point).Edges[0];
         }

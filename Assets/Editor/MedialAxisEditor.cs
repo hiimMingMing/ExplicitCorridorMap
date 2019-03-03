@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System;
+using RBush;
 using ExplicitCorridorMap;
 
 [CustomEditor(typeof(MedialAxis))]
@@ -49,8 +50,7 @@ public class MedialAxisEditor : Editor
             //shortestPath = PathFinding.FindPath(ecm, StartPosition, EndPosition);
             
         }
-
-    }
+}
 
     void OnSceneGUI()
     {
@@ -101,9 +101,7 @@ public class MedialAxisEditor : Editor
             Handles.color = Color.red;
             Handles.DrawPolyLine(path);
         }
-
-       
-
+        
     }
     
 
@@ -178,4 +176,6 @@ public class MedialAxisEditor : Editor
 
     
 }
+
+
 
