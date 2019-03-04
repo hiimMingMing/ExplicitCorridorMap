@@ -15,10 +15,10 @@ namespace ExplicitCorridorMap
 
             var edgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition);
 
-            foreach (var edge in edgeList)
-            {
-                Debug.Log(edge);
-            }
+            //foreach (var edge in edgeList)
+            //{
+            //    Debug.Log(edge);
+            //}
             ComputePortals(edgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }
@@ -99,11 +99,11 @@ namespace ExplicitCorridorMap
             }
             return totalPath;
         }
-        private static float HeuristicCost(Vertex start, Vertex goal)
+        public static float HeuristicCost(Vertex start, Vertex goal)
         {
             return HeuristicCost(start.Position, goal.Position);
         }
-        private static float HeuristicCost(Vector2 start, Vector2 goal)
+        public static float HeuristicCost(Vector2 start, Vector2 goal)
         {
             var dx = start.x - goal.x;
             var dy = start.y - goal.y;

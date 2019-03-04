@@ -28,21 +28,14 @@ namespace ExplicitCorridorMap
             InputSegments = new Dictionary<int, Segment>();
             Vertices = new Dictionary<int, Vertex>();
             Edges = new Dictionary<int, Edge>();
-            Obstacles = obstacles;
             KdTree = new KdTree<float, Vertex>(2, new FloatMath());
             RTree = new RBush<Edge>(3);
+
+            Obstacles = obstacles;
             foreach (var rect in obstacles)
             {
                 AddRect(rect);
             }
-        }
-        public ECM()
-        {
-            InputPoints = new Dictionary<int, Vector2Int>();
-            InputSegments = new Dictionary<int, Segment>();
-            Vertices = new Dictionary<int, Vertex>();
-            Edges = new Dictionary<int, Edge>();
-            Obstacles = new List<RectInt>();
         }
         public void Construct()
         {
@@ -148,6 +141,8 @@ namespace ExplicitCorridorMap
 
             edge.ComputeCell();
             twinEdge.ComputeCell();
+            edge.ComputeEnvelope();
+            twinEdge.SetEnvelope(edge.Envelope);
         }
         private void ComputeObstaclePoint(Edge cell, Edge edge, out Vector2 start, out Vector2 end)
         {
@@ -187,6 +182,37 @@ namespace ExplicitCorridorMap
             AddSegment(new Segment(rect.xMax, rect.yMax, rect.xMax, rect.y));
             AddSegment(new Segment(rect.xMax, rect.y, rect.x, rect.y));
         }
+        public ECM AddPolygonDynamic(RectInt rect)
+        {
+            Debug.Log(rect.xMin + " " + rect.yMin + " "+ rect.xMax+" "+ rect.yMax);
+            var selectedEdges = RTree.Search(new Envelope(rect.xMin, rect.yMin, rect.xMax, rect.yMax));
+            //enlarge obstacle
+            float maxSquareClearance = 0;
+            foreach (var e in selectedEdges)
+            {
+                var d1 = PathFinding.HeuristicCost(e.Start.Position, e.LeftObstacleOfStart);
+                var d2 = PathFinding.HeuristicCost(e.End.Position, e.LeftObstacleOfEnd);
+                if (d1 > maxSquareClearance) maxSquareClearance = d1;
+                if (d2 > maxSquareClearance) maxSquareClearance = d2;
+            }
+
+            float maxClearance = Mathf.Sqrt(maxSquareClearance);
+            selectedEdges = RTree.Search(new Envelope(rect.xMin- maxClearance, rect.yMin- maxClearance, rect.xMax+ maxClearance, rect.yMax+ maxClearance));
+            var segments = new HashSet<Segment>();
+            foreach (var e in selectedEdges)
+            {
+                segments.Add(RetrieveInputSegment(e));
+                segments.Add(RetrieveInputSegment(e.Twin));
+            }
+            var newECM = new ECM(new List<RectInt> { rect });
+            foreach(var seg in segments)
+            {
+                newECM.AddSegment(seg);
+            }
+            newECM.Construct();
+            return newECM;
+        }
+
         #region Code to discretize curves
         //The code below is a simple port to C# of the C++ code in the links below
         //http://www.boost.org/doc/libs/1_54_0/libs/polygon/example/voronoi_visualizer.cpp
@@ -284,9 +310,7 @@ namespace ExplicitCorridorMap
         /// <returns>The input segment site of the cell.</returns>
         public Segment RetrieveInputSegment(Edge cell)
         {
-            Segment segmentNotScaled = InputSegments[RetriveInputSegmentIndex(cell)];
-            return new Segment(new Vector2Int(segmentNotScaled.Start.x, segmentNotScaled.Start.y),
-                new Vector2Int(segmentNotScaled.End.x, segmentNotScaled.End.y));
+            return InputSegments[RetriveInputSegmentIndex(cell)];
         }
 
         private int RetriveInputSegmentIndex(Edge cell)

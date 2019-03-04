@@ -19,11 +19,7 @@ public class Player : MonoBehaviour
     {
         foreach (Transform cube in cubes)
         {
-            int w = (int)cube.localScale.x;
-            int h = (int)cube.localScale.y;
-            int x = (int)cube.position.x;
-            int y = (int)cube.position.y;
-            Obstacles.Add(new RectInt(x - w / 2, y - h / 2, w, h));
+            Obstacles.Add(Geometry.ConvertToRect(cube));
         }
         ecm = new ECM(Obstacles);
         //add border

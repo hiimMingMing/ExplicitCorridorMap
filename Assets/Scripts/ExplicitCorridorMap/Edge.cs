@@ -57,18 +57,26 @@ namespace ExplicitCorridorMap
                     LeftObstacleOfEnd,
                     LeftObstacleOfStart
                 };
+            
+        }
+        public void ComputeEnvelope()
+        {
             float minX = float.PositiveInfinity;
             float minY = float.PositiveInfinity;
             float maxX = float.NegativeInfinity;
             float maxY = float.NegativeInfinity;
-            foreach(var v in Cell)
+            foreach (var v in Cell)
             {
                 if (v.x < minX) minX = v.x;
-                else if (v.x > maxX) maxX = v.x;
+                if (v.x > maxX) maxX = v.x;
                 if (v.y < minY) minY = v.y;
-                else if (v.y > maxY) maxY = v.y;
+                if (v.y > maxY) maxY = v.y;
             }
             _envelope = new Envelope(minX, minY, maxX, maxY);
+        }
+        public void SetEnvelope(Envelope e)
+        {
+            _envelope = e;
         }
     }
 }

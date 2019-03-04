@@ -18,13 +18,16 @@ public class MedialAxisEditor : Editor
     List<Vector2> shortestPath = null;
     List<Vector2> portalsLeft;
     List<Vector2> portalsRight;
+    List<Edge> selectedEdge;
+    List<Segment> segments = new List<Segment>();
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
         var ma = (MedialAxis)target;
-        var StartPosition = ma.StartPoint.position;
-        var EndPosition = ma.EndPoint.position;
+        var startPosition = ma.StartPoint.position;
+        var endPosition = ma.EndPoint.position;
         var cubes = ma.Cubes;
+        var dynamicObstacle = ma.DynamicObstacle;
         //OpenVoronoi openVoronoi = target as OpenVoronoi;
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
@@ -36,11 +39,7 @@ public class MedialAxisEditor : Editor
             var obstacles = new List<RectInt>();
             foreach (Transform cube in cubes)
             {
-                int w = (int)cube.localScale.x;
-                int h = (int)cube.localScale.y;
-                int x = (int)cube.position.x;
-                int y = (int)cube.position.y;
-                obstacles.Add(new RectInt(x - w / 2, y - h / 2, w, h));
+                obstacles.Add(Geometry.ConvertToRect(cube));
             }
 
             ecm = new ECM(obstacles);
@@ -48,12 +47,30 @@ public class MedialAxisEditor : Editor
             ecm.AddRect(new RectInt(0, 0, 500, 500));
             ecm.Construct();
 
-            shortestPath = PathFinding.FindPathDebug(ecm, StartPosition, EndPosition, out portalsLeft,out portalsRight);
+            //shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
             //foreach(var v in shortestPath)
             //{
             //    Debug.Log(v);
             //}
-            Debug.Log("NumPortal: "+portalsLeft.Count);
+            //Debug.Log("NumPortal: "+portalsLeft.Count);
+        }
+        if (GUILayout.Button("Add Obstacle"))
+        {
+            if (ecm == null)
+            {
+                Debug.Log("Ecm must be baked");
+            }
+            else
+            {
+                //segments = ecm.AddPolygonDynamic(Geometry.ConvertToRect(dynamicObstacle));
+                var newECM = ecm.AddPolygonDynamic(Geometry.ConvertToRect(dynamicObstacle));
+                ecm = newECM;
+                //Debug.Log("Selected Segment "+segments.Count);
+                //foreach (var e in selectedEdge)
+                //{
+                //    Debug.Log(e);
+                //}
+            }
         }
 }
 
@@ -178,7 +195,7 @@ public class MedialAxisEditor : Editor
             DrawVertex(end);
         }
     }
-
+    
     
 }
 
