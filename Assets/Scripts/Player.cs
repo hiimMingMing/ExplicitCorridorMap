@@ -37,6 +37,11 @@ public class Player : MonoBehaviour
         if(Input.GetMouseButtonDown(0)){
             var finalTarget = Camera.main.ScreenToWorldPoint( Input.mousePosition);
             wayPointList = PathFinding.FindPath(ecm, transform.position, finalTarget);
+            Debug.Log("Path found");
+            foreach (var v in wayPointList)
+            {
+                Debug.Log(v);
+            }
             currentWayPoint = 1;
         }
         if (currentWayPoint < wayPointList.Count)
