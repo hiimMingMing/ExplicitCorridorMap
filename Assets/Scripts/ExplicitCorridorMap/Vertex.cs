@@ -16,13 +16,14 @@ namespace ExplicitCorridorMap
         public List<Edge> Edges { get; set; }
 
         public bool IsInside { get; set; }
-
+        public float[] KDKey { get; }
         public Vertex(int id,float x, float y)
         {
             ID = id;
             Position = new Vector2(x,y);
             Edges = new List<Edge>();
             IsInside = false;
+            KDKey  = new float[] { X, Y };
         }
         
 
@@ -40,11 +41,6 @@ namespace ExplicitCorridorMap
         public override string ToString()
         {
             return ID.ToString();
-        }
-
-        public float[] GetKDKey()
-        {
-            return new float[] { X, Y };
         }
     }
 }

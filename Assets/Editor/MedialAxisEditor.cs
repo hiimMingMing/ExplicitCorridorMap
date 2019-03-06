@@ -46,7 +46,7 @@ public class MedialAxisEditor : Editor
             ecm.AddBorder(new RectInt(0, 0, 500, 500));
             ecm.Construct();
 
-            //shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
+            shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
             //foreach(var v in shortestPath)
             //{
             //    Debug.Log(v);
@@ -62,8 +62,10 @@ public class MedialAxisEditor : Editor
             else
             {
                 //selectedEdge = ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
-                var newECM = ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
-                ecm = newECM;
+                ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
+                shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft, out portalsRight);
+
+                //ecm = newECM;
                 //ecm = newECM;
                 //Debug.Log("Selected Segment "+segments.Count);
                 //foreach (var e in selectedEdge)
