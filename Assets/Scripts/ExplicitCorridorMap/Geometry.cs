@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RBush;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +31,25 @@ namespace ExplicitCorridorMap
             int x = (int)cube.position.x;
             int y = (int)cube.position.y;
             return new RectInt(x - w / 2, y - h / 2, w, h);
+        }
+        public static Envelope FindBoundingBox(List<Vector2> points)
+        {
+            float minX = float.PositiveInfinity;
+            float minY = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float maxY = float.NegativeInfinity;
+            foreach (var v in points)
+            {
+                if (v.x < minX) minX = v.x;
+                if (v.x > maxX) maxX = v.x;
+                if (v.y < minY) minY = v.y;
+                if (v.y > maxY) maxY = v.y;
+            }
+            return new Envelope(minX, minY, maxX, maxY);
+        }
+        public static Envelope ExtendEnvelope(Envelope e, float d)
+        {
+            return new Envelope(e.MinX - d, e.MinY - d, e.MaxX + d, e.MaxY + d);
         }
     }
 }

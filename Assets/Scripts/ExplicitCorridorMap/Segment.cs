@@ -10,7 +10,7 @@ namespace ExplicitCorridorMap
     {
         public Vector2Int Start{ get; set; }
         public Vector2Int End { get; set; }
-
+        public int ID { get; set; }
         public Segment(Vector2Int start, Vector2Int end)
         {
             Start = start;

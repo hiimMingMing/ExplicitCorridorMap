@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
     public float speed = 200;
     public Transform cubes;
     // Start is called before the first frame update
-    private List<RectInt> Obstacles = new List<RectInt>();
+    private List<Obstacle> Obstacles = new List<Obstacle>();
     private ECM ecm;
     Vector2 targetWayPoint;
     public int currentWayPoint = 0;
@@ -19,11 +19,11 @@ public class Player : MonoBehaviour
     {
         foreach (Transform cube in cubes)
         {
-            Obstacles.Add(Geometry.ConvertToRect(cube));
+            Obstacles.Add(new Obstacle( Geometry.ConvertToRect(cube)));
         }
         ecm = new ECM(Obstacles);
         //add border
-        ecm.AddRect(new RectInt(0, 0, 500, 500));
+        ecm.AddBorder(new RectInt(0, 0, 500, 500));
         ecm.Construct();
     }
 

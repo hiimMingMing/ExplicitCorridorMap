@@ -19,10 +19,12 @@ namespace ExplicitCorridorMap
         public Dictionary<int, Vertex> Vertices { get; }
         public Dictionary<int, Edge> Edges { get; }
         
-        public List<RectInt> Obstacles { get; }
+        public List<Obstacle> Obstacles { get; }
         private KdTree<float, Vertex> KdTree { get; }
         private RBush<Edge> RTree { get; }
-        public ECM(List<RectInt> obstacles)
+        private RBush<Obstacle> RTreeObstacle { get; }
+
+        public ECM(List<Obstacle> obstacles)
         {
             InputPoints = new Dictionary<int, Vector2Int>();
             InputSegments = new Dictionary<int, Segment>();
@@ -32,10 +34,12 @@ namespace ExplicitCorridorMap
             RTree = new RBush<Edge>(3);
 
             Obstacles = obstacles;
-            foreach (var rect in obstacles)
+            RTreeObstacle = new RBush<Obstacle>();
+            foreach (var obs in obstacles)
             {
-                AddRect(rect);
+                AddObstacle(obs);
             }
+            RTreeObstacle.BulkLoad(Obstacles);
         }
         public void Construct()
         {
@@ -53,12 +57,8 @@ namespace ExplicitCorridorMap
                 for (int i = 0; i < CountVertices; i++)
                 {
                     var vertex = bv.GetVertex(i);
-                    foreach(var obs in Obstacles)
-                    {
-                        if (obs.Contains(Vector2Int.CeilToInt(vertex.Position))){
-                            vertex.IsInside = true;
-                            break;
-                        }
+                    if (InObstacleSpace(vertex.Position)){
+                        vertex.IsInside = true;
                     }
                     Vertices.Add(i, vertex);
                 }
@@ -173,19 +173,47 @@ namespace ExplicitCorridorMap
         }
         public void AddSegment(Segment s)
         {
+            s.ID = InputSegments.Count;
             InputSegments[InputSegments.Count] = s;
         }
-        public void AddRect(RectInt rect)
+        public void AddBorder(RectInt rect)
         {
             AddSegment(new Segment(rect.x, rect.y, rect.x, rect.yMax));
             AddSegment(new Segment(rect.x, rect.yMax, rect.xMax, rect.yMax));
             AddSegment(new Segment(rect.xMax, rect.yMax, rect.xMax, rect.y));
             AddSegment(new Segment(rect.xMax, rect.y, rect.x, rect.y));
         }
-        public ECM AddPolygonDynamic(RectInt rect)
+        public void AddObstacle(Obstacle obs)
         {
-            Debug.Log(rect.xMin + " " + rect.yMin + " "+ rect.xMax+" "+ rect.yMax);
-            var selectedEdges = RTree.Search(new Envelope(rect.xMin, rect.yMin, rect.xMax, rect.yMax));
+            List<Vector2> points = obs.Points;
+            for (int i = 1; i < points.Count; i++) 
+            {
+                AddSegment(
+                    new Segment(
+                        Vector2Int.CeilToInt(points[i-1]),
+                        Vector2Int.CeilToInt(points[i])
+                    )
+                );
+            }
+            AddSegment(
+                    new Segment(
+                        Vector2Int.CeilToInt(points[points.Count - 1]),
+                        Vector2Int.CeilToInt(points[0])
+                    )
+                );
+        }
+        public bool InObstacleSpace(Vector2 point)
+        {
+            var result = RTreeObstacle.Search(new Envelope(point.x, point.y, point.x, point.y));
+            foreach (var o in result) {
+                if (o.ContainsPoint(point)) return true;
+            }
+            return false;
+        }
+        public ECM AddPolygonDynamic(Obstacle newObstacle)
+        {
+            //Debug.Log(rect.xMin + " " + rect.yMin + " "+ rect.xMax+" "+ rect.yMax);
+            var selectedEdges = RTree.Search(newObstacle.Envelope);
             //enlarge obstacle
             float maxSquareClearance = 0;
             foreach (var e in selectedEdges)
@@ -197,14 +225,14 @@ namespace ExplicitCorridorMap
             }
 
             float maxClearance = Mathf.Sqrt(maxSquareClearance);
-            selectedEdges = RTree.Search(new Envelope(rect.xMin- maxClearance, rect.yMin- maxClearance, rect.xMax+ maxClearance, rect.yMax+ maxClearance));
+            selectedEdges = RTree.Search(Geometry.ExtendEnvelope(newObstacle.Envelope,maxClearance));
             var segments = new HashSet<Segment>();
             foreach (var e in selectedEdges)
             {
                 segments.Add(RetrieveInputSegment(e));
                 segments.Add(RetrieveInputSegment(e.Twin));
             }
-            var newECM = new ECM(new List<RectInt> { rect });
+            var newECM = new ECM(new List<Obstacle> { newObstacle });
             foreach(var seg in segments)
             {
                 newECM.AddSegment(seg);

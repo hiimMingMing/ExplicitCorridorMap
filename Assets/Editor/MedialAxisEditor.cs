@@ -36,15 +36,14 @@ public class MedialAxisEditor : Editor
         if (GUILayout.Button("Bake"))
         {
             //populate segment
-            var obstacles = new List<RectInt>();
+            var obstacles = new List<Obstacle>();
             foreach (Transform cube in cubes)
             {
-                obstacles.Add(Geometry.ConvertToRect(cube));
+                obstacles.Add(new Obstacle(Geometry.ConvertToRect(cube)));
             }
 
             ecm = new ECM(obstacles);
-            //add border
-            ecm.AddRect(new RectInt(0, 0, 500, 500));
+            ecm.AddBorder(new RectInt(0, 0, 500, 500));
             ecm.Construct();
 
             //shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
@@ -63,7 +62,7 @@ public class MedialAxisEditor : Editor
             else
             {
                 //segments = ecm.AddPolygonDynamic(Geometry.ConvertToRect(dynamicObstacle));
-                var newECM = ecm.AddPolygonDynamic(Geometry.ConvertToRect(dynamicObstacle));
+                var newECM = ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
                 ecm = newECM;
                 //Debug.Log("Selected Segment "+segments.Count);
                 //foreach (var e in selectedEdge)
