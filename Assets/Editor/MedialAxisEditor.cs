@@ -61,9 +61,10 @@ public class MedialAxisEditor : Editor
             }
             else
             {
-                //segments = ecm.AddPolygonDynamic(Geometry.ConvertToRect(dynamicObstacle));
+                //selectedEdge = ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
                 var newECM = ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
                 ecm = newECM;
+                //ecm = newECM;
                 //Debug.Log("Selected Segment "+segments.Count);
                 //foreach (var e in selectedEdge)
                 //{
@@ -75,9 +76,9 @@ public class MedialAxisEditor : Editor
 
     void OnSceneGUI()
     {
-        if (ecm == null) return;
-        //Draw input point
 
+        //Draw input point
+        if (ecm == null) return;
         Handles.color = Color.yellow;
         foreach (var inputPoint in ecm.InputPoints.Values)
         {
@@ -102,6 +103,7 @@ public class MedialAxisEditor : Editor
                 DrawEdge(edge);
             }
         }
+        
         //Draw Nearest Obstacle Point
         if (drawNearestObstaclePoints)
         {

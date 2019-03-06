@@ -11,6 +11,8 @@ namespace ExplicitCorridorMap
         public Vector2Int Start{ get; set; }
         public Vector2Int End { get; set; }
         public int ID { get; set; }
+        //Point to obstacle of this segment
+        public Obstacle Parent = null;
         public Segment(Vector2Int start, Vector2Int end)
         {
             Start = start;

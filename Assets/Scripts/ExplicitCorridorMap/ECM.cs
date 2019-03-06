@@ -176,6 +176,13 @@ namespace ExplicitCorridorMap
             s.ID = InputSegments.Count;
             InputSegments[InputSegments.Count] = s;
         }
+        public void AddSegment(List<Segment> segs)
+        {
+            foreach(var s in segs)
+            {
+                AddSegment(s);
+            }
+        }
         public void AddBorder(RectInt rect)
         {
             AddSegment(new Segment(rect.x, rect.y, rect.x, rect.yMax));
@@ -185,22 +192,7 @@ namespace ExplicitCorridorMap
         }
         public void AddObstacle(Obstacle obs)
         {
-            List<Vector2> points = obs.Points;
-            for (int i = 1; i < points.Count; i++) 
-            {
-                AddSegment(
-                    new Segment(
-                        Vector2Int.CeilToInt(points[i-1]),
-                        Vector2Int.CeilToInt(points[i])
-                    )
-                );
-            }
-            AddSegment(
-                    new Segment(
-                        Vector2Int.CeilToInt(points[points.Count - 1]),
-                        Vector2Int.CeilToInt(points[0])
-                    )
-                );
+            AddSegment(obs.Segments);
         }
         public bool InObstacleSpace(Vector2 point)
         {
@@ -212,7 +204,6 @@ namespace ExplicitCorridorMap
         }
         public ECM AddPolygonDynamic(Obstacle newObstacle)
         {
-            //Debug.Log(rect.xMin + " " + rect.yMin + " "+ rect.xMax+" "+ rect.yMax);
             var selectedEdges = RTree.Search(newObstacle.Envelope);
             //enlarge obstacle
             float maxSquareClearance = 0;
@@ -224,20 +215,51 @@ namespace ExplicitCorridorMap
                 if (d2 > maxSquareClearance) maxSquareClearance = d2;
             }
 
-            float maxClearance = Mathf.Sqrt(maxSquareClearance);
-            selectedEdges = RTree.Search(Geometry.ExtendEnvelope(newObstacle.Envelope,maxClearance));
-            var segments = new HashSet<Segment>();
+            var maxClearance = Mathf.Sqrt(maxSquareClearance);
+            var extendedEnvelope = Geometry.ExtendEnvelope(newObstacle.Envelope, maxClearance);
+            //search again with extended envelope
+            selectedEdges = RTree.Search(extendedEnvelope);
+            
+            var obstacleSet = new HashSet<Obstacle>();
+            var segmentSet = new HashSet<Segment>();
             foreach (var e in selectedEdges)
             {
-                segments.Add(RetrieveInputSegment(e));
-                segments.Add(RetrieveInputSegment(e.Twin));
+                var seg = RetrieveInputSegment(e);
+                if(seg.Parent != null)
+                {
+                    obstacleSet.Add(seg.Parent);
+                }
+                else
+                {
+                    segmentSet.Add(seg);
+                }
+                seg = RetrieveInputSegment(e.Twin);
+                if (seg.Parent != null)
+                {
+                    obstacleSet.Add(seg.Parent);
+                }
+                else
+                {
+                    segmentSet.Add(seg);
+                }
             }
-            var newECM = new ECM(new List<Obstacle> { newObstacle });
-            foreach(var seg in segments)
+            var obstacleList = obstacleSet.ToList();
+            var segmentList = segmentSet.ToList();
+            obstacleList.Add(newObstacle);
+            var newECM = new ECM(obstacleList);
+            foreach (var s in segmentList)
             {
-                newECM.AddSegment(seg);
+                newECM.AddSegment(s);
             }
             newECM.Construct();
+            //search with new ECM
+            selectedEdges = newECM.RTree.Search(extendedEnvelope);
+
+            Debug.Log("selected edge");
+            foreach (var e in selectedEdges)
+            {
+                Debug.Log(e);
+            }
             return newECM;
         }
 
@@ -318,9 +340,9 @@ namespace ExplicitCorridorMap
             if (cell.SourceCategory == SourceCategory.SinglePoint)
                 pointNoScaled = InputPoints[cell.SiteID];
             else if (cell.SourceCategory == SourceCategory.SegmentStartPoint)
-                pointNoScaled = InputSegments[RetriveInputSegmentIndex(cell)].Start;
+                pointNoScaled = InputSegments[RetrieveInputSegmentIndex(cell)].Start;
             else if (cell.SourceCategory == SourceCategory.SegmentEndPoint)
-                pointNoScaled = InputSegments[RetriveInputSegmentIndex(cell)].End;
+                pointNoScaled = InputSegments[RetrieveInputSegmentIndex(cell)].End;
             else
                 throw new Exception("This cells does not have a point as input site");
 
@@ -338,10 +360,10 @@ namespace ExplicitCorridorMap
         /// <returns>The input segment site of the cell.</returns>
         public Segment RetrieveInputSegment(Edge cell)
         {
-            return InputSegments[RetriveInputSegmentIndex(cell)];
+            return InputSegments[RetrieveInputSegmentIndex(cell)];
         }
 
-        private int RetriveInputSegmentIndex(Edge cell)
+        private int RetrieveInputSegmentIndex(Edge cell)
         {
             if (cell.SourceCategory == SourceCategory.SinglePoint)
                 throw new Exception("Attempting to retrive an input segment on a cell that was built around a point");
