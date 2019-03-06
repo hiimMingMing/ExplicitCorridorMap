@@ -23,7 +23,7 @@ namespace ExplicitCorridorMap
         public List<Obstacle> Obstacles { get; }
         public RBush<Edge> RTree { get; }
         public RBush<Obstacle> RTreeObstacle { get; }
-
+        public Obstacle Border { get; set; }
         public int CountVertices;
         public int CountEdges;
         public ECMCore(List<Obstacle> obstacles)
@@ -170,8 +170,13 @@ namespace ExplicitCorridorMap
                 AddSegment(s);
             }
         }
-        
-        
+        public void AddBorder(Obstacle border)
+        {
+            border.IsBorder = true;
+            Border = border;
+            AddSegment(border.Segments);
+        }
+
         public bool InObstacleSpace(Vector2 point)
         {
             var result = RTreeObstacle.Search(new Envelope(point.x, point.y, point.x, point.y));

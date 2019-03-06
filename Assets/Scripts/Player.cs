@@ -23,7 +23,7 @@ public class Player : MonoBehaviour
         }
         ecm = new ECM(Obstacles);
         //add border
-        ecm.AddBorder(new RectInt(0, 0, 500, 500));
+        ecm.AddBorder(new Obstacle(new RectInt(0, 0, 500, 500)));
         ecm.Construct();
     }
 

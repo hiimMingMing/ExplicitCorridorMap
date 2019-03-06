@@ -43,7 +43,7 @@ public class MedialAxisEditor : Editor
             }
 
             ecm = new ECM(obstacles);
-            ecm.AddBorder(new RectInt(0, 0, 500, 500));
+            ecm.AddBorder(new Obstacle( new RectInt(0, 0, 500, 500)));
             ecm.Construct();
 
             shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
@@ -87,11 +87,18 @@ public class MedialAxisEditor : Editor
             var position = new Vector3(inputPoint.x, inputPoint.y);
             Handles.DrawSolidDisc(position, Vector3.forward, inputPointRadius);
         }
+        for(int i=0;i< ecm.Obstacles.Count;i++)
+        {
+            var obs = ecm.Obstacles[i];
+            Handles.Label(new Vector2((obs.Envelope.MinX+obs.Envelope.MaxX)/2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), i.ToString());
+        }
         //Draw input segment
         foreach (var inputSegment in ecm.InputSegments.Values)
         {
             var startPoint = new Vector3(inputSegment.Start.x, inputSegment.Start.y);
             var endPoint = new Vector3(inputSegment.End.x, inputSegment.End.y);
+            Handles.Label((startPoint+endPoint)/2, inputSegment.ID.ToString());
+
             Handles.DrawSolidDisc(startPoint, Vector3.forward, inputPointRadius);
             Handles.DrawSolidDisc(endPoint, Vector3.forward, inputPointRadius);
             Handles.DrawLine(startPoint, endPoint);

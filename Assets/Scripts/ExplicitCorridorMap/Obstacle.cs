@@ -13,6 +13,7 @@ namespace ExplicitCorridorMap
         public List<Segment> Segments = new List<Segment>();
         private Envelope _envelope;
         public ref readonly Envelope Envelope => ref _envelope;
+        public bool IsBorder = false;
         public Obstacle(List<Vector2> points)
         {
             Points = points;
