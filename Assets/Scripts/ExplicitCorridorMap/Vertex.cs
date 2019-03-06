@@ -16,6 +16,7 @@ namespace ExplicitCorridorMap
         public List<Edge> Edges { get; set; }
 
         public bool IsInside { get; set; }
+        public Vertex OldVertex { get; set; }
         public float[] KDKey { get; }
         public Vertex(int id,float x, float y)
         {
@@ -23,6 +24,7 @@ namespace ExplicitCorridorMap
             Position = new Vector2(x,y);
             Edges = new List<Edge>();
             IsInside = false;
+            OldVertex = null;
             KDKey  = new float[] { X, Y };
         }
         

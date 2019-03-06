@@ -71,22 +71,15 @@ namespace ExplicitCorridorMap
         }
         public void AddEdge(Edge e)
         {
-            bool contains = ContainsVertex(e.Start, out Vertex vertex);
-            if (contains)
-            {
-                vertex.Edges.Add(e);
-            }
-            else
-            {
-                AddVertex(e.Start);
-            }
             e.ID = CountEdges++;
             Edges[e.ID] = e;
+            RTree.Insert(e);
         }
         public void AddVertex(Vertex v)
         {
             v.ID = CountVertices++;
             Vertices[v.ID] = v;
+            KdTree.Add(v.KDKey, v);
         }
         public void AddObstacle(Obstacle obs)
         {
@@ -94,23 +87,18 @@ namespace ExplicitCorridorMap
             Obstacles.Add(obs);
             RTreeObstacle.Insert(obs);
         }
-        public bool ContainsVertex(Vertex v, out Vertex vertex)
+        public void CheckOldVertex(Vertex v)
         {
             var node = KdTree.GetNearestNeighbours(v.KDKey, 1);
             if (node[0].Value.Position == v.Position)
             {
                 //update this vertex
-                vertex = node[0].Value;
-                return true;
-            }
-            else
-            {
-                vertex = null;
-                return false;
+                v.OldVertex = node[0].Value;
             }
         }
         public void AddPolygonDynamic(Obstacle newObstacle)
         {
+
             var selectedEdges = RTree.Search(newObstacle.Envelope);
             //enlarge obstacle
             float maxSquareClearance = 0;
@@ -141,6 +129,7 @@ namespace ExplicitCorridorMap
             }
             var obstacleList = obstacleSet.ToList();
             obstacleList.Add(newObstacle);
+            this.AddObstacle(newObstacle);
             var segmentList = segmentSet.ToList();
 
             //contruct new ECM
@@ -148,22 +137,53 @@ namespace ExplicitCorridorMap
             foreach (var s in segmentList) newECM.AddSegment(s);
             newECM.Construct();
             var newEdges = newECM.RTree.Search(extendedEnvelope);
-            this.AddObstacle(newObstacle);
-            foreach(var e in newEdges)
+            foreach(var v in newECM.Vertices.Values)
             {
+                CheckOldVertex(v);
+            }
+            var newVertices = new HashSet<Vertex>();
+            foreach (var e in newEdges)
+            {
+                UpdateEdge(e, newVertices);
+                UpdateEdge(e.Twin, newVertices);
                 e.SiteID = newECM.RetrieveInputSegment(e).ID;
                 e.Twin.SiteID = newECM.RetrieveInputSegment(e.Twin).ID;
+            }
+            foreach (var v in newVertices)
+            {
+                AddVertex(v);
+            }
+            foreach (var e in newEdges)
+            {
                 AddEdge(e);
                 AddEdge(e.Twin);
             }
-            
+
+            foreach (var v in Vertices.Values)
+            {
+                Debug.Log(v.ID + "   " + string.Join(",", v.Edges));
+            }
             //Debug.Log("selected edge");
             //foreach (var e in selectedEdges)
             //{
             //    Debug.Log(e);
             //}
         }
-
+        public void UpdateEdge(Edge e, HashSet<Vertex> newVertices)
+        {
+            if (e.Start.OldVertex != null)
+            {
+                e.Start = e.Start.OldVertex;
+                e.Start.Edges.Add(e);
+            }
+            else newVertices.Add(e.Start);
+            if (e.End.OldVertex != null)
+            {
+                e.End = e.End.OldVertex;
+                e.End.Edges.Add(e);
+            }
+            else newVertices.Add(e.End);
+        } 
 
         /// <summary>
         /// Generate a polyline representing a curved edge.

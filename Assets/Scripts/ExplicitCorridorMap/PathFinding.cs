@@ -12,7 +12,8 @@ namespace ExplicitCorridorMap
         {
             var startEdge = ecm.GetNearestEdge(startPosition);
             var endEdge = ecm.GetNearestEdge(endPosition);
-
+            //Debug.Log("S" + startEdge);
+            //Debug.Log("E" + endEdge);
             var edgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition);
 
             //foreach (var edge in edgeList)
