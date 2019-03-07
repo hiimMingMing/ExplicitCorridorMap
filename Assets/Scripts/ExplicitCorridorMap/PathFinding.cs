@@ -146,128 +146,63 @@ namespace ExplicitCorridorMap
             portalRight = portalsRight[0];
             AddToPath(path,portalApex);
 
-            var left1 = portalsLeft[1];
-            var right1 = portalsRight[1];
-            //heuristic
-            if (HeuristicCost(portalApex, left1) > HeuristicCost(portalApex, right1))
+            for (int i = 1; i < portalsLeft.Count; i++)
             {
-                for (int i = 1; i < portalsLeft.Count; i++)
+                var left = portalsLeft[i];
+                var right = portalsRight[i];
+                // Update left vertex.
+                if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
                 {
-                    var left = portalsLeft[i];
-                    var right = portalsRight[i];
-                    // Update left vertex.
-                    if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
+                    if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
                     {
-                        if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
-                        {
-                            // Tighten the funnel.
-                            portalLeft = left;
-                            leftIndex = i;
-                        }
-                        else
-                        {
-                            // Left over right, insert right to path and restart scan from portal right point.
-                            AddToPath(path,portalRight);
-                            // Make current right the new apex.
-                            portalApex = portalRight;
-                            apexIndex = rightIndex;
-                            // Reset portal
-                            portalLeft = portalApex;
-                            portalRight = portalApex;
-                            leftIndex = apexIndex;
-                            rightIndex = apexIndex;
-                            // Restart scan
-                            i = apexIndex;
-                            continue;
-                        }
-                    }//if
-                    // Update right vertex.
-                    if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
-                    {
-                        if (portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
-                        {
-                            // Tighten the funnel.
-                            portalRight = right;
-                            rightIndex = i;
-                        }
-                        else
-                        {
-                            AddToPath(path,portalLeft);
-                            // Make current left the new apex.
-                            portalApex = portalLeft;
-                            apexIndex = leftIndex;
-                            // Reset portal
-                            portalLeft = portalApex;
-                            portalRight = portalApex;
-                            leftIndex = apexIndex;
-                            rightIndex = apexIndex;
-                            // Restart scan
-                            i = apexIndex;
-                            continue;
-                        }
+                        // Tighten the funnel.
+                        portalLeft = left;
+                        leftIndex = i;
                     }
-                    
-                }//for
-            }
-            else
-            {
-                for (int i = 1; i < portalsLeft.Count; i++)
+                    else
+                    {
+                        // Left over right, insert right to path and restart scan from portal right point.
+                        AddToPath(path, portalRight);
+                        // Make current right the new apex.
+                        portalApex = portalRight;
+                        apexIndex = rightIndex;
+                        // Reset portal
+                        portalLeft = portalApex;
+                        portalRight = portalApex;
+                        leftIndex = apexIndex;
+                        rightIndex = apexIndex;
+                        // Restart scan
+                        i = apexIndex;
+                        continue;
+                    }
+                }//if
+                 // Update right vertex.
+                if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
                 {
-                    var left = portalsLeft[i];
-                    var right = portalsRight[i];
-                    // Update right vertex.
-                    if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
+                    if (portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
                     {
-                        if (portalApex.Equals(portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
-                        {
-                            // Tighten the funnel.
-                            portalRight = right;
-                            rightIndex = i;
-                        }
-                        else
-                        {
-                            AddToPath(path,portalLeft);
-                            // Make current left the new apex.
-                            portalApex = portalLeft;
-                            apexIndex = leftIndex;
-                            // Reset portal
-                            portalLeft = portalApex;
-                            portalRight = portalApex;
-                            leftIndex = apexIndex;
-                            rightIndex = apexIndex;
-                            // Restart scan
-                            i = apexIndex;
-                            continue;
-                        }
+                        // Tighten the funnel.
+                        portalRight = right;
+                        rightIndex = i;
                     }
-                    // Update left vertex.
-                    if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
+                    else
                     {
-                        if (portalApex.Equals(portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
-                        {
-                            // Tighten the funnel.
-                            portalLeft = left;
-                            leftIndex = i;
-                        }
-                        else
-                        {
-                            // Left over right, insert right to path and restart scan from portal right point.
-                            AddToPath(path,portalRight);
-                            // Make current right the new apex.
-                            portalApex = portalRight;
-                            apexIndex = rightIndex;
-                            // Reset portal
-                            portalLeft = portalApex;
-                            portalRight = portalApex;
-                            leftIndex = apexIndex;
-                            rightIndex = apexIndex;
-                            // Restart scan
-                            i = apexIndex;
-                            continue;
-                        }
-                    }//if
-                }//for
-            }
+                        AddToPath(path, portalLeft);
+                        // Make current left the new apex.
+                        portalApex = portalLeft;
+                        apexIndex = leftIndex;
+                        // Reset portal
+                        portalLeft = portalApex;
+                        portalRight = portalApex;
+                        leftIndex = apexIndex;
+                        rightIndex = apexIndex;
+                        // Restart scan
+                        i = apexIndex;
+                        continue;
+                    }
+                }
+
+            }//for
             AddToPath(path,portalsLeft[portalsLeft.Count - 1]);
             return path;
         }//funtion
