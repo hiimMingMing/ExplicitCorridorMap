@@ -113,8 +113,8 @@ namespace ExplicitCorridorMap
             float maxSquareClearance = 0;
             foreach (var e in selectedEdges)
             {
-                var d1 = PathFinding.HeuristicCost(e.Start.Position, e.LeftObstacleOfStart);
-                var d2 = PathFinding.HeuristicCost(e.End.Position, e.LeftObstacleOfEnd);
+                var d1 = (e.Start.Position - e.LeftObstacleOfStart).sqrMagnitude;
+                var d2 = (e.End.Position - e.LeftObstacleOfEnd).sqrMagnitude;
                 if (d1 > maxSquareClearance) maxSquareClearance = d1;
                 if (d2 > maxSquareClearance) maxSquareClearance = d2;
             }

@@ -81,18 +81,14 @@ public class MedialAxisEditor : Editor
 
         //Draw input point
         if (ecm == null) return;
-        Handles.color = Color.yellow;
-        foreach (var inputPoint in ecm.InputPoints.Values)
-        {
-            var position = new Vector3(inputPoint.x, inputPoint.y);
-            Handles.DrawSolidDisc(position, Vector3.forward, inputPointRadius);
-        }
+
         for(int i=0;i< ecm.Obstacles.Count;i++)
         {
             var obs = ecm.Obstacles[i];
             Handles.Label(new Vector2((obs.Envelope.MinX+obs.Envelope.MaxX)/2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), i.ToString());
         }
         //Draw input segment
+        Handles.color = Color.yellow;
         foreach (var inputSegment in ecm.InputSegments.Values)
         {
             var startPoint = new Vector3(inputSegment.Start.x, inputSegment.Start.y);

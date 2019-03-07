@@ -108,8 +108,7 @@ namespace ExplicitCorridorMap
         {
             var dx = start.x - goal.x;
             var dy = start.y - goal.y;
-            var h = dx * dx + dy * dy;
-            return h;
+            return Mathf.Sqrt(dx * dx + dy * dy);
         }
         private static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, float> fScore)
         {
