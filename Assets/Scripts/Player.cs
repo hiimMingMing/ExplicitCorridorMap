@@ -21,9 +21,7 @@ public class Player : MonoBehaviour
         {
             Obstacles.Add(new Obstacle( Geometry.ConvertToRect(cube)));
         }
-        ecm = new ECM(Obstacles);
-        //add border
-        ecm.AddBorder(new Obstacle(new RectInt(0, 0, 500, 500)));
+        ecm = new ECM(Obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
         ecm.Construct();
     }
 

@@ -16,11 +16,11 @@ namespace ExplicitCorridorMap
     {
         private KdTree<float, Vertex> KdTree { get; }
 
-        public ECM(List<Obstacle> obstacles) : base(obstacles)
+        public ECM(List<Obstacle> obstacles, Obstacle border) : base(obstacles, border)
         {
             KdTree = new KdTree<float, Vertex>(2, new FloatMath());
         }
-        public override void ConstructTree()
+        protected override void ConstructTree()
         {
             base.ConstructTree();
             //contruct kdtree
@@ -45,17 +45,26 @@ namespace ExplicitCorridorMap
             return nodes[0].Value;
         }
 
-        public override void AddSegment(Segment s)
+        protected override void AddSegment(Segment s)
         {
             s.ID = CountSegments++;
             InputSegments[s.ID] = s;
         }
-        public override void AddObstacle(Obstacle obs)
+        protected override void AddObstacle(Obstacle obs)
         {
             AddSegment(obs.Segments);
             obs.ID = CountObstacles++;
             Obstacles[obs.ID] = obs;
             RTreeObstacle.Insert(obs);
+        }
+        private void DeleteObstacle(Obstacle obs)
+        {
+            foreach (var seg in obs.Segments)
+            {
+                InputSegments.Remove(seg.ID);
+            }
+            Obstacles.Remove(obs.ID); 
+            RTreeObstacle.Delete(obs);
         }
         private void DeleteEdge(Edge e)
         {
@@ -102,14 +111,13 @@ namespace ExplicitCorridorMap
             if (e.End.OldVertex != null)
             {
                 e.End = e.End.OldVertex;
-                e.End.Edges.Add(e);
             }
             else newVertices.Add(e.End);
         }
-        public void AddPolygonDynamic(Obstacle newObstacle)
+        //Deleted all affected edges and return Obstacle Set with extended envelope for later use
+        private HashSet<Obstacle> DeleteAffectedEdge(Obstacle obstacle, out Envelope extendedEnvelope)
         {
-
-            var selectedEdges = RTree.Search(newObstacle.Envelope);
+            var selectedEdges = RTree.Search(obstacle.Envelope);
             //enlarge obstacle
             float maxSquareClearance = 0;
             foreach (var e in selectedEdges)
@@ -120,7 +128,7 @@ namespace ExplicitCorridorMap
                 if (d2 > maxSquareClearance) maxSquareClearance = d2;
             }
             var maxClearance = Mathf.Sqrt(maxSquareClearance);
-            var extendedEnvelope = Geometry.ExtendEnvelope(newObstacle.Envelope, maxClearance);
+            extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance);
 
             //search again with extended envelope, find all obstacle and segment involves
             selectedEdges = RTree.Search(extendedEnvelope);
@@ -134,13 +142,12 @@ namespace ExplicitCorridorMap
                 DeleteEdge(e);
                 DeleteEdge(e.Twin);
             }
-
-            var obstacleList = obstacleSet.ToList();
-            obstacleList.Add(newObstacle);
-            this.AddObstacle(newObstacle);
+            return obstacleSet;
+        }
+        private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope extendedEnvelope)
+        {
             //contruct new ECM
-            var newECM = new ECMCore(obstacleList);
-            newECM.AddBorder(this.Border);
+            var newECM = new ECMCore(obstacleList, this.Border);
             newECM.Construct();
             var newEdges = newECM.RTree.Search(extendedEnvelope);
             //update edge infos
@@ -167,7 +174,30 @@ namespace ExplicitCorridorMap
                 AddEdge(e.Twin);
             }
         }
-        
+        public void AddPolygonDynamic(Obstacle newObstacle)
+        {
+            Envelope extendedEnvelope;
+            var obstacleList = DeleteAffectedEdge(newObstacle, out extendedEnvelope).ToList();
+
+            obstacleList.Add(newObstacle);
+            this.AddObstacle(newObstacle);
+
+            ComputeNewECMAndMerge(obstacleList, extendedEnvelope);
+        }
+        public void DeletePolygonDynamic(int obstacleID)
+        {
+            if (!Obstacles.ContainsKey(obstacleID)) throw new KeyNotFoundException("Obstacle ID not exists");
+            var obstacle = Obstacles[obstacleID];
+
+            Envelope extendedEnvelope;
+            var obstacleSet = DeleteAffectedEdge(obstacle, out extendedEnvelope);
+
+            obstacleSet.Remove(obstacle);
+            this.DeleteObstacle(obstacle);
+
+            ComputeNewECMAndMerge(obstacleSet.ToList(), extendedEnvelope);
+        }
+
 
         /// <summary>
         /// Generate a polyline representing a curved edge.

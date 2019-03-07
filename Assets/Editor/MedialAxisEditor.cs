@@ -43,16 +43,11 @@ public class MedialAxisEditor : Editor
                 obstacles.Add(new Obstacle(Geometry.ConvertToRect(cube)));
             }
 
-            ecm = new ECM(obstacles);
-            ecm.AddBorder(new Obstacle( new RectInt(0, 0, 500, 500)));
+            ecm = new ECM(obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
             ecm.Construct();
 
             shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
-            //foreach(var v in shortestPath)
-            //{
-            //    Debug.Log(v);
-            //}
-            //Debug.Log("NumPortal: "+portalsLeft.Count);
+
         }
         if (GUILayout.Button("Add Obstacle"))
         {
@@ -62,22 +57,25 @@ public class MedialAxisEditor : Editor
             }
             else
             {
-                //selectedEdge = ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
                 ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
                 shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft, out portalsRight);
-
-                //ecm = newECM;
-                //ecm = newECM;
-                //Debug.Log("Selected Segment "+segments.Count);
-                //foreach (var e in selectedEdge)
-                //{
-                //    Debug.Log(e);
-                //}
             }
         }
 
-        ObstacleToDelete = EditorGUILayout.IntField("ObsToDelete", ObstacleToDelete);
-}
+        ObstacleToDelete = EditorGUILayout.IntField("ObstacleToDelete", ObstacleToDelete);
+        if (GUILayout.Button("Delete Obstacle"))
+        {
+            if (ecm == null)
+            {
+                Debug.Log("Ecm must be baked");
+            }
+            else
+            {
+                ecm.DeletePolygonDynamic(ObstacleToDelete);
+                shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft, out portalsRight);
+            }
+        }
+    }
 
     void OnSceneGUI()
     {
@@ -85,9 +83,8 @@ public class MedialAxisEditor : Editor
         //Draw input point
         if (ecm == null) return;
 
-        for(int i=0;i< ecm.Obstacles.Count;i++)
+        foreach(var obs in ecm.Obstacles.Values)
         {
-            var obs = ecm.Obstacles[i];
             Handles.Label(new Vector2((obs.Envelope.MinX+obs.Envelope.MaxX)/2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), obs.ID.ToString());
         }
         //Draw input segment

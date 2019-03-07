@@ -23,11 +23,11 @@ namespace ExplicitCorridorMap
         public RBush<Edge> RTree { get; }
         public RBush<Obstacle> RTreeObstacle { get; }
         public Obstacle Border { get; set; }
-        public int CountVertices;
-        public int CountEdges;
-        public int CountSegments;
-        public int CountObstacles;
-        public ECMCore(List<Obstacle> obstacles)
+        protected int CountVertices;
+        protected int CountEdges;
+        protected int CountSegments;
+        protected int CountObstacles;
+        public ECMCore(List<Obstacle> obstacles, Obstacle border)
         {
             CountSegments = 0;
             CountObstacles = 0;
@@ -42,7 +42,7 @@ namespace ExplicitCorridorMap
             {
                 AddObstacle(obs);
             }
-
+            AddBorder(border);
         }
         public void Construct()
         {
@@ -91,7 +91,7 @@ namespace ExplicitCorridorMap
             }
             ConstructTree();
         }
-        public virtual void ConstructTree()
+        protected virtual void ConstructTree()
         {
             //remove used vertex
             foreach (var vertex in Vertices.Values.ToList())
@@ -110,7 +110,7 @@ namespace ExplicitCorridorMap
 
         }
 
-        public void ComputeObstaclePoint(Edge edge)
+        protected void ComputeObstaclePoint(Edge edge)
         {
             var twinEdge = edge.Twin;
 
@@ -132,7 +132,7 @@ namespace ExplicitCorridorMap
             edge.ComputeEnvelope();
             twinEdge.SetEnvelope(edge.Envelope);
         }
-        private void ComputeObstaclePoint(Edge cell, Edge edge, out Vector2 start, out Vector2 end)
+        protected void ComputeObstaclePoint(Edge cell, Edge edge, out Vector2 start, out Vector2 end)
         {
             var startVertex = edge.Start;
             var endVertex = edge.End;
@@ -154,31 +154,31 @@ namespace ExplicitCorridorMap
                 end = nearestPointOfEndVertex;
             }
         }
-        public virtual void AddSegment(Segment s)
+        protected virtual void AddSegment(Segment s)
         {
             InputSegments[CountSegments++] = s;
         }
-        public virtual void AddObstacle(Obstacle obs)
+        protected virtual void AddObstacle(Obstacle obs)
         {
             AddSegment(obs.Segments);
             Obstacles[CountObstacles++] = obs;
             RTreeObstacle.Insert(obs);
         }
-        public void AddSegment(List<Segment> segs)
+        protected void AddSegment(List<Segment> segs)
         {
             foreach (var s in segs)
             {
                 AddSegment(s);
             }
         }
-        public void AddBorder(Obstacle border)
+        protected void AddBorder(Obstacle border)
         {
             border.IsBorder = true;
             Border = border;
             AddSegment(border.Segments);
         }
        
-        public bool InObstacleSpace(Vector2 point)
+        protected bool InObstacleSpace(Vector2 point)
         {
             var result = RTreeObstacle.Search(new Envelope(point.x, point.y, point.x, point.y));
             foreach (var o in result)
@@ -187,8 +187,8 @@ namespace ExplicitCorridorMap
             }
             return false;
         }
-        
-        
+
+
         /// <summary>
         ///  Retrieve the input point site asssociated with a cell. The point returned is the one
         ///  sent to boost. If a scale factor was used, then the output coordinates should be divided by the
@@ -224,7 +224,7 @@ namespace ExplicitCorridorMap
             return InputSegments[RetrieveInputSegmentIndex(cell)];
         }
 
-        private int RetrieveInputSegmentIndex(Edge cell)
+        public int RetrieveInputSegmentIndex(Edge cell)
         {
             if (cell.SourceCategory == SourceCategory.SinglePoint)
                 throw new Exception("Attempting to retrive an input segment on a cell that was built around a point");
