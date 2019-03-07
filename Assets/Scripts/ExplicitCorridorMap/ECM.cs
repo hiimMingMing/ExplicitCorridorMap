@@ -47,10 +47,16 @@ namespace ExplicitCorridorMap
 
         public override void AddSegment(Segment s)
         {
-            s.ID = InputSegments.Count;
-            InputSegments[InputSegments.Count] = s;
+            s.ID = CountSegments++;
+            InputSegments[s.ID] = s;
         }
-        
+        public override void AddObstacle(Obstacle obs)
+        {
+            AddSegment(obs.Segments);
+            obs.ID = CountObstacles++;
+            Obstacles[obs.ID] = obs;
+            RTreeObstacle.Insert(obs);
+        }
         private void DeleteEdge(Edge e)
         {
             e.Start.Edges.Remove(e);
@@ -75,12 +81,7 @@ namespace ExplicitCorridorMap
             Vertices[v.ID] = v;
             KdTree.Add(v.KDKey, v);
         }
-        public void AddObstacle(Obstacle obs)
-        {
-            AddSegment(obs.Segments);
-            Obstacles.Add(obs);
-            RTreeObstacle.Insert(obs);
-        }
+        
         private void CheckOldVertex(Vertex v)
         {
             var node = KdTree.GetNearestNeighbours(v.KDKey, 1);
@@ -133,15 +134,16 @@ namespace ExplicitCorridorMap
                 DeleteEdge(e);
                 DeleteEdge(e.Twin);
             }
+
             var obstacleList = obstacleSet.ToList();
             obstacleList.Add(newObstacle);
             this.AddObstacle(newObstacle);
-
             //contruct new ECM
             var newECM = new ECMCore(obstacleList);
             newECM.AddBorder(this.Border);
             newECM.Construct();
             var newEdges = newECM.RTree.Search(extendedEnvelope);
+            //update edge infos
             foreach (var v in newECM.Vertices.Values)
             {
                 CheckOldVertex(v);
@@ -154,6 +156,7 @@ namespace ExplicitCorridorMap
                 e.SiteID = newECM.RetrieveInputSegment(e).ID;
                 e.Twin.SiteID = newECM.RetrieveInputSegment(e.Twin).ID;
             }
+            //add new edge and vertex to old ecm
             foreach (var v in newVertices)
             {
                 AddVertex(v);
@@ -163,12 +166,6 @@ namespace ExplicitCorridorMap
                 AddEdge(e);
                 AddEdge(e.Twin);
             }
-
-            //Debug.Log("selected edge");
-            //foreach (var e in selectedEdges)
-            //{
-            //    Debug.Log(e);
-            //}
         }
         
 

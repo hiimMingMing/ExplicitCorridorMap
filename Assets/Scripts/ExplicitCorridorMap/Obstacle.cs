@@ -9,6 +9,7 @@ namespace ExplicitCorridorMap
 {
     public class Obstacle : ISpatialData
     {
+        public int ID { get; set; }
         public List<Vector2> Points = new List<Vector2>();
         public List<Segment> Segments = new List<Segment>();
         private Envelope _envelope;

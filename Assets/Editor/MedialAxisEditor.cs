@@ -20,6 +20,7 @@ public class MedialAxisEditor : Editor
     List<Vector2> portalsRight;
     List<Edge> selectedEdge;
     List<Segment> segments = new List<Segment>();
+    int ObstacleToDelete = 0;
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -74,6 +75,8 @@ public class MedialAxisEditor : Editor
                 //}
             }
         }
+
+        ObstacleToDelete = EditorGUILayout.IntField("ObsToDelete", ObstacleToDelete);
 }
 
     void OnSceneGUI()
@@ -85,7 +88,7 @@ public class MedialAxisEditor : Editor
         for(int i=0;i< ecm.Obstacles.Count;i++)
         {
             var obs = ecm.Obstacles[i];
-            Handles.Label(new Vector2((obs.Envelope.MinX+obs.Envelope.MaxX)/2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), i.ToString());
+            Handles.Label(new Vector2((obs.Envelope.MinX+obs.Envelope.MaxX)/2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), obs.ID.ToString());
         }
         //Draw input segment
         Handles.color = Color.yellow;

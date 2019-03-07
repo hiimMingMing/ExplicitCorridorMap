@@ -15,40 +15,40 @@ namespace ExplicitCorridorMap
 {
     public class ECMCore
     {
-        public Dictionary<int, Vector2Int> InputPoints { get; private set; }
         public Dictionary<int, Segment> InputSegments { get; private set; }
         public Dictionary<int, Vertex> Vertices { get; }
         public Dictionary<int, Edge> Edges { get; }
 
-        public List<Obstacle> Obstacles { get; }
+        public Dictionary<int,Obstacle> Obstacles { get; }
         public RBush<Edge> RTree { get; }
         public RBush<Obstacle> RTreeObstacle { get; }
         public Obstacle Border { get; set; }
         public int CountVertices;
         public int CountEdges;
+        public int CountSegments;
+        public int CountObstacles;
         public ECMCore(List<Obstacle> obstacles)
         {
-            InputPoints = new Dictionary<int, Vector2Int>();
+            CountSegments = 0;
+            CountObstacles = 0;
             InputSegments = new Dictionary<int, Segment>();
             Vertices = new Dictionary<int, Vertex>();
             Edges = new Dictionary<int, Edge>();
             RTree = new RBush<Edge>(3);
 
-            Obstacles = obstacles;
+            Obstacles = new Dictionary<int, Obstacle>();
             RTreeObstacle = new RBush<Obstacle>();
             foreach (var obs in obstacles)
             {
-                AddSegment(obs.Segments);
+                AddObstacle(obs);
             }
-            RTreeObstacle.BulkLoad(Obstacles);
 
         }
         public void Construct()
         {
             using (BoostVoronoi bv = new BoostVoronoi())
             {
-                foreach (var point in InputPoints.Values)
-                    bv.AddPoint(point.x, point.y);
+
                 foreach (var segment in InputSegments.Values)
                     bv.AddSegment(segment.Start.x, segment.Start.y, segment.End.x, segment.End.y);
                 bv.Construct();
@@ -154,14 +154,15 @@ namespace ExplicitCorridorMap
                 end = nearestPointOfEndVertex;
             }
         }
-        public void AddPoint(int x, int y)
-        {
-            Vector2Int p = new Vector2Int(x, y);
-            InputPoints[InputPoints.Count] = p;
-        }
         public virtual void AddSegment(Segment s)
         {
-            InputSegments[InputSegments.Count] = s;
+            InputSegments[CountSegments++] = s;
+        }
+        public virtual void AddObstacle(Obstacle obs)
+        {
+            AddSegment(obs.Segments);
+            Obstacles[CountObstacles++] = obs;
+            RTreeObstacle.Insert(obs);
         }
         public void AddSegment(List<Segment> segs)
         {
@@ -176,7 +177,7 @@ namespace ExplicitCorridorMap
             Border = border;
             AddSegment(border.Segments);
         }
-
+       
         public bool InObstacleSpace(Vector2 point)
         {
             var result = RTreeObstacle.Search(new Envelope(point.x, point.y, point.x, point.y));
@@ -199,16 +200,14 @@ namespace ExplicitCorridorMap
         public Vector2Int RetrieveInputPoint(Edge cell)
         {
             Vector2Int pointNoScaled;
-            if (cell.SourceCategory == SourceCategory.SinglePoint)
-                pointNoScaled = InputPoints[cell.SiteID];
-            else if (cell.SourceCategory == SourceCategory.SegmentStartPoint)
+            if (cell.SourceCategory == SourceCategory.SegmentStartPoint)
                 pointNoScaled = InputSegments[RetrieveInputSegmentIndex(cell)].Start;
             else if (cell.SourceCategory == SourceCategory.SegmentEndPoint)
                 pointNoScaled = InputSegments[RetrieveInputSegmentIndex(cell)].End;
             else
                 throw new Exception("This cells does not have a point as input site");
 
-            return new Vector2Int(pointNoScaled.x, pointNoScaled.y);
+            return pointNoScaled;
         }
 
 
@@ -229,7 +228,7 @@ namespace ExplicitCorridorMap
         {
             if (cell.SourceCategory == SourceCategory.SinglePoint)
                 throw new Exception("Attempting to retrive an input segment on a cell that was built around a point");
-            return cell.SiteID - InputPoints.Count;
+            return cell.SiteID;
         }
 
     }
