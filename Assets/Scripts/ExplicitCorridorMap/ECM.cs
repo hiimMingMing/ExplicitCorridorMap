@@ -63,14 +63,14 @@ namespace ExplicitCorridorMap
             {
                 InputSegments.Remove(seg.ID);
             }
-            Obstacles.Remove(obs.ID); 
+            Obstacles.Remove(obs.ID);
             RTreeObstacle.Delete(obs);
         }
         private void DeleteEdge(Edge e)
         {
             e.Start.Edges.Remove(e);
             if (e.Start.Edges.Count == 0) DeleteVertex(e.Start);
-            RTree.Delete(e);
+            if (!e.IsTwin) RTree.Delete(e);
             Edges.Remove(e.ID);
         }
         private void DeleteVertex(Vertex v)
@@ -82,7 +82,7 @@ namespace ExplicitCorridorMap
         {
             e.ID = CountEdges++;
             Edges[e.ID] = e;
-            RTree.Insert(e);
+            if (!e.IsTwin) RTree.Insert(e);
         }
         private void AddVertex(Vertex v)
         {
@@ -90,37 +90,23 @@ namespace ExplicitCorridorMap
             Vertices[v.ID] = v;
             KdTree.Add(v.KDKey, v);
         }
-        
+
         private void CheckOldVertex(Vertex v)
         {
             var node = KdTree.GetNearestNeighbours(v.KDKey, 1);
             if (node[0].Value.Position == v.Position)
             {
-                //update this vertex
+                node[0].Value.IsNew = true;
                 v.OldVertex = node[0].Value;
             }
         }
-        private void UpdateEdge(Edge e, HashSet<Vertex> newVertices)
+        
+        private void GetRelatedObstacles(Obstacle obstacle, out HashSet<Obstacle> obstacleSet, out Envelope extendedEnvelope)
         {
-            if (e.Start.OldVertex != null)
-            {
-                e.Start = e.Start.OldVertex;
-                e.Start.Edges.Add(e);
-            }
-            else newVertices.Add(e.Start);
-            if (e.End.OldVertex != null)
-            {
-                e.End = e.End.OldVertex;
-            }
-            else newVertices.Add(e.End);
-        }
-        //Deleted all affected edges and return Obstacle Set with extended envelope for later use
-        private HashSet<Obstacle> DeleteAffectedEdge(Obstacle obstacle, out Envelope extendedEnvelope)
-        {
-            var selectedEdges = RTree.Search(obstacle.Envelope);
+            var initialSelectedEdges = RTree.Search(obstacle.Envelope);
             //enlarge obstacle
             float maxSquareClearance = 0;
-            foreach (var e in selectedEdges)
+            foreach (var e in initialSelectedEdges)
             {
                 var d1 = (e.Start.Position - e.LeftObstacleOfStart).sqrMagnitude;
                 var d2 = (e.End.Position - e.LeftObstacleOfEnd).sqrMagnitude;
@@ -128,69 +114,131 @@ namespace ExplicitCorridorMap
                 if (d2 > maxSquareClearance) maxSquareClearance = d2;
             }
             var maxClearance = Mathf.Sqrt(maxSquareClearance);
-            extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance);
 
             //search again with extended envelope, find all obstacle and segment involves
-            selectedEdges = RTree.Search(extendedEnvelope);
-            var obstacleSet = new HashSet<Obstacle>();
-            foreach (var e in selectedEdges)
+            extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance);
+            var oldEdges = RTree.Search(extendedEnvelope).ToList();
+            obstacleSet = new HashSet<Obstacle>();
+            foreach (var e in oldEdges)
             {
                 var obs = RetrieveInputSegment(e).Parent;
                 if (obs != null && !obs.IsBorder) obstacleSet.Add(obs);
                 obs = RetrieveInputSegment(e.Twin).Parent;
                 if (obs != null && !obs.IsBorder) obstacleSet.Add(obs);
-                DeleteEdge(e);
-                DeleteEdge(e.Twin);
+                //DeleteEdge(e);
+                //DeleteEdge(e.Twin);
             }
-            return obstacleSet;
         }
-        private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope extendedEnvelope)
+        private void GetEdgesToReplace( Vertex startVertex,bool isOld,  HashSet<Vertex> vertices, HashSet<Edge> edges)
         {
+            if (!startVertex.IsOldOrNew(isOld))
+            {
+                if(!vertices.Contains(startVertex)) vertices.Add(startVertex);
+                foreach(var e in startVertex.Edges)
+                {
+                    if (!edges.Contains(e))
+                    {
+                        edges.Add(e);
+                        GetEdgesToReplace( e.End,isOld,  vertices, edges);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var e in startVertex.Edges)
+                {
+                    if (!edges.Contains(e) && vertices.Contains(e.End))
+                    {
+                        edges.Add(e);
+                        GetEdgesToReplace( e.End,isOld,  vertices, edges);
+                    }
+                }
+            }
+        }
+        private void GetEdgesToReplace(ECMCore ecm, Envelope envelope, bool isOld,out HashSet<Vertex> vertices,out HashSet<Edge> edges)
+        {
+            vertices = new HashSet<Vertex>();
+            edges = new HashSet<Edge>();
+
+            var nearestEdge = ecm.RTree.Search(envelope);
+            Vertex startVertex = null;
+            foreach(var e in nearestEdge)
+            {
+                if (!e.Start.IsOldOrNew(isOld)) {
+                    startVertex = e.Start;
+                    break;
+                }
+                if (!e.End.IsOldOrNew(isOld))
+                {
+                    startVertex = e.End;
+                    break;
+                }
+            }
+            if (startVertex == null) throw new Exception("Cannot find Start Vertex");
+            GetEdgesToReplace( startVertex,isOld,  vertices, edges);
+        }
+        private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope envelope)
+        {
+            foreach(var v in Vertices.Values) { v.IsNew = false; }
             //contruct new ECM
             var newECM = new ECMCore(obstacleList, this.Border);
             newECM.Construct();
-            var newEdges = newECM.RTree.Search(extendedEnvelope);
             //update edge infos
             foreach (var v in newECM.Vertices.Values)
             {
                 CheckOldVertex(v);
             }
-            var newVertices = new HashSet<Vertex>();
-            foreach (var e in newEdges)
+
+            GetEdgesToReplace(newECM, envelope, true, out HashSet<Vertex> newVertices, out HashSet<Edge> newEdges);
+            GetEdgesToReplace(this, envelope, false, out HashSet<Vertex> oldVertices, out HashSet<Edge> oldEdges);
+
+            foreach (var e in oldEdges)
             {
-                UpdateEdge(e, newVertices);
-                UpdateEdge(e.Twin, newVertices);
-                e.SiteID = newECM.RetrieveInputSegment(e).ID;
-                e.Twin.SiteID = newECM.RetrieveInputSegment(e.Twin).ID;
+                //Debug.Log(e);
+                DeleteEdge(e);
             }
-            //add new edge and vertex to old ecm
+            ////add new edge and vertex to old ecm
             foreach (var v in newVertices)
             {
+                //Debug.Log("B" + v);
                 AddVertex(v);
+                //Debug.Log("A" + v);
             }
             foreach (var e in newEdges)
             {
+                //Debug.Log(e);
+                if (e.Start.IsOld)
+                {
+                    e.Start = e.Start.OldVertex;
+                    e.Start.Edges.Add(e);
+                }
+                if (e.End.IsOld) e.End = e.End.OldVertex;
+                e.SiteID = newECM.RetrieveInputSegment(e).ID;
                 AddEdge(e);
-                AddEdge(e.Twin);
             }
+            //Debug.Log("Start=====================================");
+            //foreach (var v in Vertices.Values)
+            //{
+            //    Debug.Log(v + "   " + string.Join(",", v.Edges));
+            //}
         }
         public void AddPolygonDynamic(Obstacle newObstacle)
         {
-            Envelope extendedEnvelope;
-            var obstacleList = DeleteAffectedEdge(newObstacle, out extendedEnvelope).ToList();
+            GetRelatedObstacles(newObstacle, out HashSet<Obstacle> obstacleSet, out Envelope extendedEnvelope);
 
-            obstacleList.Add(newObstacle);
+            obstacleSet.Add(newObstacle);
             this.AddObstacle(newObstacle);
 
-            ComputeNewECMAndMerge(obstacleList, extendedEnvelope);
+            ComputeNewECMAndMerge(obstacleSet.ToList(), newObstacle.Envelope);
+
+
         }
         public void DeletePolygonDynamic(int obstacleID)
         {
             if (!Obstacles.ContainsKey(obstacleID)) throw new KeyNotFoundException("Obstacle ID not exists");
             var obstacle = Obstacles[obstacleID];
 
-            Envelope extendedEnvelope;
-            var obstacleSet = DeleteAffectedEdge(obstacle, out extendedEnvelope);
+            GetRelatedObstacles(obstacle, out HashSet<Obstacle> obstacleSet, out Envelope extendedEnvelope);
 
             obstacleSet.Remove(obstacle);
             this.DeleteObstacle(obstacle);
@@ -208,7 +256,7 @@ namespace ExplicitCorridorMap
         public List<Vector2> SampleCurvedEdge(Edge edge, float max_distance)
         {
             //test
-            //return new List<Vector2>() { edge.Start.Position, edge.End.Position };
+            return new List<Vector2>() { edge.Start.Position, edge.End.Position };
 
             Edge pointCell = null;
             Edge lineCell = null;

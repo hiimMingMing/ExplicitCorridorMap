@@ -17,7 +17,8 @@ namespace ExplicitCorridorMap
         public Vertex End { get; set; }
         public Edge Twin { get; set; }
         public bool IsLinear { get; set; }
-     
+        public bool IsTwin { get; set; } //use to remove twin while traverse edge list
+
         public Vector2 LeftObstacleOfStart { get; set; }
         public Vector2 RightObstacleOfStart { get; set; }
         public Vector2 LeftObstacleOfEnd { get; set; }
@@ -41,6 +42,7 @@ namespace ExplicitCorridorMap
             ContainsPoint = c.ContainsPoint;
             ContainsSegment = c.ContainsSegment;
             SourceCategory = c.SourceCategory;
+            IsTwin = false;
         }
         public override string ToString()
         {
@@ -57,7 +59,7 @@ namespace ExplicitCorridorMap
                     LeftObstacleOfEnd,
                     LeftObstacleOfStart
                 };
-            
+
         }
         public void ComputeEnvelope()
         {

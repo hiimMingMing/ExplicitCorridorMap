@@ -10,15 +10,17 @@ namespace ExplicitCorridorMap
 {
     public class Geometry
     {
-        public static bool PolygonContainsPoint(List<Vector2> polyPoints  , Vector2 p )  { 
-           var j = polyPoints.Count - 1;
-           var inside = false; 
-           for (int i = 0; i<polyPoints.Count; j = i++) { 
-              if (((polyPoints[i].y <= p.y && p.y<polyPoints[j].y) || (polyPoints[j].y <= p.y && p.y<polyPoints[i].y)) && 
-                 (p.x<(polyPoints[j].x - polyPoints[i].x) * (p.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x)) 
-                 inside = !inside; 
-           } 
-           return inside; 
+        public static bool PolygonContainsPoint(List<Vector2> polyPoints, Vector2 p)
+        {
+            var j = polyPoints.Count - 1;
+            var inside = false;
+            for (int i = 0; i < polyPoints.Count; j = i++)
+            {
+                if (((polyPoints[i].y <= p.y && p.y < polyPoints[j].y) || (polyPoints[j].y <= p.y && p.y < polyPoints[i].y)) &&
+                   (p.x < (polyPoints[j].x - polyPoints[i].x) * (p.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x))
+                    inside = !inside;
+            }
+            return inside;
         }
         public static bool PolygonContainsPoint(Vector2 polyPoint1, Vector2 polyPoint2, Vector2 polyPoint3, Vector2 p)
         {
@@ -50,6 +52,10 @@ namespace ExplicitCorridorMap
         public static Envelope ExtendEnvelope(Envelope e, float d)
         {
             return new Envelope(e.MinX - d, e.MinY - d, e.MaxX + d, e.MaxY + d);
+        }
+        public static bool EnvelopeContainsPoint(Envelope e, Vector2 p)
+        {
+            return p.x >= e.MinX && p.x <= e.MaxX && p.y >= e.MinY && p.y <= e.MaxY;
         }
     }
 }

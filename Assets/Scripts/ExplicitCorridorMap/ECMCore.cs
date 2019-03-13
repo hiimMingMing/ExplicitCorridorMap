@@ -82,6 +82,7 @@ namespace ExplicitCorridorMap
 
                     ecmEdge.Twin = ecmEdgeTwin;
                     ecmEdgeTwin.Twin = ecmEdge;
+                    ecmEdgeTwin.IsTwin = true;
                     start.Edges.Add(ecmEdge);
                     end.Edges.Add(ecmEdgeTwin);
                     Edges.Add(i, ecmEdge);
@@ -101,7 +102,7 @@ namespace ExplicitCorridorMap
             //Compute nearest obstacle point and contruct RTree
             foreach (var edge in Edges.Values)
             {
-                if (edge.ID % 2 == 0)
+                if (!edge.IsTwin)
                 {
                     ComputeObstaclePoint(edge);
                     RTree.Insert(edge);
