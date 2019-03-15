@@ -155,7 +155,7 @@ namespace ExplicitCorridorMap
                 }
             }
         }
-        private void GetEdgesToReplace(ECMCore ecm, Envelope envelope, bool isOld,out HashSet<Vertex> vertices,out HashSet<Edge> edges)
+        private void GetEdgesToReplace(ECMCore ecm, Envelope envelope,Envelope extentedEnvelope, bool isOld,out HashSet<Vertex> vertices,out HashSet<Edge> edges)
         {
             vertices = new HashSet<Vertex>();
             edges = new HashSet<Edge>();
@@ -165,19 +165,26 @@ namespace ExplicitCorridorMap
             foreach(var e in nearestEdge)
             {
                 if (!e.Start.IsOldOrNew(isOld)) {
-                    startVertex = e.Start;
-                    break;
+                    if (Geometry.EnvelopeContainsPoint(extentedEnvelope, e.Start.Position))
+                    {
+                        startVertex = e.Start;
+                        break;
+                    }
                 }
                 if (!e.End.IsOldOrNew(isOld))
                 {
-                    startVertex = e.End;
-                    break;
+                    if (Geometry.EnvelopeContainsPoint(extentedEnvelope, e.End.Position))
+                    {
+                        startVertex = e.End;
+                        break;
+                    }
                 }
             }
             if (startVertex == null) throw new Exception("Cannot find Start Vertex");
+            //Debug.Log(startVertex + " " + startVertex.Position);
             GetEdgesToReplace( startVertex,isOld,  vertices, edges);
         }
-        private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope envelope)
+        private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope envelope, Envelope extentedEnvelope)
         {
             foreach(var v in Vertices.Values) { v.IsNew = false; }
             //contruct new ECM
@@ -189,8 +196,8 @@ namespace ExplicitCorridorMap
                 CheckOldVertex(v);
             }
 
-            GetEdgesToReplace(newECM, envelope, true, out HashSet<Vertex> newVertices, out HashSet<Edge> newEdges);
-            GetEdgesToReplace(this, envelope, false, out HashSet<Vertex> oldVertices, out HashSet<Edge> oldEdges);
+            GetEdgesToReplace(newECM, envelope, extentedEnvelope, true, out HashSet<Vertex> newVertices, out HashSet<Edge> newEdges);
+            GetEdgesToReplace(this, envelope, extentedEnvelope, false, out HashSet<Vertex> oldVertices, out HashSet<Edge> oldEdges);
 
             foreach (var e in oldEdges)
             {
@@ -204,9 +211,9 @@ namespace ExplicitCorridorMap
                 AddVertex(v);
                 //Debug.Log("A" + v);
             }
+            //Debug.Log("MERGEEEEEEE");
             foreach (var e in newEdges)
             {
-                //Debug.Log(e);
                 if (e.Start.IsOld)
                 {
                     e.Start = e.Start.OldVertex;
@@ -215,6 +222,7 @@ namespace ExplicitCorridorMap
                 if (e.End.IsOld) e.End = e.End.OldVertex;
                 e.SiteID = newECM.RetrieveInputSegment(e).ID;
                 AddEdge(e);
+                //Debug.Log(e);
             }
             //Debug.Log("Start=====================================");
             //foreach (var v in Vertices.Values)
@@ -229,7 +237,7 @@ namespace ExplicitCorridorMap
             obstacleSet.Add(newObstacle);
             this.AddObstacle(newObstacle);
 
-            ComputeNewECMAndMerge(obstacleSet.ToList(), newObstacle.Envelope);
+            ComputeNewECMAndMerge(obstacleSet.ToList(), newObstacle.Envelope, extendedEnvelope);
 
 
         }
@@ -243,7 +251,7 @@ namespace ExplicitCorridorMap
             obstacleSet.Remove(obstacle);
             this.DeleteObstacle(obstacle);
 
-            ComputeNewECMAndMerge(obstacleSet.ToList(), extendedEnvelope);
+            ComputeNewECMAndMerge(obstacleSet.ToList(), extendedEnvelope, extendedEnvelope);
         }
 
 
@@ -256,7 +264,7 @@ namespace ExplicitCorridorMap
         public List<Vector2> SampleCurvedEdge(Edge edge, float max_distance)
         {
             //test
-            return new List<Vector2>() { edge.Start.Position, edge.End.Position };
+            //return new List<Vector2>() { edge.Start.Position, edge.End.Position };
 
             Edge pointCell = null;
             Edge lineCell = null;
