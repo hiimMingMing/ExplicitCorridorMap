@@ -8,21 +8,16 @@ public class Player : MonoBehaviour
     public float speed = 200;
     public Transform cubes;
     // Start is called before the first frame update
-    private List<Obstacle> Obstacles = new List<Obstacle>();
+   
     private ECM ecm;
     Vector2 targetWayPoint;
     public int currentWayPoint = 0;
-
+    public float radius;
     private List<Vector2> wayPointList = new List<Vector2>();
 
     void Start()
     {
-        foreach (Transform cube in cubes)
-        {
-            Obstacles.Add(new Obstacle( Geometry.ConvertToRect(cube)));
-        }
-        ecm = new ECM(Obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
-        ecm.Construct();
+        ecm = GameMainManager.Instance.getECM();
     }
 
     // Update is called once per frame
