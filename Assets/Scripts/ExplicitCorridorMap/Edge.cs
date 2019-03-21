@@ -23,15 +23,17 @@ namespace ExplicitCorridorMap
         public Vector2 RightObstacleOfStart { get; set; }
         public Vector2 LeftObstacleOfEnd { get; set; }
         public Vector2 RightObstacleOfEnd { get; set; }
+        public float ClearanceOfStart { get; set; }
+        public float ClearanceOfEnd { get; set; }
+        public List<EdgeProperty> EdgeProperties { get; set; }//use to agent radius
+        public float Length { get; set; }
 
         public int SiteID { get; set; }
         public bool ContainsPoint { get; set; }
         public bool ContainsSegment { get; set; }
         public SourceCategory SourceCategory { get; set; }
 
-        public float Length { get; set; }
-        public float ClearanceOfStart { get; set; }
-        public float ClearanceOfEnd { get; set; }
+        
 
         private Envelope _envelope;
         public ref readonly Envelope Envelope => ref _envelope;
@@ -47,7 +49,7 @@ namespace ExplicitCorridorMap
             ContainsSegment = c.ContainsSegment;
             SourceCategory = c.SourceCategory;
             IsTwin = false;
-
+            EdgeProperties = new List<EdgeProperty>();
             Length = (start.Position -  end.Position).magnitude;
         }
         public override string ToString()
@@ -77,5 +79,41 @@ namespace ExplicitCorridorMap
         {
             _envelope = e;
         }
+        public void AddProperty(float radius)
+        {
+            var p = new EdgeProperty();
+            if(radius >= ClearanceOfStart)
+            {
+                p.LeftObstacleOfStart = p.RightObstacleOfStart = Start.Position;
+                p.ClearanceOfStart = 0.0f;
+            }
+            else
+            {
+                p.LeftObstacleOfStart = LeftObstacleOfStart + radius * (Start.Position - LeftObstacleOfStart).normalized;
+                p.RightObstacleOfStart = RightObstacleOfStart + radius * (Start.Position - RightObstacleOfStart).normalized;
+                p.ClearanceOfStart = ClearanceOfStart - radius;
+            }
+            if (radius >= ClearanceOfEnd)
+            {
+                p.LeftObstacleOfEnd = p.RightObstacleOfEnd = End.Position;
+                p.ClearanceOfEnd = 0.0f;
+            }
+            else
+            {
+                p.LeftObstacleOfEnd = LeftObstacleOfEnd + radius * (End.Position - LeftObstacleOfEnd).normalized;
+                p.RightObstacleOfEnd = RightObstacleOfEnd + radius * (End.Position - RightObstacleOfEnd).normalized;
+                p.ClearanceOfEnd = ClearanceOfEnd - radius;
+            }
+            EdgeProperties.Add(p);
+        }
+    }
+    public class EdgeProperty
+    {
+        public Vector2 LeftObstacleOfStart { get; set; }
+        public Vector2 RightObstacleOfStart { get; set; }
+        public Vector2 LeftObstacleOfEnd { get; set; }
+        public Vector2 RightObstacleOfEnd { get; set; }
+        public float ClearanceOfStart { get; set; }
+        public float ClearanceOfEnd { get; set; }
     }
 }

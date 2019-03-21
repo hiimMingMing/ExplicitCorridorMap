@@ -23,6 +23,7 @@ public class Player : MonoBehaviour
         }
         ecm = new ECM(Obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
         ecm.Construct();
+        ecm.AddAgentRadius(10);
     }
 
     // Update is called once per frame

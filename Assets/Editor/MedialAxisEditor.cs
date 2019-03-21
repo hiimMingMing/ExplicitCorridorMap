@@ -14,6 +14,8 @@ public class MedialAxisEditor : Editor
     ECM ecm;
     float inputPointRadius = 6f;
     float outputPointRadius = 3f;
+    float agentRadius = 10f;
+
     bool drawNearestObstaclePoints = false;
     List<Vector2> shortestPath = null;
     List<Vector2> portalsLeft;
@@ -33,6 +35,7 @@ public class MedialAxisEditor : Editor
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
         drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", drawNearestObstaclePoints);
+        agentRadius = EditorGUILayout.FloatField("Agent Radius", agentRadius);
 
         if (GUILayout.Button("Bake"))
         {
@@ -45,7 +48,7 @@ public class MedialAxisEditor : Editor
 
             ecm = new ECM(obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
             ecm.Construct();
-
+            ecm.AddAgentRadius(agentRadius);
             shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
 
         }
@@ -114,7 +117,7 @@ public class MedialAxisEditor : Editor
         {
             foreach (var edge in ecm.Edges.Values)
             {
-                DrawObstaclePoint(edge);
+                DrawObstaclePointProperty(edge,0);
             }
         }
         if ( shortestPath != null)
@@ -157,6 +160,28 @@ public class MedialAxisEditor : Editor
         begin = endVertex;
         obsLeft = edge.LeftObstacleOfEnd;
         obsRight = edge.RightObstacleOfEnd;
+        Handles.color = Color.green;
+        Handles.DrawLine(begin, obsLeft);
+        Handles.color = Color.cyan;
+        Handles.DrawLine(begin, obsRight);
+
+    }
+    void DrawObstaclePointProperty(Edge edge, int index)
+    {
+        var startVertex = edge.Start.Position;
+        var endVertex = edge.End.Position;
+        var begin = startVertex;
+        var obsLeft = edge.EdgeProperties[index].LeftObstacleOfStart;
+        var obsRight = edge.EdgeProperties[index].RightObstacleOfStart;
+
+        Handles.color = Color.green;
+        Handles.DrawLine(begin, obsLeft);
+        Handles.color = Color.cyan;
+        Handles.DrawLine(begin, obsRight);
+
+        begin = endVertex;
+        obsLeft = edge.EdgeProperties[index].LeftObstacleOfEnd;
+        obsRight = edge.EdgeProperties[index].RightObstacleOfEnd;
         Handles.color = Color.green;
         Handles.DrawLine(begin, obsLeft);
         Handles.color = Color.cyan;
