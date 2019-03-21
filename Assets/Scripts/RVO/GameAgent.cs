@@ -49,7 +49,7 @@ public class GameAgent : MonoBehaviour
                 finalTarget = deafaultWayPoint;
             }
             //wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(), transform.position, finalTarget);
-            wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(), transform.position,finalTarget);
+            wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(),0, transform.position,finalTarget);
             Debug.Log("Path found");
             foreach (var v in wayPointList)
             {

@@ -143,7 +143,7 @@ Transform:
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &35098614
 SphereCollider:
@@ -236,7 +236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 200
-  cubes: {fileID: 1976709927}
+  ecmMap: {fileID: 0}
   currentWayPoint: 0
 --- !u!135 &269251433
 SphereCollider:
@@ -308,7 +308,7 @@ Transform:
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &269695120
 GameObject:
@@ -672,7 +672,7 @@ Transform:
   m_LocalScale: {x: 47.988796, y: 81.429214, z: 10.907049}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &785661849
 GameObject:
@@ -867,7 +867,7 @@ GameObject:
   - component: {fileID: 1141242256}
   - component: {fileID: 1141242255}
   m_Layer: 0
-  m_Name: ECM
+  m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -887,7 +887,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StartPoint: {fileID: 2117351242}
   EndPoint: {fileID: 35098613}
-  Cubes: {fileID: 1976709927}
+  Obstacles: {fileID: 1976709927}
   DynamicObstacle: {fileID: 733367013}
 --- !u!4 &1141242256
 Transform:
@@ -901,7 +901,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1173506427
 GameObject:
@@ -983,7 +983,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1911917540
 GameObject:
@@ -1177,7 +1177,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1976709927}
   m_Layer: 0
-  m_Name: Cubes
+  m_Name: Obstacles
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1202,7 +1202,7 @@ Transform:
   - {fileID: 637246702}
   - {fileID: 1911917541}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2117351241
 GameObject:
@@ -1235,7 +1235,7 @@ Transform:
   m_LocalScale: {x: 10.244054, y: 10.244054, z: 10.244054}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &2117351243
 SphereCollider:
@@ -1362,5 +1362,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}

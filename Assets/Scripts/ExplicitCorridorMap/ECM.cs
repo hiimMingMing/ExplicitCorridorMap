@@ -15,10 +15,11 @@ namespace ExplicitCorridorMap
     public class ECM : ECMCore
     {
         private KdTree<float, Vertex> KdTree { get; }
-        private float AgentRadius;
+        private List<float> AgentRadius;
         public ECM(List<Obstacle> obstacles, Obstacle border) : base(obstacles, border)
         {
             KdTree = new KdTree<float, Vertex>(2, new FloatMath());
+            AgentRadius = new List<float>();
         }
         protected override void ConstructTree()
         {
@@ -31,7 +32,7 @@ namespace ExplicitCorridorMap
         }
         public void AddAgentRadius(float radius)
         {
-            AgentRadius = radius;
+            AgentRadius.Add(radius);
             foreach (var  e in Edges.Values)
             {
                 e.AddProperty(radius);
@@ -214,7 +215,10 @@ namespace ExplicitCorridorMap
                 }
                 if (e.End.IsOld) e.End = e.End.OldVertex;
                 e.SiteID = newECM.RetrieveInputSegment(e).ID;
-                e.AddProperty(AgentRadius);
+                foreach(var r in AgentRadius)
+                {
+                    e.AddProperty(r);
+                }
                 AddEdge(e);
             }
         }
