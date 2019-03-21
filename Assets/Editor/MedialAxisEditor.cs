@@ -14,7 +14,7 @@ public class MedialAxisEditor : Editor
     ECM ecm;
     float inputPointRadius = 6f;
     float outputPointRadius = 3f;
-    bool drawNearestObstaclePoints = true;
+    bool drawNearestObstaclePoints = false;
     List<Vector2> shortestPath = null;
     List<Vector2> portalsLeft;
     List<Vector2> portalsRight;

@@ -29,6 +29,10 @@ namespace ExplicitCorridorMap
         public bool ContainsSegment { get; set; }
         public SourceCategory SourceCategory { get; set; }
 
+        public float Length { get; set; }
+        public float ClearanceOfStart { get; set; }
+        public float ClearanceOfEnd { get; set; }
+
         private Envelope _envelope;
         public ref readonly Envelope Envelope => ref _envelope;
         public Edge(Vertex start, Vertex end, VoronoiEdge e, VoronoiCell c)
@@ -43,6 +47,8 @@ namespace ExplicitCorridorMap
             ContainsSegment = c.ContainsSegment;
             SourceCategory = c.SourceCategory;
             IsTwin = false;
+
+            Length = (start.Position -  end.Position).magnitude;
         }
         public override string ToString()
         {
@@ -59,6 +65,8 @@ namespace ExplicitCorridorMap
                     LeftObstacleOfEnd,
                     LeftObstacleOfStart
                 };
+            ClearanceOfStart = (Start.Position - RightObstacleOfStart).magnitude;
+            ClearanceOfEnd = (End.Position - RightObstacleOfEnd).magnitude;
 
         }
         public void ComputeEnvelope()

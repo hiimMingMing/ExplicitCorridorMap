@@ -78,7 +78,7 @@ namespace ExplicitCorridorMap
                 {
                     var neigborVertex = edge.End;
                     if (closeSet.Contains(neigborVertex)) continue;
-                    var tentativeGScore = gScore[current] + HeuristicCost(current, neigborVertex);
+                    var tentativeGScore = gScore[current] + edge.Length;
                     if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
                     else if (tentativeGScore >= gScore[neigborVertex]) continue;
                     cameFrom[neigborVertex] = current;
@@ -100,15 +100,13 @@ namespace ExplicitCorridorMap
             }
             return totalPath;
         }
-        public static float HeuristicCost(Vertex start, Vertex goal)
+        public static float HeuristicCost(Vertex start, Vertex end)
         {
-            return HeuristicCost(start.Position, goal.Position);
+            return HeuristicCost(start.Position, end.Position);
         }
-        public static float HeuristicCost(Vector2 start, Vector2 goal)
+        public static float HeuristicCost(Vector2 start, Vector2 end)
         {
-            var dx = start.x - goal.x;
-            var dy = start.y - goal.y;
-            return Mathf.Sqrt(dx * dx + dy * dy);
+            return (start - end).magnitude;
         }
         private static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, float> fScore)
         {
