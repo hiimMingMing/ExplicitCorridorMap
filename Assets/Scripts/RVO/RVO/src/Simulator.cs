@@ -101,7 +101,7 @@ namespace RVO
                 doneEvent_.Set();
             }
         }
-
+        
         internal IDictionary<int, int> agentNo2indexDict_;
         internal IDictionary<int, int> index2agentNoDict_;
         internal IList<Agent> agents_;
@@ -127,6 +127,10 @@ namespace RVO
             }
         }
 
+
+        internal  IList<Agent> GetListAgents() {
+            return agents_;
+        }
         public void delAgent(int agentNo)
         {
             agents_[agentNo2indexDict_[agentNo]].needDelete_ = true;

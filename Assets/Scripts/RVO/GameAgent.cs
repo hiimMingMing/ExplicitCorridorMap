@@ -10,16 +10,18 @@ public class GameAgent : MonoBehaviour
 {
     
     [HideInInspector] public int sid = -1;
-    
+    ExplicitCorridorMap.ECM ecm;
     /** Random number generator. */
     private Random m_random = new Random();
     UnityEngine.Vector2 targetWayPoint;
     public UnityEngine.Vector2 deafaultWayPoint = UnityEngine.Vector2.zero;
     public int currentWayPoint = 0;
-    private List<UnityEngine.Vector2> wayPointList = new List<UnityEngine.Vector2>();
+    [SerializeField]
+    public List<UnityEngine.Vector2> wayPointList = new List<UnityEngine.Vector2>();
+    Vector3 finalTarget;
     // Use this for initialization
     void Start() {
-        
+        ecm = GameMainManager.Instance.getECM();
     }
    
     
@@ -43,19 +45,28 @@ public class GameAgent : MonoBehaviour
       
         if (Input.GetMouseButtonDown(1))
         {
-            var finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (deafaultWayPoint != UnityEngine.Vector2.zero)
             {
                 finalTarget = deafaultWayPoint;
             }
+            ecm.AddAgentRadius(Simulator.Instance.getAgentRadius(sid));
             //wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(), transform.position, finalTarget);
-            wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(), transform.position,finalTarget);
-            Debug.Log("Path found");
-            foreach (var v in wayPointList)
-            {
-                Debug.Log(v);
-            }
+            wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, transform.position,finalTarget);
+            
+          
             currentWayPoint = 1;
+        }
+        //check if destination stuck
+        
+        if (currentWayPoint == wayPointList.Count ) {
+            Debug.Log("check");
+            if (checkDestinationStuck()) {
+                // immediately stop
+                currentWayPoint = wayPointList.Count;
+                Simulator.Instance.setAgentVelocity(sid, new Vector2(0, 0));
+
+            }
         }
         if (currentWayPoint < wayPointList.Count)
         {
@@ -91,7 +102,7 @@ public class GameAgent : MonoBehaviour
                                                          new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)));
 
             
-            if (RVOMath.compareVector2WithinDist(new Vector2(transform.position.x, transform.position.y), new Vector2(targetWayPoint.x, targetWayPoint.y), 15.0f))
+            if (RVOMath.compareVector2WithinDist(new Vector2(transform.position.x, transform.position.y), new Vector2(targetWayPoint.x, targetWayPoint.y), Simulator.Instance.getAgentRadius(sid)))
             {
                 Debug.Log("Continue to next waypoint!");
                 currentWayPoint++;
@@ -102,4 +113,27 @@ public class GameAgent : MonoBehaviour
 
         
     }
+
+
+    bool checkDestinationStuck() {
+        float distanceToDesSqr = (transform.position.Vector3ToVector2() - finalTarget.Vector3ToVector2()).sqrMagnitude;
+        float sumAgentS = 0;
+        IList<Agent> listOfAgent = Simulator.Instance.GetListAgents();
+        for (int i = 0; i < listOfAgent.Count; i++)
+        {
+            if ((listOfAgent[i].position_.RVOVector2ToVector2() - finalTarget.Vector3ToVector2()).sqrMagnitude < distanceToDesSqr)
+            {
+                sumAgentS += listOfAgent[i].radius_ * listOfAgent[i].radius_ * 3.14f;
+            }
+        }
+
+        if (sumAgentS >= 3.14f * distanceToDesSqr * 0.3f) {
+            Debug.Log("Stuck");
+            return true;
+        }
+           
+        return false;
+
+    }
+
 }

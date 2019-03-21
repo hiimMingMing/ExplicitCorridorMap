@@ -31,7 +31,7 @@
  */
 
 using System;
-
+using UnityEngine;
 namespace RVO
 {
     /**
@@ -196,5 +196,7 @@ namespace RVO
         {
             return (float)Math.Sqrt(scalar);
         }
+
+    
     }
 }

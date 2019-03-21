@@ -666,7 +666,7 @@ namespace RVO
                     }
                 }
             }
-            Debug.Log(RVOMath.abs(result));
+         
             return lines.Count;
         }
 
