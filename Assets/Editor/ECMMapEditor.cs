@@ -1,20 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEditor;
-using System;
-using RBush;
 using ExplicitCorridorMap;
 
-[CustomEditor(typeof(MedialAxis))]
-public class MedialAxisEditor : Editor
+[CustomEditor(typeof(ECMMap))]
+public class ECMMapEditor : Editor
 {
 
     ECM ecm;
-    float inputPointRadius = 6f;
+    float inputPointRadius = 3f;
     float outputPointRadius = 3f;
-    float agentRadius = 10f;
 
     bool drawNearestObstaclePoints = false;
     List<Vector2> shortestPath = null;
@@ -26,29 +22,33 @@ public class MedialAxisEditor : Editor
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
-        var ma = (MedialAxis)target;
-        var startPosition = ma.StartPoint.position;
-        var endPosition = ma.EndPoint.position;
-        var cubes = ma.Cubes;
-        var dynamicObstacle = ma.DynamicObstacle;
+        var map = (ECMMap)target;
+        var startPosition = map.StartPoint.position;
+        var endPosition = map.EndPoint.position;
+        var obsTransform = map.Obstacles;
+        var dynamicObstacle = map.DynamicObstacle;
+        var agentRadius = map.AgentRadiusList;
         //OpenVoronoi openVoronoi = target as OpenVoronoi;
         inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
         outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
         drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", drawNearestObstaclePoints);
-        agentRadius = EditorGUILayout.FloatField("Agent Radius", agentRadius);
 
         if (GUILayout.Button("Bake"))
         {
             //populate segment
             var obstacles = new List<Obstacle>();
-            foreach (Transform cube in cubes)
+            foreach (Transform obs in obsTransform)
             {
-                obstacles.Add(new Obstacle(Geometry.ConvertToRect(cube)));
+                obstacles.Add(new Obstacle(Geometry.ConvertToRect(obs)));
             }
 
             ecm = new ECM(obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
             ecm.Construct();
-            ecm.AddAgentRadius(agentRadius);
+            foreach(var r in agentRadius)
+            {
+                ecm.AddAgentRadius(r);
+
+            }
             shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
 
         }

@@ -52,9 +52,18 @@ public class GameAgent : MonoBehaviour
             }
             ecm.AddAgentRadius(Simulator.Instance.getAgentRadius(sid));
             //wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(), transform.position, finalTarget);
+<<<<<<< HEAD
             wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, transform.position,finalTarget);
             
           
+=======
+            wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(),0, transform.position,finalTarget);
+            Debug.Log("Path found");
+            foreach (var v in wayPointList)
+            {
+                Debug.Log(v);
+            }
+>>>>>>> ea5af72176c62a568b9841a4c9c41a1337bf3a1e
             currentWayPoint = 1;
         }
         //check if destination stuck
