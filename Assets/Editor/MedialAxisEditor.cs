@@ -190,22 +190,15 @@ public class MedialAxisEditor : Editor
         }
         else
         {
-            try
-            {
-                List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(edge, 10);
-                var curve = discretizedEdge.ConvertAll(x => (Vector3)x).ToArray();
-                Handles.color = Color.blue;
-                Handles.DrawPolyLine(curve);
+            List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(edge, 10);
+            var curve = discretizedEdge.ConvertAll(x => (Vector3)x).ToArray();
+            Handles.color = Color.blue;
+            Handles.DrawPolyLine(curve);
 
-                Handles.color = Color.magenta;
-                DrawVertex(start);
-                Handles.color = Color.red;
-                DrawVertex(end);
-            }
-            catch(Exception e)
-            {
-                Debug.Log("E " + edge);
-            }
+            Handles.color = Color.magenta;
+            DrawVertex(start);
+            Handles.color = Color.red;
+            DrawVertex(end);
         }
     }
     
