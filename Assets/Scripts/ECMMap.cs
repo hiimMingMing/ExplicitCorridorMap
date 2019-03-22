@@ -23,10 +23,7 @@ public class ECMMap : MonoBehaviour
         }
         ecm = new ECM(obsList, new Obstacle(new RectInt(0, 0, 500, 500)));
         ecm.Construct();
-        foreach(var r in AgentRadiusList)
-        {
-            ecm.AddAgentRadius(r);
-        }
+        ecm.AddAgentRadius(AgentRadiusList);
     }
 
     // Update is called once per frame

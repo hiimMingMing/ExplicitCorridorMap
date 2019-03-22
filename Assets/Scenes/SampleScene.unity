@@ -236,8 +236,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 200
-  ecmMap: {fileID: 0}
-  currentWayPoint: 0
+  ecmMap: {fileID: 1141242255}
+  RadiusIndex: 1
+  Radius: 20
 --- !u!135 &269251433
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -889,6 +890,10 @@ MonoBehaviour:
   EndPoint: {fileID: 35098613}
   Obstacles: {fileID: 1976709927}
   DynamicObstacle: {fileID: 733367013}
+  AgentRadiusList:
+  - 10
+  - 20
+  - 30
 --- !u!4 &1141242256
 Transform:
   m_ObjectHideFlags: 0
