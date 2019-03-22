@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
     public ECMMap ecmMap;
     [HideInInspector]
     public int RadiusIndex = 0;
+    [HideInInspector]
     public float Radius;
     Vector2 targetWayPoint;
     private int currentWayPoint = 0;

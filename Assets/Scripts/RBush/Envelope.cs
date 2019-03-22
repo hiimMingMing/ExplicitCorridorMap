@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace RBush
 {
@@ -19,8 +20,14 @@ namespace RBush
 			this.MaxX = maxX;
 			this.MaxY = maxY;
 		}
-
-		public Envelope Extend(in Envelope other) =>
+        public Envelope(Vector2 p)
+        {
+            this.MinX = p.x;
+            this.MinY = p.y;
+            this.MaxX = p.x;
+            this.MaxY = p.y;
+        }
+        public Envelope Extend(in Envelope other) =>
 			new Envelope(
 				minX: Math.Min(this.MinX, other.MinX),
 				minY: Math.Min(this.MinY, other.MinY),
@@ -78,5 +85,9 @@ namespace RBush
 				minY: float.PositiveInfinity,
 				maxX: float.NegativeInfinity,
 				maxY: float.NegativeInfinity);
-	}
+        public override string ToString()
+        {
+            return string.Format("[MinX:{0}, MinY:{1}, MaxX:{2}, MaxY:{3}]", MinX, MinY,MaxX,MaxY);
+        }
+    }
 }

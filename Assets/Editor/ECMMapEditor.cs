@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using ExplicitCorridorMap;
+using RBush;
 
 [CustomEditor(typeof(ECMMap))]
 public class ECMMapEditor : Editor
