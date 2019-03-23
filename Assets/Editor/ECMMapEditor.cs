@@ -10,8 +10,8 @@ public class ECMMapEditor : Editor
 {
 
     ECM ecm;
-    float inputPointRadius = 3f;
-    float outputPointRadius = 3f;
+    float inputPointRadius = 2f;
+    float outputPointRadius = 2f;
 
     bool drawNearestObstaclePoints = false;
     List<Vector2> shortestPath = null;
@@ -20,6 +20,7 @@ public class ECMMapEditor : Editor
     List<Edge> selectedEdge;
     List<Segment> segments = new List<Segment>();
     int ObstacleToDelete = 0;
+    List<List<Vector2>> curveEdges = new List<List<Vector2>>();
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
@@ -45,7 +46,8 @@ public class ECMMapEditor : Editor
 
             ecm = new ECM(obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
             ecm.Construct();
-            foreach(var r in agentRadius)
+            ComputeCurveEdge();
+            foreach (var r in agentRadius)
             {
                 ecm.AddAgentRadius(r);
 
@@ -62,6 +64,7 @@ public class ECMMapEditor : Editor
             else
             {
                 ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
+                ComputeCurveEdge();
                 shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft, out portalsRight);
             }
         }
@@ -76,6 +79,7 @@ public class ECMMapEditor : Editor
             else
             {
                 ecm.DeletePolygonDynamic(ObstacleToDelete);
+                ComputeCurveEdge();
                 shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft, out portalsRight);
             }
         }
@@ -107,25 +111,29 @@ public class ECMMapEditor : Editor
         //Draw ouput edge and vertex
         foreach (var vertex in ecm.Vertices.Values)
         {
+            DrawVertex(vertex);
             foreach (var edge in vertex.Edges)
             {
                 DrawEdge(edge);
             }
         }
-        
+        Handles.color = Color.blue;
+        foreach(var l in curveEdges)
+        {
+            DrawPolyLine(l);
+        }
         //Draw Nearest Obstacle Point
         if (drawNearestObstaclePoints)
         {
             foreach (var edge in ecm.Edges.Values)
             {
-                DrawObstaclePointProperty(edge,0);
+                DrawObstaclePoint(edge);
             }
         }
         if ( shortestPath != null)
         {
-            var path = shortestPath.ConvertAll(x => new Vector3(x.x, x.y)).ToArray();
             Handles.color = Color.red;
-            Handles.DrawPolyLine(path);
+            DrawPolyLine(shortestPath);
         }
         if(portalsLeft != null)
         {
@@ -191,44 +199,40 @@ public class ECMMapEditor : Editor
     }
     void DrawVertex(Vertex vertex)
     {
+        Handles.color = Color.red;
         var position = new Vector3((float)vertex.X, (float)vertex.Y);
         Handles.DrawSolidDisc(position, Vector3.forward, outputPointRadius);
         Handles.Label(position,vertex.ID+"");
     }
     void DrawEdge(Edge edge)
     {
-        //if (!outputSegment.IsFinite) return;
-        //if (!outputSegment.IsFinite || !outputSegment.IsPrimary)
-        //    return;
-        Vertex start = edge.Start;
-        Vertex end = edge.End;
 
         if (edge.IsLinear)
         {
-            var startPoint = new Vector3((float)start.X, (float)start.Y);
-            var endPoint = new Vector3((float)end.X, (float)end.Y);
-            Handles.color = Color.magenta;
-            DrawVertex(start);
-            Handles.color = Color.red;
-            DrawVertex(end);
             Handles.color = Color.blue;
-            Handles.DrawLine(startPoint, endPoint);
-        }
-        else
-        {
-            List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(edge, 10);
-            var curve = discretizedEdge.ConvertAll(x => (Vector3)x).ToArray();
-            Handles.color = Color.blue;
-            Handles.DrawPolyLine(curve);
-
-            Handles.color = Color.magenta;
-            DrawVertex(start);
-            Handles.color = Color.red;
-            DrawVertex(end);
+            Handles.DrawLine(edge.Start.Position, edge.End.Position);
         }
     }
     
-    
+    void ComputeCurveEdge()
+    {
+        curveEdges.Clear();
+        foreach(var e in ecm.Edges.Values)
+        {
+            if (!e.IsLinear)
+            {
+                List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(e, 10);
+                curveEdges.Add(discretizedEdge);
+            }
+        }
+    }
+    void DrawPolyLine(List<Vector2> l)
+    {
+        for(int i = 0; i < l.Count - 1; i++)
+        {
+            Handles.DrawLine(l[i],l[i+1]);
+        }
+    }
 }
 
 
