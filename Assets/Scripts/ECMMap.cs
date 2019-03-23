@@ -1,4 +1,6 @@
 ﻿using ExplicitCorridorMap;
+using ExplicitCorridorMap.Maths;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -202,8 +204,7 @@ public class ECMMap : MonoBehaviour
     }
     void DrawEdge(Edge edge)
     {
-
-        if (edge.IsLinear)
+        if (edge.IsLinear && !edge.IsTwin)
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(edge.Start.Position, edge.End.Position);
@@ -217,9 +218,9 @@ public class ECMMap : MonoBehaviour
         {
             foreach (var e in vertex.Edges)
             {
-                if (!e.IsLinear)
+                if (!e.IsLinear && !e.IsTwin)
                 {
-                    List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(e, 10);
+                    List<Vector2> discretizedEdge = SampleCurvedEdge(ecm,e, 10);
                     curveEdges.Add(discretizedEdge);
                 }
             }
@@ -231,6 +232,65 @@ public class ECMMap : MonoBehaviour
         {
             Gizmos.DrawLine(l[i], l[i + 1]);
         }
+    }
+    /// <summary>
+    /// Generate a polyline representing a curved edge.
+    /// </summary>
+    /// <param name="edge">The curvy edge.</param>
+    /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
+    /// <returns></returns>
+    public List<Vector2> SampleCurvedEdge(ECM ecm,Edge edge, float max_distance)
+    {
+        //test
+        //return new List<Vector2>() { edge.Start.Position, edge.End.Position };
+
+        Edge pointCell = null;
+        Edge lineCell = null;
+
+        //Max distance to be refined
+        if (max_distance <= 0)
+            throw new Exception("Max distance must be greater than 0");
+
+        Vector2Int pointSite;
+        Segment segmentSite;
+
+        Edge twin = edge.Twin;
+
+        if (edge.ContainsSegment == true && twin.ContainsSegment == true)
+            return new List<Vector2>() { edge.Start.Position, edge.End.Position };
+
+        if (edge.ContainsPoint)
+        {
+            pointCell = edge;
+            lineCell = twin;
+        }
+        else
+        {
+            lineCell = edge;
+            pointCell = twin;
+        }
+
+        pointSite = ecm.RetrieveInputPoint(pointCell);
+        segmentSite = ecm.RetrieveInputSegment(lineCell);
+
+        List<Vector2> discretization = new List<Vector2>(){
+                edge.Start.Position,
+                edge.End.Position
+            };
+
+        if (edge.IsLinear)
+            return discretization;
+
+
+        return ParabolaComputation.Densify(
+            new Vector2(pointSite.x, pointSite.y),
+            new Vector2(segmentSite.Start.x, segmentSite.Start.y),
+            new Vector2(segmentSite.End.x, segmentSite.End.y),
+            discretization[0],
+            discretization[1],
+            max_distance,
+            0
+        );
     }
     #endregion
 }

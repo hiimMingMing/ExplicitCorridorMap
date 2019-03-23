@@ -520,7 +520,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 637246701}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -192, y: 169, z: 46.691666}
+  m_LocalPosition: {x: -195, y: 147, z: 46.691666}
   m_LocalScale: {x: 100, y: 100, z: 1}
   m_Children: []
   m_Father: {fileID: 1976709927}
@@ -669,8 +669,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 733367009}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 242, y: 214, z: -46.285713}
-  m_LocalScale: {x: 47.988796, y: 81.429214, z: 0.1}
+  m_LocalPosition: {x: 243.6, y: 188.2, z: -46.285713}
+  m_LocalScale: {x: 47.988796, y: 48.85753, z: 0.1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
@@ -760,7 +760,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 785661849}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -29, y: 145, z: 46.691666}
+  m_LocalPosition: {x: -41, y: 163, z: 46.691666}
   m_LocalScale: {x: 100, y: 100, z: 1}
   m_Children: []
   m_Father: {fileID: 1976709927}
@@ -894,11 +894,12 @@ MonoBehaviour:
   - 10
   - 20
   - 30
-  showGraph: 1
+  drawGraph: 1
   inputPointRadius: 2
   outputPointRadius: 2
   drawNearestObstaclePoints: 0
-  obstacleToDelete: 0
+  drawShortestPath: 1
+  obstacleToDelete: 9
 --- !u!4 &1141242256
 Transform:
   m_ObjectHideFlags: 0
@@ -1022,7 +1023,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1911917540}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -350, y: 197.00002, z: 46.691666}
+  m_LocalPosition: {x: -353, y: 194, z: 46.691666}
   m_LocalScale: {x: 100, y: 100, z: 1}
   m_Children: []
   m_Father: {fileID: 1976709927}

@@ -288,66 +288,6 @@ namespace ExplicitCorridorMap
 
             ComputeNewECMAndMerge(obstacles, obstacle.Envelope, selectedEdges);
         }
-
-
-        /// <summary>
-        /// Generate a polyline representing a curved edge.
-        /// </summary>
-        /// <param name="edge">The curvy edge.</param>
-        /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
-        /// <returns></returns>
-        public List<Vector2> SampleCurvedEdge(Edge edge, float max_distance)
-        {
-            //test
-            //return new List<Vector2>() { edge.Start.Position, edge.End.Position };
-
-            Edge pointCell = null;
-            Edge lineCell = null;
-
-            //Max distance to be refined
-            if (max_distance <= 0)
-                throw new Exception("Max distance must be greater than 0");
-
-            Vector2Int pointSite;
-            Segment segmentSite;
-
-            Edge twin = edge.Twin;
-
-            if (edge.ContainsSegment == true && twin.ContainsSegment == true)
-                return new List<Vector2>() { edge.Start.Position, edge.End.Position };
-
-            if (edge.ContainsPoint)
-            {
-                pointCell = edge;
-                lineCell = twin;
-            }
-            else
-            {
-                lineCell = edge;
-                pointCell = twin;
-            }
-
-            pointSite = RetrieveInputPoint(pointCell);
-            segmentSite = RetrieveInputSegment(lineCell);
-
-            List<Vector2> discretization = new List<Vector2>(){
-                edge.Start.Position,
-                edge.End.Position
-            };
-
-            if (edge.IsLinear)
-                return discretization;
-
-
-            return ParabolaComputation.Densify(
-                new Vector2(pointSite.x, pointSite.y),
-                new Vector2(segmentSite.Start.x, segmentSite.Start.y),
-                new Vector2(segmentSite.End.x, segmentSite.End.y),
-                discretization[0],
-                discretization[1],
-                max_distance,
-                0
-            );
-        }
+        
     }
 }
