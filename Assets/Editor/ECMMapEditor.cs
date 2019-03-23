@@ -9,230 +9,54 @@ using RBush;
 public class ECMMapEditor : Editor
 {
 
-    ECM ecm;
-    float inputPointRadius = 2f;
-    float outputPointRadius = 2f;
-
-    bool drawNearestObstaclePoints = false;
-    List<Vector2> shortestPath = null;
-    List<Vector2> portalsLeft;
-    List<Vector2> portalsRight;
-    List<Edge> selectedEdge;
-    List<Segment> segments = new List<Segment>();
-    int ObstacleToDelete = 0;
-    List<List<Vector2>> curveEdges = new List<List<Vector2>>();
+    ECMMap map;
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
-        var map = (ECMMap)target;
-        var startPosition = map.StartPoint.position;
-        var endPosition = map.EndPoint.position;
-        var obsTransform = map.Obstacles;
-        var dynamicObstacle = map.DynamicObstacle;
-        var agentRadius = map.AgentRadiusList;
-        //OpenVoronoi openVoronoi = target as OpenVoronoi;
-        inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", inputPointRadius);
-        outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", outputPointRadius);
-        drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", drawNearestObstaclePoints);
+        map = (ECMMap)target;
+        map.drawGraph = EditorGUILayout.Toggle("Show Graph", map.drawGraph);
 
+        if (map.drawGraph)
+        {
+            map.inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", map.inputPointRadius);
+            map.outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", map.outputPointRadius);
+            map.drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", map.drawNearestObstaclePoints);
+            map.drawShortestPath = EditorGUILayout.Toggle("Draw Path", map.drawShortestPath);
+
+        }
         if (GUILayout.Button("Bake"))
         {
-            //populate segment
-            var obstacles = new List<Obstacle>();
-            foreach (Transform obs in obsTransform)
-            {
-                obstacles.Add(new Obstacle(Geometry.ConvertToRect(obs)));
-            }
-
-            ecm = new ECM(obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
-            ecm.Construct();
-            ComputeCurveEdge();
-            foreach (var r in agentRadius)
-            {
-                ecm.AddAgentRadius(r);
-
-            }
-            shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft,out portalsRight);
-
+            map.Bake();
         }
-        if (GUILayout.Button("Add Obstacle"))
+        if (map.drawGraph)
         {
-            if (ecm == null)
+            if (GUILayout.Button("Add Obstacle"))
             {
-                Debug.Log("Ecm must be baked");
+                map.AddObstacle();
             }
-            else
-            {
-                ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(dynamicObstacle)));
-                ComputeCurveEdge();
-                shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft, out portalsRight);
-            }
-        }
 
-        ObstacleToDelete = EditorGUILayout.IntField("ObstacleToDelete", ObstacleToDelete);
-        if (GUILayout.Button("Delete Obstacle"))
-        {
-            if (ecm == null)
+            map.obstacleToDelete = EditorGUILayout.IntField("ObstacleToDelete", map.obstacleToDelete);
+            if (GUILayout.Button("Delete Obstacle"))
             {
-                Debug.Log("Ecm must be baked");
-            }
-            else
-            {
-                ecm.DeletePolygonDynamic(ObstacleToDelete);
-                ComputeCurveEdge();
-                shortestPath = PathFinding.FindPathDebug(ecm, startPosition, endPosition, out portalsLeft, out portalsRight);
+                map.DeleteObstacle();
             }
         }
     }
-
     void OnSceneGUI()
     {
-
-        //Draw input point
-        if (ecm == null) return;
-
-        foreach(var obs in ecm.Obstacles.Values)
+        var ecm = map.ecm;
+        if (ecm == null || !map.drawGraph) return;
+        foreach (var obs in ecm.Obstacles.Values)
         {
-            Handles.Label(new Vector2((obs.Envelope.MinX+obs.Envelope.MaxX)/2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), obs.ID.ToString());
+            Handles.Label(new Vector2((obs.Envelope.MinX + obs.Envelope.MaxX) / 2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), obs.ID.ToString());
         }
-        //Draw input segment
-        Handles.color = Color.yellow;
-        foreach (var inputSegment in ecm.InputSegments.Values)
-        {
-            var startPoint = new Vector3(inputSegment.Start.x, inputSegment.Start.y);
-            var endPoint = new Vector3(inputSegment.End.x, inputSegment.End.y);
-            Handles.Label((startPoint+endPoint)/2, inputSegment.ID.ToString());
-
-            Handles.DrawSolidDisc(startPoint, Vector3.forward, inputPointRadius);
-            Handles.DrawSolidDisc(endPoint, Vector3.forward, inputPointRadius);
-            Handles.DrawLine(startPoint, endPoint);
-        }
-
-        //Draw ouput edge and vertex
         foreach (var vertex in ecm.Vertices.Values)
         {
-            DrawVertex(vertex);
-            foreach (var edge in vertex.Edges)
-            {
-                DrawEdge(edge);
-            }
-        }
-        Handles.color = Color.blue;
-        foreach(var l in curveEdges)
-        {
-            DrawPolyLine(l);
-        }
-        //Draw Nearest Obstacle Point
-        if (drawNearestObstaclePoints)
-        {
-            foreach (var edge in ecm.Edges.Values)
-            {
-                DrawObstaclePoint(edge);
-            }
-        }
-        if ( shortestPath != null)
-        {
-            Handles.color = Color.red;
-            DrawPolyLine(shortestPath);
-        }
-        if(portalsLeft != null)
-        {
-            for(int i = 0; i < portalsLeft.Count; i++)
-            {
-                DrawPortal(portalsLeft[i], portalsRight[i]);
-            }
+            Handles.Label(vertex.Position, vertex.ID + "");
         }
     }
-    
 
 
-    
-    void DrawPortal(Vector2 begin, Vector2 end)
-    {
-        Handles.color = Color.magenta;
-        Handles.DrawLine(begin,end);
-
-    }
-    void DrawObstaclePoint(Edge edge)
-    {
-        var startVertex = edge.Start.Position;
-        var endVertex = edge.End.Position;
-        var begin = startVertex;
-        var obsLeft = edge.LeftObstacleOfStart;
-        var obsRight = edge.RightObstacleOfStart;
-
-        Handles.color = Color.green;
-        Handles.DrawLine(begin, obsLeft);
-        Handles.color = Color.cyan;
-        Handles.DrawLine(begin, obsRight);
-
-        begin = endVertex;
-        obsLeft = edge.LeftObstacleOfEnd;
-        obsRight = edge.RightObstacleOfEnd;
-        Handles.color = Color.green;
-        Handles.DrawLine(begin, obsLeft);
-        Handles.color = Color.cyan;
-        Handles.DrawLine(begin, obsRight);
-
-    }
-    void DrawObstaclePointProperty(Edge edge, int index)
-    {
-        var startVertex = edge.Start.Position;
-        var endVertex = edge.End.Position;
-        var begin = startVertex;
-        var obsLeft = edge.EdgeProperties[index].LeftObstacleOfStart;
-        var obsRight = edge.EdgeProperties[index].RightObstacleOfStart;
-
-        Handles.color = Color.green;
-        Handles.DrawLine(begin, obsLeft);
-        Handles.color = Color.cyan;
-        Handles.DrawLine(begin, obsRight);
-
-        begin = endVertex;
-        obsLeft = edge.EdgeProperties[index].LeftObstacleOfEnd;
-        obsRight = edge.EdgeProperties[index].RightObstacleOfEnd;
-        Handles.color = Color.green;
-        Handles.DrawLine(begin, obsLeft);
-        Handles.color = Color.cyan;
-        Handles.DrawLine(begin, obsRight);
-
-    }
-    void DrawVertex(Vertex vertex)
-    {
-        Handles.color = Color.red;
-        var position = new Vector3((float)vertex.X, (float)vertex.Y);
-        Handles.DrawSolidDisc(position, Vector3.forward, outputPointRadius);
-        Handles.Label(position,vertex.ID+"");
-    }
-    void DrawEdge(Edge edge)
-    {
-
-        if (edge.IsLinear)
-        {
-            Handles.color = Color.blue;
-            Handles.DrawLine(edge.Start.Position, edge.End.Position);
-        }
-    }
-    
-    void ComputeCurveEdge()
-    {
-        curveEdges.Clear();
-        foreach(var e in ecm.Edges.Values)
-        {
-            if (!e.IsLinear)
-            {
-                List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(e, 10);
-                curveEdges.Add(discretizedEdge);
-            }
-        }
-    }
-    void DrawPolyLine(List<Vector2> l)
-    {
-        for(int i = 0; i < l.Count - 1; i++)
-        {
-            Handles.DrawLine(l[i],l[i+1]);
-        }
-    }
 }
 
 
