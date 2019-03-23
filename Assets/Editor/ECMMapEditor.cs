@@ -44,7 +44,7 @@ public class ECMMapEditor : Editor
     }
     void OnSceneGUI()
     {
-        var ecm = map.ecm;
+        var ecm = map?.ecm;
         if (ecm == null || !map.drawGraph) return;
         foreach (var obs in ecm.Obstacles.Values)
         {

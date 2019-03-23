@@ -7,22 +7,7 @@ namespace ExplicitCorridorMap
 {
     public class PathFinding
     {
-        //Debug Purpose, Draw portal
-        public static List<Vector2> FindPathDebug(ECM ecm, Vector2 startPosition, Vector2 endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight)
-        {
-            var startEdge = ecm.GetNearestEdge(startPosition);
-            var endEdge = ecm.GetNearestEdge(endPosition);
-            //Debug.Log("S" + startEdge);
-            //Debug.Log("E" + endEdge);
-            var edgeList = FindEdgePathFromVertexToVertex(ecm, 0,startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition);
-
-            //foreach (var edge in edgeList)
-            //{
-            //    Debug.Log(edge);
-            //}
-            ComputePortals(0, edgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
-            return GetShortestPath(portalsLeft, portalsRight);
-        }
+        
         public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition, Vector2 endPosition)
         {
             var radius = ecm.AgentRadius[radiusIndex];
@@ -37,6 +22,7 @@ namespace ExplicitCorridorMap
             }
 
             var edgeList = FindEdgePathFromVertexToVertex(ecm, radiusIndex ,startEdge.Start,startEdge.End, endEdge.Start,endEdge.End,startPosition,endPosition);
+            if(edgeList.Count == 0) { return new List<Vector2>(); }
             ComputePortals(radiusIndex,edgeList, startPosition, endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }

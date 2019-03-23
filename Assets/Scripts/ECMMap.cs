@@ -46,8 +46,8 @@ public class ECMMap : MonoBehaviour
     public int obstacleToDelete = 0;
 
     List<Vector2> shortestPath = null;
-    List<Vector2> portalsLeft;
-    List<Vector2> portalsRight;
+    //List<Vector2> portalsLeft;
+    //List<Vector2> portalsRight;
     List<Edge> selectedEdge;
     List<Segment> segments = new List<Segment>();
     List<List<Vector2>> curveEdges = new List<List<Vector2>>();
@@ -68,7 +68,7 @@ public class ECMMap : MonoBehaviour
             ecm.AddAgentRadius(r);
 
         }
-        shortestPath = PathFinding.FindPathDebug(ecm, StartPoint.position, EndPoint.position, out portalsLeft, out portalsRight);
+        shortestPath = PathFinding.FindPath(ecm,0, StartPoint.position, EndPoint.position);
     }
     public void AddObstacle()
     {
@@ -80,7 +80,7 @@ public class ECMMap : MonoBehaviour
         {
             ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(DynamicObstacle)));
             ComputeCurveEdge();
-            shortestPath = PathFinding.FindPathDebug(ecm, StartPoint.position, EndPoint.position, out portalsLeft, out portalsRight);
+            shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position, EndPoint.position);
         }
     }
     public void DeleteObstacle()
@@ -93,7 +93,7 @@ public class ECMMap : MonoBehaviour
         {
             ecm.DeletePolygonDynamic(obstacleToDelete);
             ComputeCurveEdge();
-            shortestPath = PathFinding.FindPathDebug(ecm, StartPoint.position, EndPoint.position, out portalsLeft, out portalsRight);
+            shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position, EndPoint.position);
         }
     }
     void OnDrawGizmos()
@@ -141,13 +141,13 @@ public class ECMMap : MonoBehaviour
             Gizmos.color = Color.red;
             DrawPolyLine(shortestPath);
         }
-        if (portalsLeft != null && drawShortestPath)
-        {
-            for (int i = 0; i < portalsLeft.Count; i++)
-            {
-                DrawPortal(portalsLeft[i], portalsRight[i]);
-            }
-        }
+        //if (portalsLeft != null && drawShortestPath)
+        //{
+        //    for (int i = 0; i < portalsLeft.Count; i++)
+        //    {
+        //        DrawPortal(portalsLeft[i], portalsRight[i]);
+        //    }
+        //}
     }
 
 
@@ -157,7 +157,6 @@ public class ECMMap : MonoBehaviour
     {
         Gizmos.color = Color.magenta;
         Gizmos.DrawLine(begin, end);
-
     }
     void DrawObstaclePoint(Edge edge)
     {
