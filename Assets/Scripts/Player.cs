@@ -7,11 +7,12 @@ using UnityEngine.Assertions;
 public class Player : MonoBehaviour
 {
     public float speed = 200;
-    // Start is called before the first frame update
     private ECM ecm;
     public ECMMap ecmMap;
+    [HideInInspector]
     public int RadiusIndex = 0;
-
+    [HideInInspector]
+    public float Radius;
     Vector2 targetWayPoint;
     private int currentWayPoint = 0;
     private List<Vector2> wayPointList = new List<Vector2>();

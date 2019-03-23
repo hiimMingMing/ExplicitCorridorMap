@@ -9,16 +9,16 @@ using UnityEngine;
 using KdTree;
 using KdTree.Math;
 using RBush;
-
+using UnityEngine.Assertions;
 namespace ExplicitCorridorMap
 {
     public class ECM : ECMCore
     {
-        private KdTree<float, Vertex> KdTree { get; }
-        private List<float> AgentRadius;
+        public Dictionary<Vector2, Vertex> MapVertices { get; }
+        public List<float> AgentRadius { get; }
         public ECM(List<Obstacle> obstacles, Obstacle border) : base(obstacles, border)
         {
-            KdTree = new KdTree<float, Vertex>(2, new FloatMath());
+            MapVertices = new Dictionary<Vector2, Vertex>();
             AgentRadius = new List<float>();
         }
         protected override void ConstructTree()
@@ -27,13 +27,24 @@ namespace ExplicitCorridorMap
             //contruct kdtree
             foreach (var v in Vertices.Values)
             {
-                KdTree.Add(v.KDKey, v);
+                MapVertices.Add(v.Position, v);
+            }
+        }
+        public void AddAgentRadius(List<float> radiusList)
+        {
+            foreach (var r in radiusList)
+            {
+                AgentRadius.Add(r);
+                foreach (var e in Edges.Values)
+                {
+                    e.AddProperty(r);
+                }
             }
         }
         public void AddAgentRadius(float radius)
         {
             AgentRadius.Add(radius);
-            foreach (var  e in Edges.Values)
+            foreach (var e in Edges.Values)
             {
                 e.AddProperty(radius);
             }
@@ -45,13 +56,46 @@ namespace ExplicitCorridorMap
             {
                 if (Geometry.PolygonContainsPoint(edge.Cell, point)) return edge;
             }
-            return GetNearestVertex(point).Edges[0];
+            return null;
         }
-        public Vertex GetNearestVertex(Vector2 point)
+        public Edge GetNearestEdge(ref Vector2 center, float radius)
         {
-            var pointArray = new float[] { point.x, point.y };
-            var nodes = KdTree.GetNearestNeighbours(pointArray, 1);
-            return nodes[0].Value;
+            //check if it intersect with obstacle
+            var obsList = RTreeObstacle.Search(new Envelope(center.x - radius, center.y - radius, center.x + radius, center.y + radius));
+            if (obsList.Count != 0)
+            {
+                float minDistance = float.MaxValue;
+                Vector2 closestPointOnObstacle = Vector2.zero;
+                Obstacle closestObstacle = null;
+                foreach (var obs in obsList)
+                {
+                    foreach (var s in obs.Segments)
+                    {
+                        var closestPoint = Distance.GetClosestPointOnLine(s.Start, s.End, center, out float d);
+                        if (d < minDistance)
+                        {
+                            minDistance = d;
+                            closestPointOnObstacle = closestPoint;
+                            closestObstacle = obs;
+                        }
+                    }
+                }
+                //move away from obstacle
+                if (Geometry.PolygonContainsPoint(closestObstacle.Points, center))
+                {
+                    center = closestPointOnObstacle + radius * (closestPointOnObstacle - center).normalized;
+                }
+                else if (minDistance < radius)
+                {
+                    center = closestPointOnObstacle + radius * (center - closestPointOnObstacle).normalized;
+                }
+            }
+            var edges = RTree.Search(new Envelope(center));
+            foreach (var edge in edges)
+            {
+                if (Geometry.PolygonContainsPoint(edge.Cell, center)) return edge;
+            }
+            return null;
         }
 
         protected override void AddSegment(Segment s)
@@ -85,7 +129,7 @@ namespace ExplicitCorridorMap
         private void DeleteVertex(Vertex v)
         {
             Vertices.Remove(v.ID);
-            KdTree.RemoveAt(v.KDKey);
+            MapVertices.Remove(v.Position);
         }
         private void AddEdge(Edge e)
         {
@@ -97,16 +141,17 @@ namespace ExplicitCorridorMap
         {
             v.ID = CountVertices++;
             Vertices[v.ID] = v;
-            KdTree.Add(v.KDKey, v);
+            MapVertices.Add(v.Position, v);
         }
 
         private void CheckOldVertex(Vertex v)
         {
-            var node = KdTree.GetNearestNeighbours(v.KDKey, 1);
-            if (node[0].Value.Position == v.Position)
+            if (MapVertices.ContainsKey(v.Position))
             {
-                node[0].Value.IsNew = true;
-                v.OldVertex = node[0].Value;
+                var oldVertex = MapVertices[v.Position];
+                oldVertex.IsLinked = true;
+                v.IsLinked = true;
+                v.OldVertex = oldVertex;
             }
         }
 
@@ -125,13 +170,13 @@ namespace ExplicitCorridorMap
             }
 
             //search again with extended envelope, find all obstacle and segment involves
-            var extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance*3);
+            var extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance * 3);
             obstacles = RTreeObstacle.Search(extendedEnvelope).ToList();
-            
+
         }
-        private void GetEdgesToReplace(Vertex startVertex, bool isOld, HashSet<Vertex> vertices, HashSet<Edge> edges)
+        private void GetEdgesToReplace(Vertex startVertex, HashSet<Vertex> vertices, HashSet<Edge> edges)
         {
-            if (!startVertex.IsOldOrNew(isOld))
+            if (!startVertex.IsLinked)
             {
                 if (!vertices.Contains(startVertex)) vertices.Add(startVertex);
                 foreach (var e in startVertex.Edges)
@@ -139,7 +184,7 @@ namespace ExplicitCorridorMap
                     if (!edges.Contains(e))
                     {
                         edges.Add(e);
-                        GetEdgesToReplace(e.End, isOld, vertices, edges);
+                        GetEdgesToReplace(e.End, vertices, edges);
                     }
                 }
             }
@@ -150,12 +195,12 @@ namespace ExplicitCorridorMap
                     if (!edges.Contains(e) && vertices.Contains(e.End))
                     {
                         edges.Add(e);
-                        GetEdgesToReplace(e.End, isOld, vertices, edges);
+                        GetEdgesToReplace(e.End, vertices, edges);
                     }
                 }
             }
         }
-        private void GetEdgesToReplace(ECMCore ecm, Envelope envelope, IReadOnlyList<Edge> selectedEdges, bool isOld, out HashSet<Vertex> vertices, out HashSet<Edge> edges)
+        private void GetEdgesToReplace(ECMCore ecm, Envelope envelope, IReadOnlyList<Edge> selectedEdges, out HashSet<Vertex> vertices, out HashSet<Edge> edges)
         {
             vertices = new HashSet<Vertex>();
             edges = new HashSet<Edge>();
@@ -163,25 +208,23 @@ namespace ExplicitCorridorMap
             Vertex startVertex = null;
             foreach (var e in selectedEdges)
             {
-                if (!e.Start.IsOldOrNew(isOld))
+                if (!e.Start.IsLinked)
                 {
                     startVertex = e.Start;
                     break;
-                    
                 }
-                if (!e.End.IsOldOrNew(isOld))
+                if (!e.End.IsLinked)
                 {
                     startVertex = e.End;
                     break;
                 }
             }
-            if (startVertex == null) throw new Exception("Cannot find Start Vertex");
-            //Debug.Log(startVertex + " " + startVertex.Position);
-            GetEdgesToReplace(startVertex, isOld, vertices, edges);
+            Assert.IsNotNull(startVertex,"Cannot find Start Vertex");
+            GetEdgesToReplace(startVertex, vertices, edges);
         }
         private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope envelope, IReadOnlyList<Edge> selectedEdges)
         {
-            foreach (var v in Vertices.Values) { v.IsNew = false; }
+            foreach (var v in Vertices.Values) { v.IsLinked = false; }
             //contruct new ECM
             var newECM = new ECMCore(obstacleList, this.Border);
             newECM.Construct();
@@ -192,30 +235,30 @@ namespace ExplicitCorridorMap
             }
             //Find all edges of new ECM to add
             var newSelectedEdges = newECM.RTree.Search(envelope);
-            GetEdgesToReplace(newECM, envelope, newSelectedEdges, true, out HashSet<Vertex> newVertices, out HashSet<Edge> newEdges);
+            GetEdgesToReplace(newECM, envelope, newSelectedEdges, out HashSet<Vertex> newVertices, out HashSet<Edge> newEdges);
             //Find all edges of old ECM to remove
-            GetEdgesToReplace(this, envelope, selectedEdges, false, out HashSet<Vertex> oldVertices, out HashSet<Edge> oldEdges);
+            GetEdgesToReplace(this, envelope, selectedEdges, out HashSet<Vertex> oldVertices, out HashSet<Edge> oldEdges);
 
             foreach (var e in oldEdges)
             {
                 //Debug.Log(e);
                 DeleteEdge(e);
             }
-            ////add new edge and vertex to old ecm
+            //add new edge and vertex to old ecm
             foreach (var v in newVertices)
             {
                 AddVertex(v);
             }
             foreach (var e in newEdges)
             {
-                if (e.Start.IsOld)
+                if (e.Start.IsLinked)
                 {
                     e.Start = e.Start.OldVertex;
                     e.Start.Edges.Add(e);
                 }
-                if (e.End.IsOld) e.End = e.End.OldVertex;
+                if (e.End.IsLinked) e.End = e.End.OldVertex;
                 e.SiteID = newECM.RetrieveInputSegment(e).ID;
-                foreach(var r in AgentRadius)
+                foreach (var r in AgentRadius)
                 {
                     e.AddProperty(r);
                 }
@@ -245,66 +288,6 @@ namespace ExplicitCorridorMap
 
             ComputeNewECMAndMerge(obstacles, obstacle.Envelope, selectedEdges);
         }
-
-
-        /// <summary>
-        /// Generate a polyline representing a curved edge.
-        /// </summary>
-        /// <param name="edge">The curvy edge.</param>
-        /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
-        /// <returns></returns>
-        public List<Vector2> SampleCurvedEdge(Edge edge, float max_distance)
-        {
-            //test
-            //return new List<Vector2>() { edge.Start.Position, edge.End.Position };
-
-            Edge pointCell = null;
-            Edge lineCell = null;
-
-            //Max distance to be refined
-            if (max_distance <= 0)
-                throw new Exception("Max distance must be greater than 0");
-
-            Vector2Int pointSite;
-            Segment segmentSite;
-
-            Edge twin = edge.Twin;
-
-            if (edge.ContainsSegment == true && twin.ContainsSegment == true)
-                return new List<Vector2>() { edge.Start.Position, edge.End.Position };
-
-            if (edge.ContainsPoint)
-            {
-                pointCell = edge;
-                lineCell = twin;
-            }
-            else
-            {
-                lineCell = edge;
-                pointCell = twin;
-            }
-
-            pointSite = RetrieveInputPoint(pointCell);
-            segmentSite = RetrieveInputSegment(lineCell);
-
-            List<Vector2> discretization = new List<Vector2>(){
-                edge.Start.Position,
-                edge.End.Position
-            };
-
-            if (edge.IsLinear)
-                return discretization;
-
-
-            return ParabolaComputation.Densify(
-                new Vector2(pointSite.x, pointSite.y),
-                new Vector2(segmentSite.Start.x, segmentSite.Start.y),
-                new Vector2(segmentSite.End.x, segmentSite.End.y),
-                discretization[0],
-                discretization[1],
-                max_distance,
-                0
-            );
-        }
+        
     }
 }

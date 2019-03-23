@@ -2,40 +2,34 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-
+using UnityEngine.Assertions;
 namespace ExplicitCorridorMap
 {
     public class PathFinding
     {
-        //Debug Purpose, Draw portal
-        public static List<Vector2> FindPathDebug(ECM ecm, Vector2 startPosition, Vector2 endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight)
-        {
-            var startEdge = ecm.GetNearestEdge(startPosition);
-            var endEdge = ecm.GetNearestEdge(endPosition);
-            //Debug.Log("S" + startEdge);
-            //Debug.Log("E" + endEdge);
-            var edgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition);
-
-            //foreach (var edge in edgeList)
-            //{
-            //    Debug.Log(edge);
-            //}
-            ComputePortals(0, edgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
-            return GetShortestPath(portalsLeft, portalsRight);
-        }
+        
         public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition, Vector2 endPosition)
         {
-            var startEdge = ecm.GetNearestEdge(startPosition);
-            var endEdge = ecm.GetNearestEdge(endPosition);
+            var radius = ecm.AgentRadius[radiusIndex];
+            var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
+            var endEdge = ecm.GetNearestEdge(ref endPosition,radius);
+            if (startEdge == null || endEdge == null) return new List<Vector2>();
+            //check goal clearance
+            var endEdgeProperty = endEdge.EdgeProperties[radiusIndex];
+            if (endEdgeProperty.ClearanceOfStart < 0 && endEdgeProperty.ClearanceOfEnd < 0)
+            {
+                return new List<Vector2>();
+            }
 
-            var edgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start,startEdge.End, endEdge.Start,endEdge.End,startPosition,endPosition);
+            var edgeList = FindEdgePathFromVertexToVertex(ecm, radiusIndex ,startEdge.Start,startEdge.End, endEdge.Start,endEdge.End,startPosition,endPosition);
+            if(edgeList.Count == 0) { return new List<Vector2>(); }
             ComputePortals(radiusIndex,edgeList, startPosition, endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }
         
-        private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
+        private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, int radiusIndex, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
         {
-            var path = PathFinding.FindPathFromVertexToVertex(graph, start1, start2, end1,end2,startPosition,endPosition);
+            var path = PathFinding.FindPathFromVertexToVertex(graph, radiusIndex, start1, start2, end1,end2,startPosition,endPosition);
             var edgeList = new List<Edge>();
             
             for (int i = path.Count - 1; i > 0; i--)
@@ -52,8 +46,11 @@ namespace ExplicitCorridorMap
         //Simple Astar Algorithm
         //start1,start2 are two vertex of start edge
         //end1,end2 are two vertex of end edge
-        private static List<Vertex> FindPathFromVertexToVertex(ECM graph, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
+        private static List<Vertex> FindPathFromVertexToVertex(ECM graph, int radiusIndex, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
         {
+            List<Vertex> result = new List<Vertex>();
+            var agentRadius = graph.AgentRadius[radiusIndex];
+
             var openSet = new HashSet<Vertex>();
             openSet.Add(start1);
             openSet.Add(start2);
@@ -66,7 +63,6 @@ namespace ExplicitCorridorMap
             gScore[start2] = HeuristicCost(startPosition, start2.Position);
             fScore[start2] = HeuristicCost(start2.Position, endPosition);
 
-            List<Vertex> result = new List<Vertex>();
             while (openSet.Count != 0)
             {
                 var current = LowestFScore(openSet, fScore);
@@ -77,7 +73,7 @@ namespace ExplicitCorridorMap
                 foreach(var edge in current.Edges)
                 {
                     var neigborVertex = edge.End;
-                    if (closeSet.Contains(neigborVertex)) continue;
+                    if (closeSet.Contains(neigborVertex) || edge.EdgeProperties[radiusIndex].ClearanceOfEnd < 0) continue;
                     var tentativeGScore = gScore[current] + edge.Length;
                     if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
                     else if (tentativeGScore >= gScore[neigborVertex]) continue;

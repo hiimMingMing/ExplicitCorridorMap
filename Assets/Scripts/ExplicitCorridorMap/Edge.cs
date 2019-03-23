@@ -54,7 +54,7 @@ namespace ExplicitCorridorMap
         }
         public override string ToString()
         {
-            return string.Format("{0}-{1}", Start, End);
+            return string.Format("{0} [{1}-{2}]",ID, Start, End);
         }
         public void ComputeCell()
         {
@@ -85,25 +85,25 @@ namespace ExplicitCorridorMap
             if(radius >= ClearanceOfStart)
             {
                 p.LeftObstacleOfStart = p.RightObstacleOfStart = Start.Position;
-                p.ClearanceOfStart = 0.0f;
             }
             else
             {
                 p.LeftObstacleOfStart = LeftObstacleOfStart + radius * (Start.Position - LeftObstacleOfStart).normalized;
                 p.RightObstacleOfStart = RightObstacleOfStart + radius * (Start.Position - RightObstacleOfStart).normalized;
-                p.ClearanceOfStart = ClearanceOfStart - radius;
             }
+            p.ClearanceOfStart = ClearanceOfStart - radius;
+
             if (radius >= ClearanceOfEnd)
             {
                 p.LeftObstacleOfEnd = p.RightObstacleOfEnd = End.Position;
-                p.ClearanceOfEnd = 0.0f;
             }
             else
             {
                 p.LeftObstacleOfEnd = LeftObstacleOfEnd + radius * (End.Position - LeftObstacleOfEnd).normalized;
                 p.RightObstacleOfEnd = RightObstacleOfEnd + radius * (End.Position - RightObstacleOfEnd).normalized;
-                p.ClearanceOfEnd = ClearanceOfEnd - radius;
             }
+            p.ClearanceOfEnd = ClearanceOfEnd - radius;
+
             EdgeProperties.Add(p);
         }
     }
