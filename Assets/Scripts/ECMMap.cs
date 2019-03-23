@@ -214,12 +214,15 @@ public class ECMMap : MonoBehaviour
     void ComputeCurveEdge()
     {
         curveEdges.Clear();
-        foreach (var e in ecm.Edges.Values)
+        foreach (var vertex in ecm.Vertices.Values)
         {
-            if (!e.IsLinear)
+            foreach (var e in vertex.Edges)
             {
-                List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(e, 10);
-                curveEdges.Add(discretizedEdge);
+                if (!e.IsLinear)
+                {
+                    List<Vector2> discretizedEdge = ecm.SampleCurvedEdge(e, 10);
+                    curveEdges.Add(discretizedEdge);
+                }
             }
         }
     }
