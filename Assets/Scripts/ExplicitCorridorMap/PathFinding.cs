@@ -200,7 +200,7 @@ namespace ExplicitCorridorMap
             return path;
         }//funtion
 
-        public static void ComputePortals(List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight)
+        public static void ComputePortals(int radiusIndex, List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight)
         {
             portalsLeft = new List<Vector2>();
             portalsRight = new List<Vector2>();

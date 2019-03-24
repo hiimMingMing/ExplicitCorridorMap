@@ -59,7 +59,7 @@ namespace ExplicitCorridorMap
         }
 
         //Dynamic find the new path
-        public static List<Vector2> DynamicFindPath2(ECM ecm, Vector2 startPosition, Vector2 endPosition, List<Vector2> affectPoint)
+        public static List<Vector2> DynamicFindPath2(ECM ecm, int radiusIndex, Vector2 startPosition, Vector2 endPosition, List<Vector2> affectPoint)
         {
             List<Vector2> interscetPoint = new List<Vector2>();
             List<Vector2> shortertPath = new List<Vector2>();
@@ -83,7 +83,7 @@ namespace ExplicitCorridorMap
             if (interscetPoint.Count == 0) //The new path is still the old path
             {
                 Debug.Log("TH0: No change!");
-                PathFinding.ComputePortals(oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
+                PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
                 shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
             }
             else if (interscetPoint.Count == 1)
@@ -100,14 +100,14 @@ namespace ExplicitCorridorMap
                 if (oldFScore < newFScore) //The new path is still the old path
                 {
                     Debug.Log("No change!!!");
-                    PathFinding.ComputePortals(oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
+                    PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
                     shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
                 }
                 else //Change the path
                 {
                     Debug.Log("Change!!!");
-                    PathFinding.ComputePortals(newEdgeList, startPosition, interscetPoint[0], out portalsLeft, out portalsRight);
-                    PathFinding.ComputePortals(newEdgeList2, interscetPoint[0], endPosition, out portalsLeft2, out portalsRight2);
+                    PathFinding.ComputePortals(radiusIndex, newEdgeList, startPosition, interscetPoint[0], out portalsLeft, out portalsRight);
+                    PathFinding.ComputePortals(radiusIndex, newEdgeList2, interscetPoint[0], endPosition, out portalsLeft2, out portalsRight2);
                     shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
                     shortertPath.AddRange(PathFinding.GetShortestPath(portalsLeft2, portalsRight2));
                 }
@@ -130,14 +130,14 @@ namespace ExplicitCorridorMap
                 if (oldFScore < newFScore) //The new path is still the old path
                 {
                     Debug.Log("No change!!!");
-                    PathFinding.ComputePortals(oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
+                    PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
                     shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
                 }
                 else //Change the path
                 {
                     Debug.Log("Change!!!");
-                    PathFinding.ComputePortals(newEdgeList, startPosition, interscetPoint[0], out portalsLeft, out portalsRight);
-                    PathFinding.ComputePortals(newEdgeList2, interscetPoint[1], endPosition, out portalsLeft2, out portalsRight2);
+                    PathFinding.ComputePortals(radiusIndex, newEdgeList, startPosition, interscetPoint[0], out portalsLeft, out portalsRight);
+                    PathFinding.ComputePortals(radiusIndex, newEdgeList2, interscetPoint[1], endPosition, out portalsLeft2, out portalsRight2);
                     shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
                     shortertPath.AddRange(PathFinding.GetShortestPath(portalsLeft2, portalsRight2));
                 }

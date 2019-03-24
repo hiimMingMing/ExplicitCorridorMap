@@ -44,7 +44,7 @@ public class Player : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0)){
             finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            wayPointList = PathFinding.FindPath(ecm, transform.position, finalTarget);
+            wayPointList = PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget);
             //Debug.Log("Path found");
             Debug.Log("count: "+listEdgePath.Count);
             foreach (var v in listEdgePath)
@@ -114,7 +114,7 @@ public class Player : MonoBehaviour
             }
 
             //Handle the path
-            wayPointList = DynamicReplanning.DynamicFindPath2(ecm, transform.position, finalTarget, obsPoints);
+            wayPointList = DynamicReplanning.DynamicFindPath2(ecm, RadiusIndex, transform.position, finalTarget, obsPoints);
 
         }
         else transform.position = Vector3.MoveTowards(transform.position, targetWayPoint, speed * Time.deltaTime);
