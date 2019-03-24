@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class Player : MonoBehaviour
 {
@@ -9,13 +10,21 @@ public class Player : MonoBehaviour
     public Transform cubes;
     // Start is called before the first frame update
     private List<Obstacle> Obstacles = new List<Obstacle>();
+
     private ECM ecm;
+    public ECMMap ecmMap;
+    [HideInInspector]
+    public int RadiusIndex = 0;
+    [HideInInspector]
+    public float Radius;
     Vector2 targetWayPoint;
-    public int currentWayPoint = 0;
+
+    private int currentWayPoint = 0;
     public bool isMoving = false;
 
     private Vector3 finalTarget;
     private List<Edge> listEdgePath = new List<Edge>();
+
     private List<Vector2> wayPointList = new List<Vector2>();
 
     //Draw the path
@@ -27,12 +36,7 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        foreach (Transform cube in cubes)
-        {
-            Obstacles.Add(new Obstacle( Geometry.ConvertToRect(cube)));
-        }
-        ecm = new ECM(Obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
-        ecm.Construct();  
+        ecm = ecmMap.ecm;
     }
 
     // Update is called once per frame
@@ -66,11 +70,11 @@ public class Player : MonoBehaviour
         if (currentWayPoint < wayPointList.Count)
         {
             targetWayPoint = wayPointList[currentWayPoint];
-            walk();
+            Walk();
         }
     }
 
-    void walk()
+    void Walk()
     {
         // move towards the target
         isMoving = true;

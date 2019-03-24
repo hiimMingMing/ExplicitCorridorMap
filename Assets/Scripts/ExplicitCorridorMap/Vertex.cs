@@ -17,8 +17,7 @@ namespace ExplicitCorridorMap
 
         public bool IsInside { get; set; }
         public Vertex OldVertex { get; set; }
-        public bool IsNew { get; set; }
-        public bool IsOld =>  OldVertex != null; 
+        public bool IsLinked { get; set; } // check if this vertex be used to linking with vertex of other ecm
         public float[] KDKey { get; }
         public Vertex(int id, float x, float y)
         {
@@ -28,14 +27,9 @@ namespace ExplicitCorridorMap
             IsInside = false;
             OldVertex = null;
             KDKey = new float[] { X, Y };
-            IsNew = false;
+            IsLinked = false;
         }
         
-        public bool IsOldOrNew(bool isOld)
-        {
-            if (isOld) return OldVertex != null;
-            else return IsNew;
-        }
         public override bool Equals(object obj)
         {
             if (obj == null) return false;
