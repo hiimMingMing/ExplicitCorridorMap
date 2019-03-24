@@ -88,9 +88,8 @@ namespace RVO
 
 
         public static bool compareVector2WithinDist(Vector2 v1, Vector2 v2, float radius) {
-            if (v1.x() > v2.x() - radius && v1.x() < v2.x() + radius) {
-                if (v1.y() > v2.y() - radius && v1.y() < v2.y() + radius)
-                    return true;
+            if (RVOMath.absSq(v1 - v2) < radius * radius) {
+                return true;
             }
             return false;
         }

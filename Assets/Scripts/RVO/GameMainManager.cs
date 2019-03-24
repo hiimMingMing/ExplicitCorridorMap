@@ -13,12 +13,16 @@ using Vector2 = RVO.Vector2;
 public class GameMainManager : SingletonBehaviour<GameMainManager>
 {
     public GameObject agentPrefab;
-    public AgentSetting agentSetting;
+ 
+    public ECMMap defaultECMMap;
     [HideInInspector] public Vector2 mousePosition;
     private ExplicitCorridorMap.ECM ecm;
     private Plane m_hPlane = new Plane(Vector3.forward, Vector3.zero);
     private Dictionary<int, GameAgent> m_agentMap = new Dictionary<int, GameAgent>();
     public Transform cubes;
+    
+    [Header("Agent setting")]
+    public AgentSetting agentSetting;
     public ExplicitCorridorMap.ECM getECM() {
         return ecm;
     }
@@ -39,7 +43,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
 
         //End
         Simulator.Instance.setTimeStep(1f);
-        Simulator.Instance.setAgentDefaults(60.0f, 10, 5.0f, 5.0f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(60.0f, 10, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
 
         // add in awake
         Simulator.Instance.processObstacles();
@@ -70,13 +74,22 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
     }
 
     void CreateCustomAgent() {
+
+         
         int sid = Simulator.Instance.addAgent(mousePosition,agentSetting.radius,agentSetting.maxSpeed, agentSetting.priority);
 
         if (sid >= 0)
         {
             GameObject go = LeanPool.Spawn(agentPrefab, new Vector3(mousePosition.x(), mousePosition.y(), 0), Quaternion.identity);
+
+            //TODO change to 3D
+            Vector3 newScale = go.transform.localScale*(agentSetting.radius * 2 / go.GetComponent<MeshRenderer>().bounds.size.x);
+            go.transform.localScale = newScale;
             go.GetComponent<MeshRenderer>().material.color = agentSetting.color;
             GameAgent ga = go.GetComponent<GameAgent>();
+            ga.destinationRadius = agentSetting.destinationRadius;
+            //TODO change to custom ecm map 
+            ga.ecmMap = defaultECMMap;
             Assert.IsNotNull(ga);
             ga.sid = sid;
             m_agentMap.Add(sid, ga);
@@ -85,6 +98,35 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
 
     }
 
+
+    void CreateCustomAgent(int index)
+    {
+        int numberOfAgent = agentSetting.numberOfAgent;
+        int resolution =(int) Math.Round( Mathf.Sqrt(numberOfAgent))+1;
+        Vector2 agentUnitPosition = new Vector2(index / resolution, index % resolution);
+        Vector2 realPosition = (agentUnitPosition/resolution - new Vector2(0.5f, 0.5f))+mousePosition;
+        
+        int sid = Simulator.Instance.addAgent(realPosition, agentSetting.radius, agentSetting.maxSpeed, agentSetting.priority);
+
+        if (sid >= 0)
+        {
+            GameObject go = LeanPool.Spawn(agentPrefab, new Vector3(realPosition.x(), realPosition.y(), 0), Quaternion.identity);
+
+            //TODO change to 3D
+            Vector3 newScale = go.transform.localScale * (agentSetting.radius * 2 / go.GetComponent<MeshRenderer>().bounds.size.x);
+            go.transform.localScale = newScale;
+            go.GetComponent<MeshRenderer>().material.color = agentSetting.color;
+            GameAgent ga = go.GetComponent<GameAgent>();
+            ga.destinationRadius = agentSetting.destinationRadius;
+            //TODO change to custom ecm map 
+            ga.ecmMap = defaultECMMap;
+            Assert.IsNotNull(ga);
+            ga.sid = sid;
+            m_agentMap.Add(sid, ga);
+
+        }
+
+    }
     void CreatDefaultAgent()
     {
         int sid = Simulator.Instance.addAgent(mousePosition);
@@ -93,25 +135,15 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
         {
             GameObject go = LeanPool.Spawn(agentPrefab, new Vector3(mousePosition.x(), mousePosition.y(), 0), Quaternion.identity);
             GameAgent ga = go.GetComponent<GameAgent>();
+            ga.destinationRadius = Simulator.Instance.getAgentRadius(sid)*4;
+            ga.ecmMap = defaultECMMap;
             Assert.IsNotNull(ga);
             ga.sid = sid;
             m_agentMap.Add(sid, ga);
         }
     }
 
-    //public void CreatAgent(Vector2 position,GameAgent ga)
-    //{
-    //    Simulator.Instance.setAgentDefaults(60.0f, 10, 5.0f, 5.0f, 10.0f, 2.0f, new Vector2(0.0f, 0.0f));
-    //    int sid = Simulator.Instance.addAgent(position);
-    //    if (sid >= 0)
-    //    {
-            
-    //        Assert.IsNotNull(ga);
-    //        ga.sid = sid;
-    //        m_agentMap.Add(sid, ga);
-    //    }
-    //}
-
+    
     // Update is called once per frame
     private void Update()
     {
@@ -126,7 +158,11 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
             {
                 if (agentSetting.isEnable)
                 {
-                    CreateCustomAgent();
+                    for (int i = 0; i < agentSetting.numberOfAgent; i++)
+                    {
+                        CreateCustomAgent(i);
+                    }
+                    
                 }
                 else
                 {

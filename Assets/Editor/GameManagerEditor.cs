@@ -12,6 +12,16 @@ public class GameManagerEditor : Editor
     {
         base.OnInspectorGUI();
         DrawSettingEditor(manager.agentSetting);
+        var gameManager = (GameMainManager)target;
+        var radiusList = gameManager.defaultECMMap.AgentRadiusList;
+        var options = new string[radiusList.Count];
+        for (int i = 0; i < radiusList.Count; i++)
+        {
+            options[i] = radiusList[i].ToString();
+        }
+
+        gameManager.agentSetting.radiusIndex = EditorGUILayout.Popup("Radius", gameManager.agentSetting.radiusIndex, options);
+        gameManager.agentSetting.radius = radiusList[gameManager.agentSetting.radiusIndex];
     }
 
     void DrawSettingEditor(Object setting) {

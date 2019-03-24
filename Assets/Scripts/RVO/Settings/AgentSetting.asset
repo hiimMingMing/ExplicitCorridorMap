@@ -13,7 +13,12 @@ MonoBehaviour:
   m_Name: AgentSetting
   m_EditorClassIdentifier: 
   isEnable: 1
-  radius: 10
+  radius: 5
+  radiusIndex: 1
   priority: 0
-  maxSpeed: 2
-  color: {r: 0.93333334, g: 0.08235291, b: 0.2651787, a: 0}
+  maxSpeed: 3
+  color: {r: 0.5517704, g: 0.9529412, b: 0.050980363, a: 0}
+  ecmMap: {fileID: 0}
+  destinationRadius: 20
+  numberOfAgent: 1
+  debugMode: 1

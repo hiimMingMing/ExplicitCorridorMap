@@ -424,6 +424,7 @@ namespace RVO
                     }
 
                 }
+                Debug.Log(id_+"   " + delta);
                 line.point = velocity_ + delta * u;
                 orcaLines_.Add(line);
             }

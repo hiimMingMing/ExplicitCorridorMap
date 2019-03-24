@@ -953,6 +953,7 @@ namespace RVO
             }
             workers_ = null;
             workerAgentCount_ = 0;
+            
         }
 
         /**
