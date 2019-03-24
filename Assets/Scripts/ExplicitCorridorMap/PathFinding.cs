@@ -23,6 +23,7 @@ namespace ExplicitCorridorMap
             ComputePortals(edgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }
+
         public static List<Vector2> FindPath(ECM ecm,Vector2 startPosition, Vector2 endPosition)
         {
             var startEdge = ecm.GetNearestEdge(startPosition);
@@ -89,7 +90,7 @@ namespace ExplicitCorridorMap
             return result;
 
         }
-        private static List<Vertex> RecontructPath(Dictionary<Vertex, Vertex> cameFrom, Vertex current)
+        public static List<Vertex> RecontructPath(Dictionary<Vertex, Vertex> cameFrom, Vertex current)
         {
             var totalPath = new List<Vertex>();
             totalPath.Add(current);
@@ -110,7 +111,7 @@ namespace ExplicitCorridorMap
             var dy = start.y - goal.y;
             return Mathf.Sqrt(dx * dx + dy * dy);
         }
-        private static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, float> fScore)
+        public static Vertex LowestFScore(HashSet<Vertex> hashSet, Dictionary<Vertex, float> fScore)
         {
             float min = float.MaxValue;
             Vertex result = null;
@@ -135,7 +136,7 @@ namespace ExplicitCorridorMap
         }
 
         //Simple Stupid Funnel Algorithm
-        private static List<Vector2> GetShortestPath(List<Vector2> portalsLeft, List<Vector2> portalsRight)
+        public static List<Vector2> GetShortestPath(List<Vector2> portalsLeft, List<Vector2> portalsRight)
         {
             List<Vector2> path = new List<Vector2>();
             if (portalsLeft.Count == 0) return path;
@@ -206,7 +207,7 @@ namespace ExplicitCorridorMap
             AddToPath(path,portalsLeft[portalsLeft.Count - 1]);
             return path;
         }//funtion
-        private static void ComputePortals(List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight)
+        public static void ComputePortals(List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight)
         {
             portalsLeft = new List<Vector2>();
             portalsRight = new List<Vector2>();
