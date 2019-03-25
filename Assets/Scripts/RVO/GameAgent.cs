@@ -19,6 +19,7 @@ public class GameAgent : MonoBehaviour
     public UnityEngine.Vector2 targetWayPoint;
     public Vector3 finalTarget;
     public int currentWayPoint = 0;
+    public Vector3 debugTarget = Vector3.zero;
     public float destinationRadius { get; set; }
     private List<UnityEngine.Vector2> wayPointList = new List<UnityEngine.Vector2>();
     
@@ -62,9 +63,14 @@ public class GameAgent : MonoBehaviour
         #endregion
         if (Input.GetMouseButtonDown(1))
         {
-            finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            if (debugTarget != Vector3.zero) {
+                finalTarget = debugTarget;
+            }
+            else
+            {
+                finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-
+            }
             ///wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(), transform.position, finalTarget);
 
             wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position, finalTarget);

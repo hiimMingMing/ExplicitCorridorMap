@@ -43,7 +43,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
 
         //End
         Simulator.Instance.setTimeStep(1f);
-        Simulator.Instance.setAgentDefaults(60.0f, 10, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(120.0f, 50, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
 
         // add in awake
         Simulator.Instance.processObstacles();

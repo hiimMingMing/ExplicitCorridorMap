@@ -16,8 +16,8 @@ MonoBehaviour:
   radius: 5
   radiusIndex: 1
   priority: 0
-  maxSpeed: 3
-  color: {r: 0.5517704, g: 0.9529412, b: 0.050980363, a: 0}
+  maxSpeed: 1
+  color: {r: 0.9529412, g: 0.89165, b: 0.050980363, a: 0}
   ecmMap: {fileID: 0}
   destinationRadius: 20
   numberOfAgent: 1
