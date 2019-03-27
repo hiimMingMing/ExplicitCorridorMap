@@ -211,7 +211,7 @@ public class ECMMap : MonoBehaviour
         }
     }
 
-    void ComputeCurveEdge()
+    public void ComputeCurveEdge()
     {
         curveEdges.Clear();
         foreach (var vertex in ecm.Vertices.Values)
