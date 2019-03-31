@@ -33,7 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
+using UnityEngine;
 namespace RVO
 {
     /**
@@ -297,6 +297,72 @@ namespace RVO
          */
         public int addObstacle(IList<Vector2> vertices)
         {
+            if (vertices.Count < 2)
+            {
+                return -1;
+            }
+
+            int obstacleNo = obstacles_.Count;
+
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                Obstacle obstacle = new Obstacle();
+                obstacle.point_ = vertices[i];
+
+                if (i != 0)
+                {
+                    obstacle.previous_ = obstacles_[obstacles_.Count - 1];
+                    obstacle.previous_.next_ = obstacle;
+                }
+
+                if (i == vertices.Count - 1)
+                {
+                    obstacle.next_ = obstacles_[obstacleNo];
+                    obstacle.next_.previous_ = obstacle;
+                }
+
+                obstacle.direction_ = RVOMath.normalize(vertices[(i == vertices.Count - 1 ? 0 : i + 1)] - vertices[i]);
+
+                if (vertices.Count == 2)
+                {
+                    obstacle.convex_ = true;
+                }
+                else
+                {
+                    obstacle.convex_ = (RVOMath.leftOf(vertices[(i == 0 ? vertices.Count - 1 : i - 1)], vertices[i], vertices[(i == vertices.Count - 1 ? 0 : i + 1)]) >= 0.0f);
+                }
+
+                obstacle.id_ = obstacles_.Count;
+                obstacles_.Add(obstacle);
+            }
+
+            return obstacleNo;
+        }
+
+
+
+        public int addObstacle(Transform transform)
+        {
+
+            IList<Vector2> vertices = new List<Vector2>();
+            BoxCollider[] boxColliders = transform.GetComponentsInChildren<BoxCollider>();
+            for (int i = 0; i < boxColliders.Length; i++)
+            {
+                float minX = boxColliders[i].transform.position.x -
+                             boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                float minY = boxColliders[i].transform.position.y -
+                             boxColliders[i].size.y * boxColliders[i].transform.lossyScale.y * 0.5f;
+                float maxX = boxColliders[i].transform.position.x +
+                             boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                float maxY = boxColliders[i].transform.position.y +
+                             boxColliders[i].size.y * boxColliders[i].transform.lossyScale.y * 0.5f;
+
+              
+                vertices.Add(new Vector2(maxX, maxY));
+                vertices.Add(new Vector2(minX, maxY));
+                vertices.Add(new Vector2(minX, minY));
+                vertices.Add(new Vector2(maxX, minY));
+            }
             if (vertices.Count < 2)
             {
                 return -1;
