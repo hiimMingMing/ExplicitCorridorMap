@@ -25,7 +25,9 @@ namespace ExplicitCorridorMap
         public Vector2 RightObstacleOfEnd { get; set; }
         public float ClearanceOfStart { get; set; }
         public float ClearanceOfEnd { get; set; }
-        public List<EdgeProperty> EdgeProperties { get; set; }//use to agent radius
+        public float WidthClearanceOfStart { get; set; }
+        public float WidthClearanceOfEnd { get; set; }
+        public List<EdgeProperty> EdgeProperties { get; set; }//use for agent radius
         public float Length { get; set; }
 
         public int SiteID { get; set; }
@@ -69,7 +71,8 @@ namespace ExplicitCorridorMap
                 };
             ClearanceOfStart = (Start.Position - RightObstacleOfStart).magnitude;
             ClearanceOfEnd = (End.Position - RightObstacleOfEnd).magnitude;
-
+            WidthClearanceOfStart = (LeftObstacleOfStart - RightObstacleOfStart).magnitude / 2.0f;
+            WidthClearanceOfEnd = (LeftObstacleOfEnd - RightObstacleOfEnd).magnitude / 2.0f;
         }
         public void ComputeEnvelope()
         {
@@ -78,6 +81,10 @@ namespace ExplicitCorridorMap
         public void SetEnvelope(Envelope e)
         {
             _envelope = e;
+        }
+        public bool HasEnoughClearance(float radius)
+        {
+            return radius >= WidthClearanceOfStart && radius >= WidthClearanceOfEnd;
         }
         public void AddProperty(float radius)
         {
@@ -115,5 +122,6 @@ namespace ExplicitCorridorMap
         public Vector2 RightObstacleOfEnd { get; set; }
         public float ClearanceOfStart { get; set; }
         public float ClearanceOfEnd { get; set; }
+        
     }
 }
