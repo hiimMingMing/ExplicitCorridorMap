@@ -21,8 +21,8 @@ public class GameAgent : MonoBehaviour
     public int currentWayPoint = 0;
     public Vector3 debugTarget = Vector3.zero;
     public float destinationRadius { get; set; }
-    private List<UnityEngine.Vector2> wayPointList = new List<UnityEngine.Vector2>();
-    
+    public List<UnityEngine.Vector2> wayPointList = new List<UnityEngine.Vector2>();
+    List<LineDrawer> lineList = new List<LineDrawer>();
     public int radiusIndex;
     // Use this for initialization
     void Start() {
@@ -33,7 +33,7 @@ public class GameAgent : MonoBehaviour
         radiusIndex = ecmMap.AgentRadiusList.FindIndex(x=>(x==rad));
         
     }
-
+    
 
     // Update is called once per frame
     void Update()
@@ -58,11 +58,14 @@ public class GameAgent : MonoBehaviour
             {
                 lineRenderer.SetPosition(0, transform.position);
                 lineRenderer.SetPosition(1, targetWayPoint);
+                lineRenderer.startWidth = 2.0f;
+                lineRenderer.endWidth = 2.0f;
             }
         }
         #endregion
         if (Input.GetMouseButtonDown(1))
         {
+            DeletePath();
             if (debugTarget != Vector3.zero) {
                 finalTarget = debugTarget;
             }
@@ -75,7 +78,7 @@ public class GameAgent : MonoBehaviour
 
             wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position, finalTarget);
 
-
+            DrawPath(Color.yellow);
             currentWayPoint = 1;
         }
         //check if destination stuck
@@ -104,7 +107,7 @@ public class GameAgent : MonoBehaviour
             //transform.forward = Vector3.RotateTowards(transform.forward, (Vector3)targetWayPoint - transform.position, speed * Time.deltaTime, 0.0f);
 
             // move towards the target
-
+            
 
             Vector2 goalVector = new Vector2(targetWayPoint.x, targetWayPoint.y) - Simulator.Instance.getAgentPosition(sid);
             
@@ -128,6 +131,7 @@ public class GameAgent : MonoBehaviour
                 Debug.Log("Continue to next waypoint!");
                 currentWayPoint++;
                 if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
+                else DeletePath();
             }
         }
 
@@ -156,5 +160,30 @@ public class GameAgent : MonoBehaviour
         return false;
 
     }
+    #region Debug
+    public void DrawPath(Color color)
+    {
+        if (GameMainManager.Instance.agentSetting.debugMode)
+        {
+            for (int i = 0; i < wayPointList.Count - 1; i++)
+            {
+                //Draw the path
+                LineDrawer lineDrawer = new LineDrawer();
+                var start = new Vector3(wayPointList[i].x, wayPointList[i].y);
+                var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y);
+                lineDrawer.DrawLineInGameView(start, end, color, 0.5f);
+                lineList.Add(lineDrawer);
+            }
+        }
+    }
 
+    void DeletePath()
+    {
+        if (GameMainManager.Instance.agentSetting.debugMode)
+        {
+            foreach (var l in lineList)
+                l.Destroy();
+        }
+    }
+    #endregion
 }

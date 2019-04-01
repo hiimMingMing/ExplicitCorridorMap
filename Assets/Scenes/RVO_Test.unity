@@ -563,7 +563,14 @@ MonoBehaviour:
   agentPrefab: {fileID: 2629423753363850525, guid: 2a3b88eb9011299439e378112d34c004,
     type: 3}
   defaultECMMap: {fileID: 730136803}
+  ecmmap: {fileID: 730136803}
   cubes: {fileID: 284411795}
+  addedObstacle:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  defaultObstacle: {fileID: 1010689133}
   agentSetting: {fileID: 11400000, guid: b9a7788c8cb2fcd4a8b552fc17e2a4a1, type: 2}
 --- !u!4 &584897564
 Transform:
@@ -613,7 +620,7 @@ MonoBehaviour:
   Obstacles: {fileID: 284411795}
   DynamicObstacle: {fileID: 1010689133}
   AgentRadiusList:
-  - 1
+  - 3
   - 5
   - 10
   - 15
@@ -847,8 +854,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1010689132}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 73, y: 391, z: -46.285713}
-  m_LocalScale: {x: 47.988796, y: 72.70465, z: 10.907049}
+  m_LocalPosition: {x: 59.99, y: 380.16, z: -46.285713}
+  m_LocalScale: {x: 20.786827, y: 25.083105, z: 10.907049}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3

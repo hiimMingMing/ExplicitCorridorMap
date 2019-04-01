@@ -1,12 +1,75 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using rvo =  RVO;
 namespace ExplicitCorridorMap
 {
     public class DynamicReplanning
     {
+        //GameAgents version
+        public static void HandleDynamicEvent( )
+        {
+            GameMainManager gameManager = GameMainManager.Instance;
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                //Add a dynamic obstacle
+                var position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                position.z -= Camera.main.transform.position.z;
+            
+                gameManager.addedObstacle = DRMath.ConvertToRect(gameManager.defaultObstacle.transform.localScale.x, gameManager.defaultObstacle.transform.localScale.y, position);
+                Transform obj = Object.Instantiate(gameManager.defaultObstacle, position,Quaternion.identity);
+                gameManager.getECM().AddPolygonDynamic(new Obstacle(gameManager.addedObstacle));
+                gameManager.ecmmap.ComputeCurveEdge();
+                rvo.Simulator.Instance.addObstacle(obj);
+                //TODO change to effective way to add obstacle
+                rvo.Simulator.Instance.processObstacles();
+                //Handle the path
+                foreach (var item in gameManager.m_agentMap)
+                {
+                    GameAgent player = item.Value;
+                    var listAffectPath = ListAffectedPath(player.wayPointList, gameManager.addedObstacle, player.currentWayPoint);
+                    var newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position, player.finalTarget, listAffectPath);
+                    if (newPath.Count > 0)
+                    {
+                        player.wayPointList = newPath;
+                    }
+                    player.DrawPath(Color.green);
+                }
+               
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                //Delete an obstacle
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    BoxCollider bc = (BoxCollider)hit.collider;
+                    if (bc != null)
+                    {
+                        var xScale = bc.gameObject.transform.localScale.x;
+                        var yScale = bc.gameObject.transform.localScale.y;
+                        var position = bc.gameObject.transform.position;
+                        GameMainManager.Instance.addedObstacle = DRMath.ConvertToRect(xScale, yScale, position);
+
+                        Object.Destroy(bc.gameObject);
+                    }
+                }
+
+                //Handle the path
+                foreach (var item in gameManager.m_agentMap)
+                {
+                    GameAgent player = item.Value;
+                    player.wayPointList = DynamicFindPathByECM2(player.ecmMap, player.radiusIndex, player.transform.position, player.finalTarget, GameMainManager.Instance.addedObstacle);
+                    player.DrawPath(Color.green);
+                }
+            }
+        }
+
+
         //Handle dynamic events (Add/Delete obstacle)
+        //Player version
         public static void HandleDynamicEvent(Player player)
         {
             if (Input.GetKeyDown(KeyCode.A))
@@ -91,6 +154,16 @@ namespace ExplicitCorridorMap
             List<Vector2> newPath = new List<Vector2>();
             ecmmap.ecm.AddPolygonDynamic(new Obstacle(obstacle));
             ecmmap.ComputeCurveEdge();
+            if (listAffectPath.Count > 0)
+                return PathFinding.FindPath(ecmmap.ecm, radiusIndex, startPosition, endPosition);
+
+            return newPath;
+        }
+
+        public static List<Vector2> DynamicFindPathByECMVer2(ECMMap ecmmap, int radiusIndex, Vector2 startPosition, Vector2 endPosition, List<Vector2> listAffectPath )
+        {
+            List<Vector2> newPath = new List<Vector2>();
+            
             if (listAffectPath.Count > 0)
                 return PathFinding.FindPath(ecmmap.ecm, radiusIndex, startPosition, endPosition);
 
