@@ -56,7 +56,7 @@ namespace ExplicitCorridorMap
         }
         public override string ToString()
         {
-            return string.Format("{0} [{1}-{2}]",ID, Start, End);
+            return string.Format("{0}-{1}", Start, End);
         }
         public void ComputeCell()
         {

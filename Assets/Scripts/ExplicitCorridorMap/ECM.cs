@@ -170,9 +170,49 @@ namespace ExplicitCorridorMap
             }
 
             //search again with extended envelope, find all obstacle and segment involves
-            var extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance * 3);
-            obstacles = RTreeObstacle.Search(extendedEnvelope).ToList();
+            var extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance);
+            //var edges = RTree.Search(extendedEnvelope);
 
+            var edges = new List<Edge>();
+            float maxX = extendedEnvelope.MaxX;
+            float minX = extendedEnvelope.MinX;
+            float maxY = extendedEnvelope.MaxY;
+            float minY = extendedEnvelope.MinY;
+            var exRect = new Rect(minX, minY, maxX - minX, maxY - minY);
+            foreach (var e in Edges.Values)
+            {
+                maxX = e.Envelope.MaxX;
+                minX = e.Envelope.MinX;
+                maxY = e.Envelope.MaxY;
+                minY = e.Envelope.MinY;
+
+                var rect = new Rect(minX,minY,maxX-minX,maxY-minY);
+
+                if (rect.Overlaps(exRect))
+                {
+                    edges.Add(e);
+                }
+            }
+            var obstacleSet = new HashSet<Obstacle>();
+            foreach (var e in edges)
+            {
+                foreach (var ei in e.Start.Edges)
+                {
+                    var obs = RetrieveInputSegment(ei).Parent;
+                    if(!obs.IsBorder) obstacleSet.Add(obs);
+                    obs = RetrieveInputSegment(ei.Twin).Parent;
+                    if (!obs.IsBorder) obstacleSet.Add(obs);
+                }
+                foreach (var ei in e.End.Edges)
+                {
+                    var obs = RetrieveInputSegment(ei).Parent;
+                    if (!obs.IsBorder) obstacleSet.Add(obs);
+                    obs = RetrieveInputSegment(ei.Twin).Parent;
+                    if (!obs.IsBorder) obstacleSet.Add(obs);
+                }
+            }
+            obstacles = obstacleSet.ToList();
+            
         }
         private void GetEdgesToReplace(Vertex startVertex, HashSet<Vertex> vertices, HashSet<Edge> edges)
         {
@@ -202,9 +242,7 @@ namespace ExplicitCorridorMap
         }
         private void GetEdgesToReplace(ECMCore ecm, Envelope envelope, IReadOnlyList<Edge> selectedEdges, out HashSet<Vertex> vertices, out HashSet<Edge> edges)
         {
-            vertices = new HashSet<Vertex>();
-            edges = new HashSet<Edge>();
-
+            
             Vertex startVertex = null;
             foreach (var e in selectedEdges)
             {
@@ -219,8 +257,18 @@ namespace ExplicitCorridorMap
                     break;
                 }
             }
-            Assert.IsNotNull(startVertex,"Cannot find Start Vertex");
-            GetEdgesToReplace(startVertex, vertices, edges);
+
+            vertices = new HashSet<Vertex>();
+            edges = new HashSet<Edge>();
+            if (startVertex == null)
+            {
+                foreach(var e in selectedEdges)
+                {
+                    edges.Add(e);
+                    edges.Add(e.Twin);
+                }
+            }
+            else GetEdgesToReplace(startVertex, vertices, edges);
         }
         private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope envelope, IReadOnlyList<Edge> selectedEdges)
         {
@@ -235,13 +283,15 @@ namespace ExplicitCorridorMap
             }
             //Find all edges of new ECM to add
             var newSelectedEdges = newECM.RTree.Search(envelope);
+            //Debug.Log("New");
             GetEdgesToReplace(newECM, envelope, newSelectedEdges, out HashSet<Vertex> newVertices, out HashSet<Edge> newEdges);
+            //Debug.Log("Old");
             //Find all edges of old ECM to remove
             GetEdgesToReplace(this, envelope, selectedEdges, out HashSet<Vertex> oldVertices, out HashSet<Edge> oldEdges);
 
             foreach (var e in oldEdges)
             {
-                //Debug.Log(e);
+                //Debug.Log("D "+e);
                 DeleteEdge(e);
             }
             //add new edge and vertex to old ecm
@@ -274,7 +324,17 @@ namespace ExplicitCorridorMap
 
             ComputeNewECMAndMerge(obstacles, obstacle.Envelope, selectedEdges);
 
-
+            //foreach(var v in Vertices.Values)
+            //{
+            //    string es = "";
+            //    foreach(var e in v.Edges)
+            //    {
+            //        es += e.End;
+            //        es += "O" + RetrieveInputSegment(e).Parent.ID;
+            //        es += ", ";
+            //    }
+            //    Debug.Log(v + ":   "+es);
+            //}
         }
         public void DeletePolygonDynamic(int obstacleID)
         {
@@ -285,7 +345,6 @@ namespace ExplicitCorridorMap
 
             obstacles.Remove(obstacle);
             this.DeleteObstacle(obstacle);
-
             ComputeNewECMAndMerge(obstacles, obstacle.Envelope, selectedEdges);
         }
         
