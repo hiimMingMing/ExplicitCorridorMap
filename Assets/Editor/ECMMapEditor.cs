@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using ExplicitCorridorMap;
-using RBush;
+using System;
 
 [CustomEditor(typeof(ECMMap))]
 public class ECMMapEditor : Editor
@@ -48,7 +48,10 @@ public class ECMMapEditor : Editor
         if (ecm == null || !map.drawGraph) return;
         foreach (var obs in ecm.Obstacles.Values)
         {
-            Handles.Label(new Vector2((obs.Envelope.MinX + obs.Envelope.MaxX) / 2, (obs.Envelope.MinY + obs.Envelope.MaxY) / 2), obs.ID.ToString());
+            var x = ((float)obs.mBRectangle.LeftTop.X + (float)obs.mBRectangle.RightBottom.X) / 2;
+            var y = ((float)obs.mBRectangle.LeftTop.Y + (float)obs.mBRectangle.RightBottom.Y) / 2;
+
+            Handles.Label(new Vector2(x,y), obs.ID.ToString());
         }
         foreach (var vertex in ecm.Vertices.Values)
         {

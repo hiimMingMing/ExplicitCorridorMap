@@ -63,7 +63,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
 
     void DeleteAgent()
     {
-        float rangeSq = float.MaxValue;
+        //float rangeSq = float.MaxValue;
         int agentNo = Simulator.Instance.queryNearAgent(mousePosition, 1.5f);
         if (agentNo == -1 || !m_agentMap.ContainsKey(agentNo))
             return;

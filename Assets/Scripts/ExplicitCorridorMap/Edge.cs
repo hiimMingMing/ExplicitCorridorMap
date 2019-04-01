@@ -1,15 +1,11 @@
 ﻿using ExplicitCorridorMap.Voronoi;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using RBush;
-
+using Advanced.Algorithms.DataStructures;
 namespace ExplicitCorridorMap
 {
-    public class Edge : ISpatialData
+    public class Edge : SpatialData
     {
         public int ID;
         public List<Vector2> Cell { get; set; }
@@ -36,9 +32,6 @@ namespace ExplicitCorridorMap
         public SourceCategory SourceCategory { get; set; }
 
         
-
-        private Envelope _envelope;
-        public ref readonly Envelope Envelope => ref _envelope;
         public Edge(Vertex start, Vertex end, VoronoiEdge e, VoronoiCell c)
         {
             Start = start;
@@ -74,13 +67,14 @@ namespace ExplicitCorridorMap
             WidthClearanceOfStart = (LeftObstacleOfStart - RightObstacleOfStart).magnitude / 2.0f;
             WidthClearanceOfEnd = (LeftObstacleOfEnd - RightObstacleOfEnd).magnitude / 2.0f;
         }
-        public void ComputeEnvelope()
+        public override void ComputeMBRectangle()
         {
-            _envelope = Geometry.FindBoundingBox(Cell);
+            mBRectangle = Geometry.ComputeMBRectangle(Cell);
+            mBRectangle.Polygon = this;
         }
-        public void SetEnvelope(Envelope e)
+        public override MBRectangle GetContainingRectangle()
         {
-            _envelope = e;
+            return mBRectangle;
         }
         public bool HasEnoughClearance(float radius)
         {
