@@ -11,6 +11,9 @@ public class ECMMapManager : MonoBehaviour {
 
 	public static ECMMapManager instance = null;
 
+	[SerializeField]
+	public bool enableDebug = false;
+
 
 	float yLower = 0.1f;
 
@@ -38,6 +41,26 @@ public class ECMMapManager : MonoBehaviour {
 	void Start () {
 		setGround(GameObject.Find("GroundForECM").GetComponent<NavMeshSurface>());
 		bakeECMMap();
+		if(enableDebug) {
+			drawDebug();
+		}
+	}
+
+	public void drawDebug() {
+		GameObject obstacles = GameObject.Find("Obstacles");
+		for(int i = 0; i < bakedECMMap.Count; i++) {
+			LineRenderer lineRenderer = obstacles.transform.GetChild(i).gameObject.AddComponent(typeof(LineRenderer)) as LineRenderer;
+			Vector3[] abc = new Vector3[1];
+			lineRenderer.positionCount = bakedECMMap[i].vertices.Count;
+			lineRenderer.SetPositions(bakedECMMap[i].vertices.ToArray());
+			lineRenderer.startWidth = 0.05f;
+			lineRenderer.endWidth = 0.05f;
+			lineRenderer.loop = true;
+
+			for(int j = 0; j < lineRenderer.positionCount; j++) {
+				lineRenderer.SetPosition(j, lineRenderer.GetPosition(j) + new Vector3(0.0f, 0.1f, 0.0f));
+			}
+		}
 	}
 
 	public void setGround(NavMeshSurface surfaceIn) {
