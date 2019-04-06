@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEditor;
 
 public class ECMMapManager : MonoBehaviour {
+
 	public NavMeshSurface surface;
 	public List<ObstaclesVertices> bakedECMMap;
 
 	public static ECMMapManager instance = null;
+
 
 	float yLower = 0.1f;
 
@@ -33,6 +36,7 @@ public class ECMMapManager : MonoBehaviour {
 	}
 
 	void Start () {
+		setGround(GameObject.Find("GroundForECM").GetComponent<NavMeshSurface>());
 		bakeECMMap();
 	}
 
@@ -138,5 +142,6 @@ public class ECMMapManager : MonoBehaviour {
 	{
 		public List<Vector3> vertices = new List<Vector3>();
 	}
+
 	
 }
