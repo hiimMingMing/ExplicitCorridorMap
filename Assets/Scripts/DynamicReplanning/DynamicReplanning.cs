@@ -25,7 +25,7 @@ namespace ExplicitCorridorMap
                 {
                     player.wayPointList = newPath;           
                 }
-                player.DrawPath(Color.green);
+                LineDrawer.DrawPath(player.wayPointList, player.lineList, Color.green);
             }
             else if (Input.GetKeyDown(KeyCode.D))
             {
@@ -49,7 +49,7 @@ namespace ExplicitCorridorMap
 
                 //Handle the path
                 player.wayPointList = DynamicFindPathByECM2(player.ecmMap, player.RadiusIndex, player.transform.position, player.finalTarget, player.obstacle);
-                player.DrawPath(Color.green);
+                LineDrawer.DrawPath(player.wayPointList, player.lineList, Color.green);
             }
         }
 
@@ -103,7 +103,7 @@ namespace ExplicitCorridorMap
             int ID = FindObstacleID(ecmmap.ecm, obstacle);
             ecmmap.ecm.DeletePolygonDynamic(ID);
             ecmmap.ComputeCurveEdge();
-            var shortestPath = PathFinding.FindPath(ecmmap.ecm, 0, startPosition, endPosition);
+            var shortestPath = PathFinding.FindPath(ecmmap.ecm, radiusIndex, startPosition, endPosition);
 
             return shortestPath;
         }

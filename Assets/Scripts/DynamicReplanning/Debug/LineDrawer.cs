@@ -15,6 +15,20 @@ public class LineDrawer
         lineRenderer.material = new Material(Shader.Find("Hidden/Internal-Colored"));
     }
 
+    //Draw a list of line drawer
+    public static void DrawPath(List<Vector2> wayPointList, List<LineDrawer> lineList, Color color)
+    {
+        for (int i = 0; i < wayPointList.Count - 1; i++)
+        {
+            //Draw the path
+            LineDrawer lineDrawer = new LineDrawer();
+            var start = new Vector3(wayPointList[i].x, wayPointList[i].y);
+            var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y);
+            lineDrawer.DrawLineInGameView(start, end, color, 2.0f);
+            lineList.Add(lineDrawer);
+        }
+    }
+
     //Draws lines through the provided vertices
     public void DrawLineInGameView(Vector3 start, Vector3 end, Color color, float lineSize)
     {
@@ -42,6 +56,13 @@ public class LineDrawer
         //Set the postion of both two lines
         lineRenderer.SetPosition(0, start);
         lineRenderer.SetPosition(1, end);
+    }
+
+    //Destroy a list of line drawer
+    public static void DeletePath(List<LineDrawer> lineList)
+    {
+        foreach (var l in lineList)
+            l.Destroy();
     }
 
     public void Destroy()

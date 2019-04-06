@@ -25,8 +25,9 @@ public class Player : MonoBehaviour
 
     //Draw the path
     public bool drawPath = true;
-    LineDrawer lineDrawer;
-    List<LineDrawer> lineList = new List<LineDrawer>();
+    //LineDrawer lineDrawer;
+    [HideInInspector]
+    public List<LineDrawer> lineList = new List<LineDrawer>();
     [HideInInspector]
     public bool check = false;
 
@@ -48,13 +49,9 @@ public class Player : MonoBehaviour
             wayPointList = PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget);       
             currentWayPoint = 1;
 
-            DrawPath(Color.magenta); //Debug
+            if (drawPath) LineDrawer.DrawPath(wayPointList, lineList, Color.magenta); //Debug
         }
-        if (Input.GetMouseButtonDown(1))
-        {
-            var test = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Debug.Log(test.x + " - " + test.y);
-        }
+
         if (currentWayPoint < wayPointList.Count)
         {
             targetWayPoint = wayPointList[currentWayPoint];
@@ -73,34 +70,35 @@ public class Player : MonoBehaviour
         {
             currentWayPoint++;
             if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
-            else DeletePath(); //Debug
+            else
+                if (drawPath) LineDrawer.DeletePath(lineList); //Debug
         }
     }
 
-    #region Debug
-    public void DrawPath(Color color)
-    {
-        if (drawPath)
-        {
-            for (int i = 0; i < wayPointList.Count - 1; i++)
-            {
-                //Draw the path
-                LineDrawer lineDrawer = new LineDrawer();
-                var start = new Vector3(wayPointList[i].x, wayPointList[i].y);
-                var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y);
-                lineDrawer.DrawLineInGameView(start, end, color, 2.0f);
-                lineList.Add(lineDrawer);
-            }
-        }
-    }
+    //#region Debug
+    //public void DrawPath(Color color)
+    //{
+    //    if (drawPath)
+    //    {
+    //        for (int i = 0; i < wayPointList.Count - 1; i++)
+    //        {
+    //            //Draw the path
+    //            LineDrawer lineDrawer = new LineDrawer();
+    //            var start = new Vector3(wayPointList[i].x, wayPointList[i].y);
+    //            var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y);
+    //            lineDrawer.DrawLineInGameView(start, end, color, 2.0f);
+    //            lineList.Add(lineDrawer);
+    //        }
+    //    }
+    //}
 
-    void DeletePath()
-    {
-        if (drawPath)
-        {
-            foreach (var l in lineList)
-                l.Destroy();
-        }
-    }
-    #endregion
+    //void DeletePath()
+    //{
+    //    if (drawPath)
+    //    {
+    //        foreach (var l in lineList)
+    //            l.Destroy();
+    //    }
+    //}
+    //#endregion
 }
