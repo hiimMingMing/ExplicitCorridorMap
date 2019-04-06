@@ -17,18 +17,19 @@ namespace ExplicitCorridorMap
 
         public bool IsInside { get; set; }
         public Vertex OldVertex { get; set; }
+        public bool IsLinked { get; set; } // check if this vertex be used to linking with vertex of other ecm
         public float[] KDKey { get; }
-        public Vertex(int id,float x, float y)
+        public Vertex(int id, float x, float y)
         {
             ID = id;
-            Position = new Vector2(x,y);
+            Position = new Vector2(x, y);
             Edges = new List<Edge>();
             IsInside = false;
             OldVertex = null;
-            KDKey  = new float[] { X, Y };
+            KDKey = new float[] { X, Y };
+            IsLinked = false;
         }
         
-
         public override bool Equals(object obj)
         {
             if (obj == null) return false;

@@ -1,24 +1,26 @@
-﻿using RBush;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Advanced.Algorithms.DataStructures;
 
 namespace ExplicitCorridorMap
 {
     public class Geometry
     {
-        public static bool PolygonContainsPoint(List<Vector2> polyPoints  , Vector2 p )  { 
-           var j = polyPoints.Count - 1;
-           var inside = false; 
-           for (int i = 0; i<polyPoints.Count; j = i++) { 
-              if (((polyPoints[i].y <= p.y && p.y<polyPoints[j].y) || (polyPoints[j].y <= p.y && p.y<polyPoints[i].y)) && 
-                 (p.x<(polyPoints[j].x - polyPoints[i].x) * (p.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x)) 
-                 inside = !inside; 
-           } 
-           return inside; 
+        public static bool PolygonContainsPoint(List<Vector2> polyPoints, Vector2 p)
+        {
+            var j = polyPoints.Count - 1;
+            var inside = false;
+            for (int i = 0; i < polyPoints.Count; j = i++)
+            {
+                if (((polyPoints[i].y <= p.y && p.y < polyPoints[j].y) || (polyPoints[j].y <= p.y && p.y < polyPoints[i].y)) &&
+                   (p.x < (polyPoints[j].x - polyPoints[i].x) * (p.y - polyPoints[i].y) / (polyPoints[j].y - polyPoints[i].y) + polyPoints[i].x))
+                    inside = !inside;
+            }
+            return inside;
         }
         public static bool PolygonContainsPoint(Vector2 polyPoint1, Vector2 polyPoint2, Vector2 polyPoint3, Vector2 p)
         {
@@ -32,7 +34,8 @@ namespace ExplicitCorridorMap
             int y = (int)cube.position.y;
             return new RectInt(x - w / 2, y - h / 2, w, h);
         }
-        public static Envelope FindBoundingBox(List<Vector2> points)
+        
+        public static MBRectangle ComputeMBRectangle(List<Vector2> points)
         {
             float minX = float.PositiveInfinity;
             float minY = float.PositiveInfinity;
@@ -45,11 +48,11 @@ namespace ExplicitCorridorMap
                 if (v.y < minY) minY = v.y;
                 if (v.y > maxY) maxY = v.y;
             }
-            return new Envelope(minX, minY, maxX, maxY);
+            return new MBRectangle(new Point( minX, maxY), new Point( maxX, minY));
         }
-        public static Envelope ExtendEnvelope(Envelope e, float d)
+        public static Rectangle ExtendRectangle(Rectangle e, float d)
         {
-            return new Envelope(e.MinX - d, e.MinY - d, e.MaxX + d, e.MaxY + d);
+            return new Rectangle(new Point(e.LeftTop.X -d, e.LeftTop.Y + d), new Point(e.RightBottom.X + d, e.RightBottom.Y - d));
         }
     }
 }

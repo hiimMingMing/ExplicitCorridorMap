@@ -1,24 +1,20 @@
 ﻿using ExplicitCorridorMap.Maths;
-using ExplicitCorridorMap.Voronoi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using KdTree;
-using KdTree.Math;
-using RBush;
+using Advanced.Algorithms.DataStructures;
 
 namespace ExplicitCorridorMap
 {
     public class ECM : ECMCore
     {
-        private KdTree<float, Vertex> KdTree { get; }
-
+        public Dictionary<Vector2, Vertex> MapVertices { get; }
+        public List<float> AgentRadius { get; }
         public ECM(List<Obstacle> obstacles, Obstacle border) : base(obstacles, border)
         {
-            KdTree = new KdTree<float, Vertex>(2, new FloatMath());
+            MapVertices = new Dictionary<Vector2, Vertex>();
+            AgentRadius = new List<float>();
         }
         protected override void ConstructTree()
         {
@@ -26,23 +22,75 @@ namespace ExplicitCorridorMap
             //contruct kdtree
             foreach (var v in Vertices.Values)
             {
-                KdTree.Add(v.KDKey, v);
+                MapVertices.Add(v.Position, v);
+            }
+        }
+        public void AddAgentRadius(List<float> radiusList)
+        {
+            foreach (var r in radiusList)
+            {
+                AgentRadius.Add(r);
+                foreach (var e in Edges.Values)
+                {
+                    e.AddProperty(r);
+                }
+            }
+        }
+        public void AddAgentRadius(float radius)
+        {
+            AgentRadius.Add(radius);
+            foreach (var e in Edges.Values)
+            {
+                e.AddProperty(radius);
             }
         }
         public Edge GetNearestEdge(Vector2 point)
         {
-            var edges = RTree.Search(new Envelope(point.x, point.y, point.x, point.y));
+            var edges = RTreeEdge.RangeSearch(new Rectangle(point));
             foreach (var edge in edges)
             {
                 if (Geometry.PolygonContainsPoint(edge.Cell, point)) return edge;
             }
-            return GetNearestVertex(point).Edges[0];
+            return null;
         }
-        public Vertex GetNearestVertex(Vector2 point)
+        public Edge GetNearestEdge(ref Vector2 center, float radius)
         {
-            var pointArray = new float[] { point.x, point.y };
-            var nodes = KdTree.GetNearestNeighbours(pointArray, 1);
-            return nodes[0].Value;
+            //check if it intersect with obstacle
+            var obsList = RTreeObstacle.RangeSearch(new Rectangle(center,radius));
+            if (obsList.Count != 0)
+            {
+                float minDistance = float.MaxValue;
+                Vector2 closestPointOnObstacle = Vector2.zero;
+                Obstacle closestObstacle = null;
+                foreach (var obs in obsList)
+                {
+                    foreach (var s in obs.Segments)
+                    {
+                        var closestPoint = Distance.GetClosestPointOnLine(s.Start, s.End, center, out float d);
+                        if (d < minDistance)
+                        {
+                            minDistance = d;
+                            closestPointOnObstacle = closestPoint;
+                            closestObstacle = obs;
+                        }
+                    }
+                }
+                //move away from obstacle
+                if (Geometry.PolygonContainsPoint(closestObstacle.Points, center))
+                {
+                    center = closestPointOnObstacle + radius * (closestPointOnObstacle - center).normalized;
+                }
+                else if (minDistance < radius)
+                {
+                    center = closestPointOnObstacle + radius * (center - closestPointOnObstacle).normalized;
+                }
+            }
+            var edges = RTreeEdge.RangeSearch(new Rectangle(center));
+            foreach (var edge in edges)
+            {
+                if (Geometry.PolygonContainsPoint(edge.Cell, center)) return edge;
+            }
+            return null;
         }
 
         protected override void AddSegment(Segment s)
@@ -63,105 +111,163 @@ namespace ExplicitCorridorMap
             {
                 InputSegments.Remove(seg.ID);
             }
-            Obstacles.Remove(obs.ID); 
+            Obstacles.Remove(obs.ID);
             RTreeObstacle.Delete(obs);
         }
         private void DeleteEdge(Edge e)
         {
             e.Start.Edges.Remove(e);
             if (e.Start.Edges.Count == 0) DeleteVertex(e.Start);
-            RTree.Delete(e);
+            if (!e.IsTwin) RTreeEdge.Delete(e);
             Edges.Remove(e.ID);
         }
         private void DeleteVertex(Vertex v)
         {
             Vertices.Remove(v.ID);
-            KdTree.RemoveAt(v.KDKey);
+            MapVertices.Remove(v.Position);
         }
         private void AddEdge(Edge e)
         {
             e.ID = CountEdges++;
             Edges[e.ID] = e;
-            RTree.Insert(e);
+            if (!e.IsTwin) RTreeEdge.Insert(e);
         }
         private void AddVertex(Vertex v)
         {
             v.ID = CountVertices++;
             Vertices[v.ID] = v;
-            KdTree.Add(v.KDKey, v);
+            MapVertices.Add(v.Position, v);
         }
-        
+
         private void CheckOldVertex(Vertex v)
         {
-            var node = KdTree.GetNearestNeighbours(v.KDKey, 1);
-            if (node[0].Value.Position == v.Position)
+            if (MapVertices.ContainsKey(v.Position))
             {
-                //update this vertex
-                v.OldVertex = node[0].Value;
+                var oldVertex = MapVertices[v.Position];
+                oldVertex.IsLinked = true;
+                v.IsLinked = true;
+                v.OldVertex = oldVertex;
             }
         }
-        private void UpdateEdge(Edge e, HashSet<Vertex> newVertices)
+
+        private void GetRelatedObstacles(Obstacle obstacle, out List<Obstacle> obstacles, out IReadOnlyList<Edge> selectedEdges)
         {
-            if (e.Start.OldVertex != null)
-            {
-                e.Start = e.Start.OldVertex;
-                e.Start.Edges.Add(e);
-            }
-            else newVertices.Add(e.Start);
-            if (e.End.OldVertex != null)
-            {
-                e.End = e.End.OldVertex;
-            }
-            else newVertices.Add(e.End);
-        }
-        //Deleted all affected edges and return Obstacle Set with extended envelope for later use
-        private HashSet<Obstacle> DeleteAffectedEdge(Obstacle obstacle, out Envelope extendedEnvelope)
-        {
-            var selectedEdges = RTree.Search(obstacle.Envelope);
+            //selecte all edges intersect with obstacle
+            selectedEdges = RTreeEdge.RangeSearch(obstacle.mBRectangle);
             //enlarge obstacle
-            float maxSquareClearance = 0;
+            float maxClearance = 0;
             foreach (var e in selectedEdges)
             {
-                var d1 = (e.Start.Position - e.LeftObstacleOfStart).sqrMagnitude;
-                var d2 = (e.End.Position - e.LeftObstacleOfEnd).sqrMagnitude;
-                if (d1 > maxSquareClearance) maxSquareClearance = d1;
-                if (d2 > maxSquareClearance) maxSquareClearance = d2;
+                var d1 = e.ClearanceOfStart;
+                var d2 = e.ClearanceOfEnd;
+                if (d1 > maxClearance) maxClearance = d1;
+                if (d2 > maxClearance) maxClearance = d2;
             }
-            var maxClearance = Mathf.Sqrt(maxSquareClearance);
-            extendedEnvelope = Geometry.ExtendEnvelope(obstacle.Envelope, maxClearance);
 
             //search again with extended envelope, find all obstacle and segment involves
-            selectedEdges = RTree.Search(extendedEnvelope);
+            var extendedRectangle = Geometry.ExtendRectangle(obstacle.mBRectangle, maxClearance);
+            var edges = RTreeEdge.RangeSearch(extendedRectangle);
+
             var obstacleSet = new HashSet<Obstacle>();
+            foreach (var e in edges)
+            {
+                foreach (var ei in e.Start.Edges)
+                {
+                    var obs = RetrieveInputSegment(ei).Parent;
+                    if (!obs.IsBorder) obstacleSet.Add(obs);
+                    obs = RetrieveInputSegment(ei.Twin).Parent;
+                    if (!obs.IsBorder) obstacleSet.Add(obs);
+                }
+                foreach (var ei in e.End.Edges)
+                {
+                    var obs = RetrieveInputSegment(ei).Parent;
+                    if (!obs.IsBorder) obstacleSet.Add(obs);
+                    obs = RetrieveInputSegment(ei.Twin).Parent;
+                    if (!obs.IsBorder) obstacleSet.Add(obs);
+                }
+            }
+            obstacles = obstacleSet.ToList();
+
+        }
+        private void GetEdgesToReplace(Vertex startVertex, HashSet<Vertex> vertices, HashSet<Edge> edges)
+        {
+            if (!startVertex.IsLinked)
+            {
+                if (!vertices.Contains(startVertex)) vertices.Add(startVertex);
+                foreach (var e in startVertex.Edges)
+                {
+                    if (!edges.Contains(e))
+                    {
+                        edges.Add(e);
+                        GetEdgesToReplace(e.End, vertices, edges);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var e in startVertex.Edges)
+                {
+                    if (!edges.Contains(e) && vertices.Contains(e.End))
+                    {
+                        edges.Add(e);
+                        GetEdgesToReplace(e.End, vertices, edges);
+                    }
+                }
+            }
+        }
+        private void GetEdgesToReplace(ECMCore ecm, IReadOnlyList<Edge> selectedEdges, out HashSet<Vertex> vertices, out HashSet<Edge> edges)
+        {
+
+            Vertex startVertex = null;
             foreach (var e in selectedEdges)
             {
-                var obs = RetrieveInputSegment(e).Parent;
-                if (obs != null && !obs.IsBorder) obstacleSet.Add(obs);
-                obs = RetrieveInputSegment(e.Twin).Parent;
-                if (obs != null && !obs.IsBorder) obstacleSet.Add(obs);
-                DeleteEdge(e);
-                DeleteEdge(e.Twin);
+                if (!e.Start.IsLinked)
+                {
+                    startVertex = e.Start;
+                    break;
+                }
+                if (!e.End.IsLinked)
+                {
+                    startVertex = e.End;
+                    break;
+                }
             }
-            return obstacleSet;
+
+            vertices = new HashSet<Vertex>();
+            edges = new HashSet<Edge>();
+            if (startVertex == null)
+            {
+                foreach (var e in selectedEdges)
+                {
+                    edges.Add(e);
+                    edges.Add(e.Twin);
+                }
+            }
+            else GetEdgesToReplace(startVertex, vertices, edges);
         }
-        private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Envelope extendedEnvelope)
+        private void ComputeNewECMAndMerge(List<Obstacle> obstacleList, Rectangle mBRectangle, IReadOnlyList<Edge> selectedEdges)
         {
+            foreach (var v in Vertices.Values) { v.IsLinked = false; }
             //contruct new ECM
             var newECM = new ECMCore(obstacleList, this.Border);
             newECM.Construct();
-            var newEdges = newECM.RTree.Search(extendedEnvelope);
             //update edge infos
             foreach (var v in newECM.Vertices.Values)
             {
                 CheckOldVertex(v);
             }
-            var newVertices = new HashSet<Vertex>();
-            foreach (var e in newEdges)
+            //Find all edges of new ECM to add
+            var newSelectedEdges = newECM.RTreeEdge.RangeSearch(mBRectangle);
+            //Debug.Log("New");
+            GetEdgesToReplace(newECM, newSelectedEdges, out HashSet<Vertex> newVertices, out HashSet<Edge> newEdges);
+            //Debug.Log("Old");
+            //Find all edges of old ECM to remove
+            GetEdgesToReplace(this, selectedEdges, out HashSet<Vertex> oldVertices, out HashSet<Edge> oldEdges);
+
+            foreach (var e in oldEdges)
             {
-                UpdateEdge(e, newVertices);
-                UpdateEdge(e.Twin, newVertices);
-                e.SiteID = newECM.RetrieveInputSegment(e).ID;
-                e.Twin.SiteID = newECM.RetrieveInputSegment(e.Twin).ID;
+                //Debug.Log("D "+e);
+                DeleteEdge(e);
             }
             //add new edge and vertex to old ecm
             foreach (var v in newVertices)
@@ -170,93 +276,52 @@ namespace ExplicitCorridorMap
             }
             foreach (var e in newEdges)
             {
+                if (e.Start.IsLinked)
+                {
+                    e.Start = e.Start.OldVertex;
+                    e.Start.Edges.Add(e);
+                }
+                if (e.End.IsLinked) e.End = e.End.OldVertex;
+                e.SiteID = newECM.RetrieveInputSegment(e).ID;
+                foreach (var r in AgentRadius)
+                {
+                    e.AddProperty(r);
+                }
                 AddEdge(e);
-                AddEdge(e.Twin);
             }
         }
-        public void AddPolygonDynamic(Obstacle newObstacle)
+        public void AddPolygonDynamic(Obstacle obstacle)
         {
-            Envelope extendedEnvelope;
-            var obstacleList = DeleteAffectedEdge(newObstacle, out extendedEnvelope).ToList();
+            GetRelatedObstacles(obstacle, out List<Obstacle> obstacles, out IReadOnlyList<Edge> selectedEdges);
 
-            obstacleList.Add(newObstacle);
-            this.AddObstacle(newObstacle);
+            obstacles.Add(obstacle);
+            this.AddObstacle(obstacle);
 
-            ComputeNewECMAndMerge(obstacleList, extendedEnvelope);
+            ComputeNewECMAndMerge(obstacles, obstacle.mBRectangle, selectedEdges);
+
+            //foreach(var v in Vertices.Values)
+            //{
+            //    string es = "";
+            //    foreach(var e in v.Edges)
+            //    {
+            //        es += e.End;
+            //        es += "O" + RetrieveInputSegment(e).Parent.ID;
+            //        es += ", ";
+            //    }
+            //    Debug.Log(v + ":   "+es);
+            //}
         }
         public void DeletePolygonDynamic(int obstacleID)
         {
             if (!Obstacles.ContainsKey(obstacleID)) throw new KeyNotFoundException("Obstacle ID not exists");
             var obstacle = Obstacles[obstacleID];
 
-            Envelope extendedEnvelope;
-            var obstacleSet = DeleteAffectedEdge(obstacle, out extendedEnvelope);
+            GetRelatedObstacles(obstacle, out List<Obstacle> obstacles, out IReadOnlyList<Edge> selectedEdges);
 
-            obstacleSet.Remove(obstacle);
+            obstacles.Remove(obstacle);
             this.DeleteObstacle(obstacle);
-
-            ComputeNewECMAndMerge(obstacleSet.ToList(), extendedEnvelope);
+            ComputeNewECMAndMerge(obstacles, obstacle.mBRectangle, selectedEdges);
         }
 
-
-        /// <summary>
-        /// Generate a polyline representing a curved edge.
-        /// </summary>
-        /// <param name="edge">The curvy edge.</param>
-        /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
-        /// <returns></returns>
-        public List<Vector2> SampleCurvedEdge(Edge edge, float max_distance)
-        {
-            //test
-            //return new List<Vector2>() { edge.Start.Position, edge.End.Position };
-
-            Edge pointCell = null;
-            Edge lineCell = null;
-
-            //Max distance to be refined
-            if (max_distance <= 0)
-                throw new Exception("Max distance must be greater than 0");
-
-            Vector2Int pointSite;
-            Segment segmentSite;
-
-            Edge twin = edge.Twin;
-
-            if (edge.ContainsSegment == true && twin.ContainsSegment == true)
-                return new List<Vector2>() { edge.Start.Position, edge.End.Position };
-
-            if (edge.ContainsPoint)
-            {
-                pointCell = edge;
-                lineCell = twin;
-            }
-            else
-            {
-                lineCell = edge;
-                pointCell = twin;
-            }
-
-            pointSite = RetrieveInputPoint(pointCell);
-            segmentSite = RetrieveInputSegment(lineCell);
-
-            List<Vector2> discretization = new List<Vector2>(){
-                edge.Start.Position,
-                edge.End.Position
-            };
-
-            if (edge.IsLinear)
-                return discretization;
-
-
-            return ParabolaComputation.Densify(
-                new Vector2(pointSite.x, pointSite.y),
-                new Vector2(segmentSite.Start.x, segmentSite.Start.y),
-                new Vector2(segmentSite.End.x, segmentSite.End.y),
-                discretization[0],
-                discretization[1],
-                max_distance,
-                0
-            );
-        }
     }
 }

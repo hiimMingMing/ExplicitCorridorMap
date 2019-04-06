@@ -3,12 +3,8 @@ using ExplicitCorridorMap.Voronoi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using KdTree;
-using KdTree.Math;
-using RBush;
+using Advanced.Algorithms.DataStructures;
 
 
 namespace ExplicitCorridorMap
@@ -20,8 +16,8 @@ namespace ExplicitCorridorMap
         public Dictionary<int, Edge> Edges { get; }
 
         public Dictionary<int,Obstacle> Obstacles { get; }
-        public RBush<Edge> RTree { get; }
-        public RBush<Obstacle> RTreeObstacle { get; }
+        public RTree<Edge> RTreeEdge { get; }
+        public RTree<Obstacle> RTreeObstacle { get; }
         public Obstacle Border { get; set; }
         protected int CountVertices;
         protected int CountEdges;
@@ -34,10 +30,10 @@ namespace ExplicitCorridorMap
             InputSegments = new Dictionary<int, Segment>();
             Vertices = new Dictionary<int, Vertex>();
             Edges = new Dictionary<int, Edge>();
-            RTree = new RBush<Edge>(3);
+            RTreeEdge = new RTree<Edge>(3);
 
             Obstacles = new Dictionary<int, Obstacle>();
-            RTreeObstacle = new RBush<Obstacle>();
+            RTreeObstacle = new RTree<Obstacle>(3);
             foreach (var obs in obstacles)
             {
                 AddObstacle(obs);
@@ -82,6 +78,7 @@ namespace ExplicitCorridorMap
 
                     ecmEdge.Twin = ecmEdgeTwin;
                     ecmEdgeTwin.Twin = ecmEdge;
+                    ecmEdgeTwin.IsTwin = true;
                     start.Edges.Add(ecmEdge);
                     end.Edges.Add(ecmEdgeTwin);
                     Edges.Add(i, ecmEdge);
@@ -101,10 +98,10 @@ namespace ExplicitCorridorMap
             //Compute nearest obstacle point and contruct RTree
             foreach (var edge in Edges.Values)
             {
-                if (edge.ID % 2 == 0)
+                if (!edge.IsTwin)
                 {
                     ComputeObstaclePoint(edge);
-                    RTree.Insert(edge);
+                    RTreeEdge.Insert(edge);
                 }
             }
 
@@ -129,8 +126,7 @@ namespace ExplicitCorridorMap
 
             edge.ComputeCell();
             twinEdge.ComputeCell();
-            edge.ComputeEnvelope();
-            twinEdge.SetEnvelope(edge.Envelope);
+            edge.ComputeMBRectangle();
         }
         protected void ComputeObstaclePoint(Edge cell, Edge edge, out Vector2 start, out Vector2 end)
         {
@@ -180,7 +176,7 @@ namespace ExplicitCorridorMap
        
         protected bool InObstacleSpace(Vector2 point)
         {
-            var result = RTreeObstacle.Search(new Envelope(point.x, point.y, point.x, point.y));
+            var result = RTreeObstacle.RangeSearch(new Rectangle(point));
             foreach (var o in result)
             {
                 if (o.ContainsPoint(point)) return true;
