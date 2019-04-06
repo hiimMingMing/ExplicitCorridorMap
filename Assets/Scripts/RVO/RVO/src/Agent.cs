@@ -409,24 +409,19 @@ namespace RVO
                     u = (combinedRadius * invTimeStep - wLength) * unitW;
                 }
                 float delta = 0.5f;
-                if (priority == 1)
+                float total = priority + other.priority;
+                
+                if (priority + other.priority != 0)
                 {
-                    if (other.priority != 1)
-                    {
-                        delta = 0;
-                    }
+                    delta = 1 - (priority / total);
                 }
-                else
+               
+             
+                if (delta != 0)
                 {
-                    if (other.priority == 1)
-                    {
-                        delta = 1;
-                    }
-
+                    line.point = velocity_ + delta * u;
+                    orcaLines_.Add(line);
                 }
-                Debug.Log(id_+"   " + delta);
-                line.point = velocity_ + delta * u;
-                orcaLines_.Add(line);
             }
 
             int lineFail = linearProgram2(orcaLines_, maxSpeed_, prefVelocity_, true, ref newVelocity_);

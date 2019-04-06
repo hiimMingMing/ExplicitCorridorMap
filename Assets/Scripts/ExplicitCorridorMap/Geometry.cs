@@ -1,10 +1,10 @@
-﻿using RBush;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Advanced.Algorithms.DataStructures;
 
 namespace ExplicitCorridorMap
 {
@@ -34,7 +34,8 @@ namespace ExplicitCorridorMap
             int y = (int)cube.position.y;
             return new RectInt(x - w / 2, y - h / 2, w, h);
         }
-        public static Envelope FindBoundingBox(List<Vector2> points)
+        
+        public static MBRectangle ComputeMBRectangle(List<Vector2> points)
         {
             float minX = float.PositiveInfinity;
             float minY = float.PositiveInfinity;
@@ -47,15 +48,11 @@ namespace ExplicitCorridorMap
                 if (v.y < minY) minY = v.y;
                 if (v.y > maxY) maxY = v.y;
             }
-            return new Envelope(minX, minY, maxX, maxY);
+            return new MBRectangle(new Point( minX, maxY), new Point( maxX, minY));
         }
-        public static Envelope ExtendEnvelope(Envelope e, float d)
+        public static Rectangle ExtendRectangle(Rectangle e, float d)
         {
-            return new Envelope(e.MinX - d, e.MinY - d, e.MaxX + d, e.MaxY + d);
-        }
-        public static bool EnvelopeContainsPoint(Envelope e, Vector2 p)
-        {
-            return p.x >= e.MinX && p.x <= e.MaxX && p.y >= e.MinY && p.y <= e.MaxY;
+            return new Rectangle(new Point(e.LeftTop.X -d, e.LeftTop.Y + d), new Point(e.RightBottom.X + d, e.RightBottom.Y - d));
         }
     }
 }

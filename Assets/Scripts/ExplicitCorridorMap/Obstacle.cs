@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using RBush;
+using Advanced.Algorithms.DataStructures;
 namespace ExplicitCorridorMap
 {
-    public class Obstacle : ISpatialData
+    public class Obstacle : SpatialData
     {
         public int ID { get; set; }
         public List<Vector2> Points = new List<Vector2>();
         public List<Segment> Segments = new List<Segment>();
-        private Envelope _envelope;
-        public ref readonly Envelope Envelope => ref _envelope;
+        private Rectangle Rectangle;
         public bool IsBorder = false;
         public Obstacle(List<Vector2> points)
         {
@@ -34,7 +31,7 @@ namespace ExplicitCorridorMap
         }
         public void Init()
         {
-            _envelope = Geometry.FindBoundingBox(Points);
+            ComputeMBRectangle();
             for (int i = 1; i < Points.Count; i++)
             {
                 var s = new Segment(Vector2Int.CeilToInt(Points[i - 1]),Vector2Int.CeilToInt(Points[i]));
@@ -44,6 +41,15 @@ namespace ExplicitCorridorMap
             var sLast = new Segment(Vector2Int.CeilToInt(Points[Points.Count - 1]), Vector2Int.CeilToInt(Points[0]));
             sLast.Parent = this;
             Segments.Add(sLast);
+        }
+        public override void ComputeMBRectangle()
+        {
+            mBRectangle = Geometry.ComputeMBRectangle(Points);
+            mBRectangle.Polygon = this;
+        }
+        public override MBRectangle GetContainingRectangle()
+        {
+            return mBRectangle;
         }
     }
 }

@@ -1,15 +1,11 @@
 ﻿using ExplicitCorridorMap.Voronoi;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using RBush;
-
+using Advanced.Algorithms.DataStructures;
 namespace ExplicitCorridorMap
 {
-    public class Edge : ISpatialData
+    public class Edge : SpatialData
     {
         public int ID;
         public List<Vector2> Cell { get; set; }
@@ -25,7 +21,9 @@ namespace ExplicitCorridorMap
         public Vector2 RightObstacleOfEnd { get; set; }
         public float ClearanceOfStart { get; set; }
         public float ClearanceOfEnd { get; set; }
-        public List<EdgeProperty> EdgeProperties { get; set; }//use to agent radius
+        public float WidthClearanceOfStart { get; set; }
+        public float WidthClearanceOfEnd { get; set; }
+        public List<EdgeProperty> EdgeProperties { get; set; }//use for agent radius
         public float Length { get; set; }
 
         public int SiteID { get; set; }
@@ -34,9 +32,6 @@ namespace ExplicitCorridorMap
         public SourceCategory SourceCategory { get; set; }
 
         
-
-        private Envelope _envelope;
-        public ref readonly Envelope Envelope => ref _envelope;
         public Edge(Vertex start, Vertex end, VoronoiEdge e, VoronoiCell c)
         {
             Start = start;
@@ -54,7 +49,7 @@ namespace ExplicitCorridorMap
         }
         public override string ToString()
         {
-            return string.Format("{0} [{1}-{2}]",ID, Start, End);
+            return string.Format("{0}-{1}", Start, End);
         }
         public void ComputeCell()
         {
@@ -69,15 +64,21 @@ namespace ExplicitCorridorMap
                 };
             ClearanceOfStart = (Start.Position - RightObstacleOfStart).magnitude;
             ClearanceOfEnd = (End.Position - RightObstacleOfEnd).magnitude;
-
+            WidthClearanceOfStart = (LeftObstacleOfStart - RightObstacleOfStart).magnitude / 2.0f;
+            WidthClearanceOfEnd = (LeftObstacleOfEnd - RightObstacleOfEnd).magnitude / 2.0f;
         }
-        public void ComputeEnvelope()
+        public override void ComputeMBRectangle()
         {
-            _envelope = Geometry.FindBoundingBox(Cell);
+            mBRectangle = Geometry.ComputeMBRectangle(Cell);
+            mBRectangle.Polygon = this;
         }
-        public void SetEnvelope(Envelope e)
+        public override MBRectangle GetContainingRectangle()
         {
-            _envelope = e;
+            return mBRectangle;
+        }
+        public bool HasEnoughClearance(float radius)
+        {
+            return radius >= WidthClearanceOfStart && radius >= WidthClearanceOfEnd;
         }
         public void AddProperty(float radius)
         {
@@ -115,5 +116,6 @@ namespace ExplicitCorridorMap
         public Vector2 RightObstacleOfEnd { get; set; }
         public float ClearanceOfStart { get; set; }
         public float ClearanceOfEnd { get; set; }
+        
     }
 }

@@ -9,7 +9,7 @@ using UnityEngine.Assertions.Comparers;
 using UnityEngine.Experimental.UIElements;
 using Random = System.Random;
 using Vector2 = RVO.Vector2;
-
+using ExplicitCorridorMap;
 public class GameMainManager : SingletonBehaviour<GameMainManager>
 {
     public GameObject agentPrefab;
@@ -17,33 +17,33 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
     public ECMMap defaultECMMap;
     [HideInInspector] public Vector2 mousePosition;
     private ExplicitCorridorMap.ECM ecm;
+    public  ECMMap ecmmap;
     private Plane m_hPlane = new Plane(Vector3.forward, Vector3.zero);
-    private Dictionary<int, GameAgent> m_agentMap = new Dictionary<int, GameAgent>();
+    [HideInInspector]
+    public Dictionary<int, GameAgent> m_agentMap = new Dictionary<int, GameAgent>();
     public Transform cubes;
-    
+    // use to store current added obstacle
+    [HideInInspector]
+    public RectInt addedObstacle;
+    public Transform defaultObstacle;
     [Header("Agent setting")]
     public AgentSetting agentSetting;
     public ExplicitCorridorMap.ECM getECM() {
-        return ecm;
+        return ecmmap.ecm;
     }
 
    
     // Use this for initialization
     void Start()
     {
-        //Construct ECM
-        List<ExplicitCorridorMap.Obstacle> obstacles = new List<ExplicitCorridorMap.Obstacle>();
-        foreach (Transform cube in cubes)
-        {
-            obstacles.Add(new ExplicitCorridorMap.Obstacle(ExplicitCorridorMap.Geometry.ConvertToRect(cube)));
-            //Obstacles.Add(new Obstacle(Geometry.ConvertToRect(cube)));
+        if (ecmmap == null) {
+            Debug.Log("No ECMMap!");
         }
-        ecm = new ExplicitCorridorMap.ECM(obstacles, new ExplicitCorridorMap.Obstacle(new RectInt(0, 0, 500, 500)));
-        ecm.Construct();
+         
 
         //End
         Simulator.Instance.setTimeStep(1f);
-        Simulator.Instance.setAgentDefaults(60.0f, 10, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(120.0f, 50, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
 
         // add in awake
         Simulator.Instance.processObstacles();
@@ -63,7 +63,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
 
     void DeleteAgent()
     {
-        float rangeSq = float.MaxValue;
+        //float rangeSq = float.MaxValue;
         int agentNo = Simulator.Instance.queryNearAgent(mousePosition, 1.5f);
         if (agentNo == -1 || !m_agentMap.ContainsKey(agentNo))
             return;
@@ -170,8 +170,8 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
                 }
             }
         }
-
-       
+        
+        DynamicReplanning.HandleDynamicEvent( );
     }
 
     void FixedUpdate() {

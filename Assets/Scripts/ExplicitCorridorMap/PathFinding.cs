@@ -19,16 +19,16 @@ namespace ExplicitCorridorMap
             {
                 return new List<Vector2>();
             }
-
-            var edgeList = FindEdgePathFromVertexToVertex(ecm, radiusIndex ,startEdge.Start,startEdge.End, endEdge.Start,endEdge.End,startPosition,endPosition);
-            if(edgeList.Count == 0) { return new List<Vector2>(); }
+            var vertexList = FindPathFromVertexToVertex(ecm, radiusIndex, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition);
+            if (vertexList.Count == 0) return new List<Vector2>();
+            else if (vertexList.Count == 1) return new List<Vector2>() { startPosition,endPosition};
+            var edgeList = ConvertToEdgeList(vertexList);
             ComputePortals(radiusIndex,edgeList, startPosition, endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
         }
         
-        private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, int radiusIndex, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
+        private static List<Edge> ConvertToEdgeList(List<Vertex> path)
         {
-            var path = PathFinding.FindPathFromVertexToVertex(graph, radiusIndex, start1, start2, end1,end2,startPosition,endPosition);
             var edgeList = new List<Edge>();
             
             for (int i = path.Count - 1; i > 0; i--)
@@ -48,7 +48,7 @@ namespace ExplicitCorridorMap
         private static List<Vertex> FindPathFromVertexToVertex(ECM graph, int radiusIndex, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
         {
             List<Vertex> result = new List<Vertex>();
-            var agentRadius = graph.AgentRadius[radiusIndex];
+            var radius = graph.AgentRadius[radiusIndex];
 
             var openSet = new HashSet<Vertex>();
             openSet.Add(start1);
@@ -72,7 +72,7 @@ namespace ExplicitCorridorMap
                 foreach(var edge in current.Edges)
                 {
                     var neigborVertex = edge.End;
-                    if (closeSet.Contains(neigborVertex) || edge.EdgeProperties[radiusIndex].ClearanceOfEnd < 0) continue;
+                    if (closeSet.Contains(neigborVertex) || edge.HasEnoughClearance(radius)) continue;
                     var tentativeGScore = gScore[current] + edge.Length;
                     if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
                     else if (tentativeGScore >= gScore[neigborVertex]) continue;
