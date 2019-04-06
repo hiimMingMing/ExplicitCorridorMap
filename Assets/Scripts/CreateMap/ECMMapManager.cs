@@ -3,25 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class MyNavToVerticesList : MonoBehaviour {
+public class ECMMapManager : MonoBehaviour {
 	public NavMeshSurface surface;
-	[SerializeField]
 	public List<ObstaclesVertices> bakedECMMap;
+
+	public static ECMMapManager instance = null;
 
 	float yLower = 0.1f;
 
-     float Round(float input, int decimalPlaces = 1)
-     {
-         float multiplier = 1;
-         for (int i = 0; i < decimalPlaces; i++)
-         {
-             multiplier *= 10f;
-         }
-         return Mathf.Round(input * multiplier) / multiplier;
-     }
+    float Round(float input, int decimalPlaces = 1)
+    {
+        float multiplier = 1;
+        for (int i = 0; i < decimalPlaces; i++)
+        {
+            multiplier *= 10f;
+        }
+        return Mathf.Round(input * multiplier) / multiplier;
+    }
 
-	// Use this for initialization
+	void Awake() {
+		if(instance == null) {
+			instance = this;
+		}
+		else if(instance != this) {
+			Destroy(gameObject);
+		}
+
+		DontDestroyOnLoad(gameObject);
+	}
+
 	void Start () {
+		bakeECMMap();
+	}
+
+	public void setGround(NavMeshSurface surfaceIn) {
+		surface = surfaceIn;
+	}
+
+	public void setLowestHeight(int value) {
+		yLower = value;
+	}
+
+	public List<List<Vector3>> bakeECMMap() {
 		GameObject obstacles = GameObject.Find("Obstacles");
 
 		int obstaclesCOunt = obstacles.transform.childCount;
@@ -35,6 +58,15 @@ public class MyNavToVerticesList : MonoBehaviour {
 			NavMeshToVertices();
         }   
 
+		return getBakedMap();
+	}
+
+	public List<List<Vector3>> getBakedMap() {
+		List<List<Vector3>> result = new List<List<Vector3>>();
+		for(int i = 0; i < bakedECMMap.Count; i++) {
+			result.Add(bakedECMMap[i].vertices);
+		}
+		return result;
 	}
 
 	void NavMeshToVertices() {
@@ -107,8 +139,4 @@ public class MyNavToVerticesList : MonoBehaviour {
 		public List<Vector3> vertices = new List<Vector3>();
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }
