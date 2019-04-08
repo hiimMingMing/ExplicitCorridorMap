@@ -51,11 +51,11 @@ public class ECMMapEditor : Editor
             var x = ((float)obs.mBRectangle.LeftTop.X + (float)obs.mBRectangle.RightBottom.X) / 2;
             var y = ((float)obs.mBRectangle.LeftTop.Y + (float)obs.mBRectangle.RightBottom.Y) / 2;
 
-            Handles.Label(new Vector2(x,y), obs.ID.ToString());
+            Handles.Label(new Vector2(x,y).to3D(), obs.ID.ToString());
         }
         foreach (var vertex in ecm.Vertices.Values)
         {
-            Handles.Label(vertex.Position, vertex.ID + "");
+            Handles.Label(vertex.Position.to3D(), vertex.ID + "");
         }
     }
 

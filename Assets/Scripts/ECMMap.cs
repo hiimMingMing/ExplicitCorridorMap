@@ -30,7 +30,7 @@ public class ECMMap : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     #region DrawGizmos
@@ -70,7 +70,7 @@ public class ECMMap : MonoBehaviour
             ecm.AddAgentRadius(r);
 
         }
-        shortestPath = PathFinding.FindPath(ecm,0, StartPoint.position, EndPoint.position);
+        shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position, EndPoint.position);
     }
     public void AddObstacle()
     {
@@ -103,7 +103,7 @@ public class ECMMap : MonoBehaviour
 
         //Draw input point
         if (ecm == null || !drawGraph) return;
-        
+
         //Draw input segment
         Gizmos.color = Color.yellow;
         foreach (var inputSegment in ecm.InputSegments.Values)
@@ -220,7 +220,7 @@ public class ECMMap : MonoBehaviour
             {
                 if (!e.IsLinear && !e.IsTwin)
                 {
-                    List<Vector2> discretizedEdge = SampleCurvedEdge(ecm,e, 10);
+                    List<Vector2> discretizedEdge = SampleCurvedEdge(ecm, e, 10);
                     curveEdges.Add(discretizedEdge);
                 }
             }
@@ -239,7 +239,7 @@ public class ECMMap : MonoBehaviour
     /// <param name="edge">The curvy edge.</param>
     /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
     /// <returns></returns>
-    public List<Vector2> SampleCurvedEdge(ECM ecm,Edge edge, float max_distance)
+    public List<Vector2> SampleCurvedEdge(ECM ecm, Edge edge, float max_distance)
     {
         //test
         //return new List<Vector2>() { edge.Start.Position, edge.End.Position };

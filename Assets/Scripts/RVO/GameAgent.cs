@@ -46,9 +46,15 @@ public class GameAgent : MonoBehaviour
         {
             Vector2 pos = Simulator.Instance.getAgentPosition(sid);
             Vector2 vel = Simulator.Instance.getAgentVelocity(sid);
-            transform.position = new Vector3(pos.x(), pos.y(), transform.position.z);
+            if (GameMainManager.Instance.is3D)
+            {
+                transform.position = new Vector3(pos.x(), pos.y(), 0).to3D();
+            }
+            else {
+                transform.position = new Vector3(pos.x(), pos.y(), transform.position.z);
+            }
             if (Math.Abs(vel.x()) > 0.01f && Math.Abs(vel.y()) > 0.01f)
-                transform.forward = new Vector3(vel.x(), vel.y(), 0).normalized;
+                transform.forward = new Vector3(vel.x(), vel.y(), 0).to3D().normalized;
         }
 
         #region Debug
@@ -57,7 +63,7 @@ public class GameAgent : MonoBehaviour
             if (targetWayPoint.x != 0 && targetWayPoint.y != 0)
             {
                 lineRenderer.SetPosition(0, transform.position);
-                lineRenderer.SetPosition(1, targetWayPoint);
+                lineRenderer.SetPosition(1, targetWayPoint.to3D());
                 lineRenderer.startWidth = 2.0f;
                 lineRenderer.endWidth = 2.0f;
             }
@@ -71,12 +77,24 @@ public class GameAgent : MonoBehaviour
             }
             else
             {
-                finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
+                if (GameMainManager.Instance.is3D)
+                {
+                    Vector2 mousePosition = GameMainManager.Instance.mousePosition;
+                    finalTarget = new Vector3(mousePosition.x_, mousePosition.y_, 0);
+                }
+                else {
+                    finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                }
+               
             }
-            ///wayPointList = ExplicitCorridorMap.PathFinding.FindPath(GameMainManager.Instance.getECM(), transform.position, finalTarget);
-
-            wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position, finalTarget);
+            
+            if (GameMainManager.Instance.is3D)
+            {
+                wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position.to2D(), finalTarget);
+            }
+            else {
+                wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm,radiusIndex ,transform.position, finalTarget);
+            }
 
             DrawPath(Color.yellow);
             currentWayPoint = 1;
@@ -126,7 +144,15 @@ public class GameAgent : MonoBehaviour
                                                          dist *
                                                          new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)));
 
-            if (RVOMath.compareVector2WithinDist(new Vector2(transform.position.x, transform.position.y), new Vector2(targetWayPoint.x, targetWayPoint.y), destinationRadius))
+            Vector2 position;
+            if (GameMainManager.Instance.is3D)
+            {
+                position = new Vector2(transform.position.x, transform.position.z);
+            }
+            else {
+                position = new Vector2(transform.position.x, transform.position.y);
+            }
+            if (RVOMath.compareVector2WithinDist(position, new Vector2(targetWayPoint.x, targetWayPoint.y), destinationRadius))
             {
                 Debug.Log("Continue to next waypoint!");
                 currentWayPoint++;
@@ -141,7 +167,15 @@ public class GameAgent : MonoBehaviour
 
 
     bool checkDestinationStuck() {
-        float distanceToDesSqr = (transform.position.Vector3ToVector2() - finalTarget.Vector3ToVector2()).sqrMagnitude;
+        float distanceToDesSqr;
+        if (GameMainManager.Instance.is3D)
+        {
+            distanceToDesSqr = (transform.position.to2D().Vector3ToVector2() - finalTarget.Vector3ToVector2()).sqrMagnitude;
+        }
+        else {
+            distanceToDesSqr = (transform.position.Vector3ToVector2() - finalTarget.Vector3ToVector2()).sqrMagnitude;
+
+        }
         float sumAgentS = 0;
         IList<Agent> listOfAgent = Simulator.Instance.GetListAgents();
         for (int i = 0; i < listOfAgent.Count; i++)
@@ -169,8 +203,8 @@ public class GameAgent : MonoBehaviour
             {
                 //Draw the path
                 LineDrawer lineDrawer = new LineDrawer();
-                var start = new Vector3(wayPointList[i].x, wayPointList[i].y);
-                var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y);
+                var start = new Vector3(wayPointList[i].x, wayPointList[i].y).to3D();
+                var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y).to3D();
                 lineDrawer.DrawLineInGameView(start, end, color, 0.5f);
                 lineList.Add(lineDrawer);
             }

@@ -562,6 +562,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentPrefab: {fileID: 2629423753363850525, guid: 2a3b88eb9011299439e378112d34c004,
     type: 3}
+  is3D: 0
   defaultECMMap: {fileID: 730136803}
   ecmmap: {fileID: 730136803}
   cubes: {fileID: 284411795}

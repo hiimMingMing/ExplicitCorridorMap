@@ -28,10 +28,28 @@ namespace ExplicitCorridorMap
         }
         public static RectInt ConvertToRect(Transform cube)
         {
-            int w = (int)cube.localScale.x;
-            int h = (int)cube.localScale.y;
-            int x = (int)cube.position.x;
-            int y = (int)cube.position.y;
+            int w, h, x, y;
+            if (GameMainManager.Instance.isNull())
+            {
+                GameMainManager.Instance.is3D = false;
+                w = (int)cube.localScale.x;
+                h = (int)cube.localScale.y;
+                x = (int)cube.position.x;
+                y = (int)cube.position.y;
+                return new RectInt(x - w / 2, y - h / 2, w, h);
+
+            }
+            if (GameMainManager.Instance.is3D) {
+                w = (int)cube.localScale.x;
+                h = (int)cube.localScale.z;
+                x = (int)cube.position.x;
+                y = (int)cube.position.z;
+                return new RectInt(x - w / 2, y - h / 2, w, h);
+            }
+            w = (int)cube.localScale.x;
+            h = (int)cube.localScale.y;
+            x = (int)cube.position.x;
+            y = (int)cube.position.y;
             return new RectInt(x - w / 2, y - h / 2, w, h);
         }
         

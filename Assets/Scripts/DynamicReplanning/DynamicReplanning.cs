@@ -13,13 +13,30 @@ namespace ExplicitCorridorMap
             if (Input.GetKeyDown(KeyCode.A))
             {
                 //Add a dynamic obstacle
-                var position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                position.z -= Camera.main.transform.position.z;
-            
-                gameManager.addedObstacle = DRMath.ConvertToRect(gameManager.defaultObstacle.transform.localScale.x, gameManager.defaultObstacle.transform.localScale.y, position);
+                Vector3 position;
+                if (GameMainManager.Instance.is3D)
+                {
+                    position = new Vector3(GameMainManager.Instance.mousePosition.x_,0, GameMainManager.Instance.mousePosition.y_);
+                }
+                else
+                {
+                    position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    position.z -= Camera.main.transform.position.z;
+                }
+                if (GameMainManager.Instance.is3D)
+                {
+                    Vector3 ORCAposition = new Vector3(position.x, position.z, 0);
+                    gameManager.addedObstacle = DRMath.ConvertToRect(gameManager.defaultObstacle.transform.localScale.x, gameManager.defaultObstacle.transform.localScale.z, ORCAposition);
+                    
+                }
+                else {
+                    gameManager.addedObstacle = DRMath.ConvertToRect(gameManager.defaultObstacle.transform.localScale.x, gameManager.defaultObstacle.transform.localScale.y, position);
+
+                }
                 Transform obj = Object.Instantiate(gameManager.defaultObstacle, position,Quaternion.identity);
                 gameManager.getECM().AddPolygonDynamic(new Obstacle(gameManager.addedObstacle));
                 gameManager.ecmmap.ComputeCurveEdge();
+              
                 rvo.Simulator.Instance.addObstacle(obj);
                 //TODO change to effective way to add obstacle
                 rvo.Simulator.Instance.processObstacles();
@@ -28,9 +45,17 @@ namespace ExplicitCorridorMap
                 {
                     GameAgent player = item.Value;
                     var listAffectPath = ListAffectedPath(player.wayPointList, gameManager.addedObstacle, player.currentWayPoint);
-                    var newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position, player.finalTarget, listAffectPath);
+                    List<Vector2> newPath;
+                    if (GameMainManager.Instance.is3D)
+                    {
+                        newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position.to3D(), player.finalTarget, listAffectPath);
+                    }
+                    else {
+                        newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position, player.finalTarget, listAffectPath);
+                    }
                     if (newPath.Count > 0)
                     {
+                        player.currentWayPoint = 0;
                         player.wayPointList = newPath;
                     }
                     player.DrawPath(Color.green);
@@ -78,15 +103,18 @@ namespace ExplicitCorridorMap
                 var position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 position.z -= Camera.main.transform.position.z;
 
+              
                 player.obstacle = DRMath.ConvertToRect(player.addObj.transform.localScale.x, player.addObj.transform.localScale.y, position);
                 Object.Instantiate(player.addObj, position, player.transform.rotation);
 
                 //Handle the path
                 var listAffectPath  = ListAffectedPath(player.wayPointList, player.obstacle, player.currentWayPoint);
-                var newPath = DynamicFindPathByECM(player.ecmMap, player.RadiusIndex, player.transform.position, player.finalTarget, listAffectPath, player.obstacle);
+                var newPath = DynamicFindPathByECM(player.ecmMap, player.RadiusIndex, player.transform.position , player.finalTarget, listAffectPath, player.obstacle);
                 if (newPath.Count > 0)
                 {
-                    player.wayPointList = newPath;           
+                    player.currentWayPoint = 0;
+                    player.wayPointList = newPath;
+                  
                 }
                 player.DrawPath(Color.green);
             }
