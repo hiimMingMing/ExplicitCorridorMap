@@ -16,5 +16,5 @@ public class AgentSetting : ScriptableObject
     public float destinationRadius;
     [Range(1,1000)]
     public int numberOfAgent;
-    public bool debugMode;
+   
 }

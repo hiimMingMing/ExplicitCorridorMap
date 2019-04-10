@@ -30,10 +30,10 @@ public class GameAgent : MonoBehaviour
         float rad = Simulator.Instance.getAgentRadius(sid);
         lineRenderer = GetComponent<LineRenderer>();
 
-        radiusIndex = ecmMap.AgentRadiusList.FindIndex(x=>(x==rad));
-        
+        radiusIndex = ecmMap.AgentRadiusList.FindIndex(x => (x == rad));
+
     }
-    
+
 
     // Update is called once per frame
     void Update()
@@ -58,7 +58,7 @@ public class GameAgent : MonoBehaviour
         }
 
         #region Debug
-        if (GameMainManager.Instance.agentSetting.debugMode)
+        if (GameMainManager.Instance.DebugMode)
         {
             if (targetWayPoint.x != 0 && targetWayPoint.y != 0)
             {
@@ -69,40 +69,48 @@ public class GameAgent : MonoBehaviour
             }
         }
         #endregion
-        if (Input.GetMouseButtonDown(1))
+        if (!GameMainManager.Instance.isGroupTarget)
         {
-            DeletePath();
-            if (debugTarget != Vector3.zero) {
-                finalTarget = debugTarget;
-            }
-            else
+            if (Input.GetMouseButtonDown(1))
             {
+                DeletePath();
+                if (debugTarget != Vector3.zero)
+                {
+                    finalTarget = debugTarget;
+                }
+                else
+                {
+                    if (GameMainManager.Instance.is3D)
+                    {
+                        Vector2 mousePosition = GameMainManager.Instance.mousePosition;
+                        finalTarget = new Vector3(mousePosition.x_, mousePosition.y_, 0);
+                    }
+                    else
+                    {
+                        finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    }
+
+                }
+
                 if (GameMainManager.Instance.is3D)
                 {
-                    Vector2 mousePosition = GameMainManager.Instance.mousePosition;
-                    finalTarget = new Vector3(mousePosition.x_, mousePosition.y_, 0);
+                    wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position.to2D(), finalTarget);
                 }
-                else {
-                    finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                else
+                {
+                    wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position, finalTarget);
                 }
-               
-            }
-            
-            if (GameMainManager.Instance.is3D)
-            {
-                wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position.to2D(), finalTarget);
-            }
-            else {
-                wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm,radiusIndex ,transform.position, finalTarget);
-            }
 
-            DrawPath(Color.yellow);
-            currentWayPoint = 1;
+                DrawPath(Color.black);
+                currentWayPoint = 1;
+            }
         }
         //check if destination stuck
 
+
+        ///
         if (currentWayPoint == wayPointList.Count) {
-            Debug.Log("check");
+         
             if (checkDestinationStuck()) {
                 // immediately stop
                 currentWayPoint = wayPointList.Count;
@@ -119,52 +127,134 @@ public class GameAgent : MonoBehaviour
             Simulator.Instance.setAgentPrefVelocity(sid, new Vector2(0, 0));
             return;
         }
-        void walk()
+
+
+
+
+    }
+    void walk()
+    {
+        // rotate towards the target
+        //transform.forward = Vector3.RotateTowards(transform.forward, (Vector3)targetWayPoint - transform.position, speed * Time.deltaTime, 0.0f);
+
+        // move towards the target
+
+
+        Vector2 goalVector = new Vector2(targetWayPoint.x, targetWayPoint.y) - Simulator.Instance.getAgentPosition(sid);
+
+
+
+        goalVector = RVOMath.normalize(goalVector);
+
+
+        Simulator.Instance.setAgentPrefVelocity(sid, goalVector);
+
+        /* Perturb a little to avoid deadlocks due to perfect symmetry. */
+        float angle = (float)m_random.NextDouble() * 2.0f * (float)Math.PI;
+        float dist = (float)m_random.NextDouble() * 0.0001f;
+
+        Simulator.Instance.setAgentPrefVelocity(sid, Simulator.Instance.getAgentPrefVelocity(sid) +
+                                                     dist *
+                                                     new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)));
+
+        Vector2 position;
+        if (GameMainManager.Instance.is3D)
         {
-            // rotate towards the target
-            //transform.forward = Vector3.RotateTowards(transform.forward, (Vector3)targetWayPoint - transform.position, speed * Time.deltaTime, 0.0f);
-
-            // move towards the target
-            
-
-            Vector2 goalVector = new Vector2(targetWayPoint.x, targetWayPoint.y) - Simulator.Instance.getAgentPosition(sid);
-            
-           
-           
-            goalVector = RVOMath.normalize(goalVector);
-          
-
-            Simulator.Instance.setAgentPrefVelocity(sid, goalVector);
-
-            /* Perturb a little to avoid deadlocks due to perfect symmetry. */
-            float angle = (float)m_random.NextDouble() * 2.0f * (float)Math.PI;
-            float dist = (float)m_random.NextDouble() * 0.0001f;
-
-            Simulator.Instance.setAgentPrefVelocity(sid, Simulator.Instance.getAgentPrefVelocity(sid) +
-                                                         dist *
-                                                         new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)));
-
-            Vector2 position;
-            if (GameMainManager.Instance.is3D)
-            {
-                position = new Vector2(transform.position.x, transform.position.z);
-            }
-            else {
-                position = new Vector2(transform.position.x, transform.position.y);
-            }
-            if (RVOMath.compareVector2WithinDist(position, new Vector2(targetWayPoint.x, targetWayPoint.y), destinationRadius))
-            {
-                Debug.Log("Continue to next waypoint!");
-                currentWayPoint++;
-                if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
-                else DeletePath();
-            }
+            position = new Vector2(transform.position.x, transform.position.z);
+        }
+        else
+        {
+            position = new Vector2(transform.position.x, transform.position.y);
         }
 
 
-        
+
+
+        //check pass waypoint
+        if (currentWayPoint < wayPointList.Count - 1)
+        {
+            if (!sameSideApproach(position)) {
+                radiusApproach(position);
+            }
+        }
+        else
+        {
+            radiusApproach(position);
+        }
     }
 
+
+
+    bool radiusApproach(Vector2 position) {
+        if (RVOMath.compareVector2WithinDist(position, new Vector2(targetWayPoint.x, targetWayPoint.y), destinationRadius))
+        {
+           
+            currentWayPoint++;
+            if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
+            else DeletePath();
+            return true;
+        }
+        return false;
+    }
+
+    // using for waypoints expect the last one
+    bool sameSideApproach(Vector2 position) {
+        Vector2 curWayPoint = new Vector2(targetWayPoint.x, targetWayPoint.y);
+        Vector2 nextWayPoint = new Vector2(wayPointList[currentWayPoint + 1].x, wayPointList[currentWayPoint + 1].y);
+        Vector2 np = nextWayPoint - curWayPoint;
+        np = new Vector2(-np.y_, np.x_);
+        Vector2 y = curWayPoint + np;
+        Vector2 x = curWayPoint;
+      
+        float val = ((x.y_ - y.y_) * (position.x_ - y.x_) + (y.x_ - x.x_) * (position.y_ - y.y_)) * ((x.y_ - y.y_) * (nextWayPoint.x_ - y.x_) + (y.x_ - x.x_) * (nextWayPoint.y_ - y.y_));
+     
+        if (val > 0) {
+          
+            currentWayPoint++;
+            if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
+            else DeletePath();
+            return true;
+        }
+
+        return false;
+
+    }
+    public void newPath(){
+        if (Input.GetMouseButtonDown(1))
+        {
+            DeletePath();
+            if (debugTarget != Vector3.zero)
+            {
+                finalTarget = debugTarget;
+            }
+            else
+            {
+                if (GameMainManager.Instance.is3D)
+                {
+                    Vector2 mousePosition = GameMainManager.Instance.mousePosition;
+                    finalTarget = new Vector3(mousePosition.x_, mousePosition.y_, 0);
+                }
+                else
+                {
+                    finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                }
+
+            }
+
+            if (GameMainManager.Instance.is3D)
+            {
+                wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position.to2D(), finalTarget);
+            }
+            else
+            {
+                wayPointList = ExplicitCorridorMap.PathFinding.FindPath(ecm, radiusIndex, transform.position, finalTarget);
+            }
+
+            DrawPath(Color.black);
+            currentWayPoint = 1;
+        }
+
+    }
 
     bool checkDestinationStuck() {
         float distanceToDesSqr;
@@ -187,7 +277,7 @@ public class GameAgent : MonoBehaviour
         }
 
         if (sumAgentS >= 3.14f * distanceToDesSqr * 0.1f) {
-            Debug.Log("Stuck");
+         
             return true;
         }
            
@@ -197,7 +287,7 @@ public class GameAgent : MonoBehaviour
     #region Debug
     public void DrawPath(Color color)
     {
-        if (GameMainManager.Instance.agentSetting.debugMode)
+        if (GameMainManager.Instance.DebugMode)
         {
             for (int i = 0; i < wayPointList.Count - 1; i++)
             {
@@ -205,7 +295,7 @@ public class GameAgent : MonoBehaviour
                 LineDrawer lineDrawer = new LineDrawer();
                 var start = new Vector3(wayPointList[i].x, wayPointList[i].y).to3D();
                 var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y).to3D();
-                lineDrawer.DrawLineInGameView(start, end, color, 0.5f);
+                lineDrawer.DrawLineInGameView(start, end, color, 1f);
                 lineList.Add(lineDrawer);
             }
         }
@@ -213,7 +303,7 @@ public class GameAgent : MonoBehaviour
 
     void DeletePath()
     {
-        if (GameMainManager.Instance.agentSetting.debugMode)
+        if (GameMainManager.Instance.DebugMode)
         {
             foreach (var l in lineList)
                 l.Destroy();

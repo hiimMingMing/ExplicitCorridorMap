@@ -12,6 +12,16 @@ using Vector2 = RVO.Vector2;
 using ExplicitCorridorMap;
 public class GameMainManager : SingletonBehaviour<GameMainManager>
 {
+
+    public bool isGroupTarget = false;
+    public List<GameObject> group;
+    public Vector3 lastClick = new Vector3(0,0);
+    public float mouseHelddownTime = 0;
+    private float helddownThreshhold = 0.2f;
+    LineDrawer[] lineDrawer = new LineDrawer[4];
+
+    public bool DebugMode = true;
+
     public GameObject agentPrefab;
     public bool is3D = true;
     public ECMMap defaultECMMap;
@@ -41,6 +51,8 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
     // Use this for initialization
     void Start()
     {
+
+       
         if (ecmmap == null) {
             Debug.Log("No ECMMap!");
         }
@@ -207,8 +219,83 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
         //// Use in sampleScene
         if (isNull()) return;
         UpdateMousePosition();
+        
+        if (isGroupTarget)
+        {
+            if (Input.GetMouseButtonDown(1)) {
+                foreach (var item in group)
+                {
+                    GameAgent ga = item.GetComponent<GameAgent>();
+                    ga.newPath();
+                }
+            }
+            if (Input.GetMouseButtonDown(0))
+            {
+                lastClick = new Vector3(mousePosition.x_, 0, mousePosition.y_);
+
+            }
+            if (Input.GetMouseButton(0))
+            {
+
+                mouseHelddownTime += Time.deltaTime;
+                Vector3 click = new Vector3(mousePosition.x_, 0, mousePosition.y_);
+                if (mouseHelddownTime > helddownThreshhold)
+                {
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (lineDrawer[i] != null)
+                        {
+                            lineDrawer[i].Destroy();
+                        }
+                        lineDrawer[i] = new LineDrawer();
+                    }
+                    Vector3[] bound = { new Vector3(lastClick.x, 0, lastClick.z), new Vector3(lastClick.x, 0, click.z), new Vector3(click.x, 0, click.z), new Vector3(click.x, 0, lastClick.z) };
+
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        lineDrawer[i].DrawLineInGameView(bound[i], bound[(i + 1) % 4], Color.blue, 1f);
+                    }
+                    return;
+                }
+
+            }
+          
+        }
         if (Input.GetMouseButtonUp(0))
         {
+            if (isGroupTarget)
+            {
+                
+                if (mouseHelddownTime > helddownThreshhold)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (lineDrawer[i] != null)
+                        {
+                            lineDrawer[i].Destroy();
+                        }
+
+                    }
+                    GameObject[] allAgent = GameObject.FindGameObjectsWithTag("Player");
+                    group.Clear();
+
+                    Vector2 click = new Vector2(mousePosition.x_, mousePosition.y_);
+                    List<UnityEngine.Vector2> bound = new List<UnityEngine.Vector2> { new UnityEngine.Vector2(lastClick.x, lastClick.z), new UnityEngine.Vector2(lastClick.x, click.y_), new UnityEngine.Vector2(click.x_, click.y_), new UnityEngine.Vector2(click.x_, lastClick.z) };
+
+                    foreach (var item in allAgent)
+                    {
+                        UnityEngine.Vector2 position = new UnityEngine.Vector2(item.transform.position.x, item.transform.position.z);
+                        if (Geometry.PolygonContainsPoint(bound, position))
+                        {
+                            group.Add(item);
+                        }
+                    }
+                    mouseHelddownTime = 0;
+                    return;
+                }
+            }
             if (Input.GetKey(KeyCode.Delete))
             {
                 DeleteAgent();

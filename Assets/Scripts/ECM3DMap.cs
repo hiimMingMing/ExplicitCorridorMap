@@ -16,7 +16,10 @@ public class ECM3DMap : ECMMap
         {
             obsList.Add(new Obstacle(Geometry.ConvertToRect(obs)));
         }
-        ecm = new ECM(obsList, new Obstacle(new RectInt(0, 0, 500, 500)));
+
+        float width = Ground.transform.GetComponent<MeshRenderer>().bounds.size.x;
+        float height = Ground.transform.GetComponent<MeshRenderer>().bounds.size.z;
+        ecm = new ECM(obsList, new Obstacle(new RectInt((int)(Ground.transform.position.z-(width/2)), (int)(Ground.transform.position.x - (height / 2)), (int)width, (int)height)));
         ecm.Construct();
         ecm.AddAgentRadius(AgentRadiusList);
     }
@@ -28,15 +31,15 @@ public class ECM3DMap : ECMMap
     }
 
     #region DrawGizmos
-  
 
-    List<Vector2> shortestPath = null;
+    public GameObject Ground;
+   
     //List<Vector2> portalsLeft;
     //List<Vector2> portalsRight;
-    List<Edge> selectedEdge;
-    List<Segment> segments = new List<Segment>();
-    List<List<Vector2>> curveEdges = new List<List<Vector2>>();
-    public void Bake()
+    private List<Edge> selectedEdge;
+    private List<Segment> segments = new List<Segment>();
+    private List<List<Vector2>> curveEdges = new List<List<Vector2>>();
+    public new void Bake()
     {
         //populate segment
         var obstacles = new List<Obstacle>();
@@ -45,7 +48,10 @@ public class ECM3DMap : ECMMap
             obstacles.Add(new Obstacle(Geometry.ConvertToRect(obs)));
         }
 
-        ecm = new ECM(obstacles, new Obstacle(new RectInt(0, 0, 600, 600)));
+
+        float width = Ground.transform.GetComponent<MeshRenderer>().bounds.size.x;
+        float height = Ground.transform.GetComponent<MeshRenderer>().bounds.size.z;
+        ecm = new ECM(obstacles, new Obstacle(new RectInt((int)(Ground.transform.position.z - (width / 2)), (int)(Ground.transform.position.x - (height / 2)), (int)width, (int)height)));
         ecm.Construct();
         ComputeCurveEdge();
         foreach (var r in AgentRadiusList)
@@ -55,7 +61,7 @@ public class ECM3DMap : ECMMap
         }
         shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position.to2D(), EndPoint.position.to2D());
     }
-    public void AddObstacle()
+    public new void AddObstacle()
     {
         if (ecm == null)
         {
@@ -68,7 +74,7 @@ public class ECM3DMap : ECMMap
             shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position.to2D(), EndPoint.position.to2D());
         }
     }
-    public void DeleteObstacle()
+    public new void DeleteObstacle()
     {
         if (ecm == null)
         {
@@ -194,7 +200,7 @@ public class ECM3DMap : ECMMap
         }
     }
 
-    public void ComputeCurveEdge()
+    public new void ComputeCurveEdge()
     {
         curveEdges.Clear();
         foreach (var vertex in ecm.Vertices.Values)
@@ -222,7 +228,7 @@ public class ECM3DMap : ECMMap
     /// <param name="edge">The curvy edge.</param>
     /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
     /// <returns></returns>
-    public List<Vector2> SampleCurvedEdge(ECM ecm, Edge edge, float max_distance)
+    public new List<Vector2> SampleCurvedEdge(ECM ecm, Edge edge, float max_distance)
     {
         //test
         //return new List<Vector2>() { edge.Start.Position, edge.End.Position };

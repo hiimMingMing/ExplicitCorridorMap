@@ -46,8 +46,8 @@ public class ECMMap : MonoBehaviour
     public bool drawShortestPath = false;
     [HideInInspector]
     public int obstacleToDelete = 0;
-
-    List<Vector2> shortestPath = null;
+    [HideInInspector]
+    public List<Vector2> shortestPath = null;
     //List<Vector2> portalsLeft;
     //List<Vector2> portalsRight;
     List<Edge> selectedEdge;
