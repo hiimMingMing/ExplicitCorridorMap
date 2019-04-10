@@ -20,6 +20,8 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
     private float helddownThreshhold = 0.2f;
     LineDrawer[] lineDrawer = new LineDrawer[4];
 
+
+    public Transform groupBorder;
     public bool DebugMode = true;
 
     public GameObject agentPrefab;
@@ -60,7 +62,8 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
 
         //End
         Simulator.Instance.setTimeStep(1f);
-        Simulator.Instance.setAgentDefaults(120.0f, 50, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
+        //Simulator.Instance.setAgentDefaults(120.0f, 50, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(200.0f, 50, 0.1f, 0.05f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
         if (is3D)
         {
             m_hPlane = new Plane(Vector3.up, Vector3.zero);
@@ -242,21 +245,13 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
                 if (mouseHelddownTime > helddownThreshhold)
                 {
 
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (lineDrawer[i] != null)
-                        {
-                            lineDrawer[i].Destroy();
-                        }
-                        lineDrawer[i] = new LineDrawer();
-                    }
-                    Vector3[] bound = { new Vector3(lastClick.x, 0, lastClick.z), new Vector3(lastClick.x, 0, click.z), new Vector3(click.x, 0, click.z), new Vector3(click.x, 0, lastClick.z) };
+                 
 
-
-                    for (int i = 0; i < 4; i++)
-                    {
-                        lineDrawer[i].DrawLineInGameView(bound[i], bound[(i + 1) % 4], Color.blue, 1f);
-                    }
+                    
+                    Vector3 newScale = (click - lastClick);
+                    newScale = new Vector3(newScale.x, 1, newScale.z);
+                    groupBorder.transform.localScale = newScale;
+                    groupBorder.transform.position = lastClick+ newScale/2;
                     return;
                 }
 
@@ -267,7 +262,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
         {
             if (isGroupTarget)
             {
-                
+                groupBorder.transform.localScale = UnityEngine.Vector3.zero;
                 if (mouseHelddownTime > helddownThreshhold)
                 {
                     for (int i = 0; i < 4; i++)

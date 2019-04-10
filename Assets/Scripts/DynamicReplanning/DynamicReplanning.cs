@@ -103,7 +103,7 @@ namespace ExplicitCorridorMap
                 var position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 position.z -= Camera.main.transform.position.z;
 
-              
+                
                 player.obstacle = DRMath.ConvertToRect(player.addObj.transform.localScale.x, player.addObj.transform.localScale.y, position);
                 Object.Instantiate(player.addObj, position, player.transform.rotation);
 
@@ -361,7 +361,7 @@ namespace ExplicitCorridorMap
 
                 openSet.Remove(current);
                 closeSet.Add(current);
-
+                
                 foreach (var edge in current.Edges)
                 {
                     var neigborVertex = edge.End;
