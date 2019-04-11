@@ -24,6 +24,7 @@ public class ECMMapEditor : Editor
             map.drawShortestPath = EditorGUILayout.Toggle("Draw Path", map.drawShortestPath);
 
         }
+        map.grouping = EditorGUILayout.Toggle("Grouping", map.grouping);
         if (GUILayout.Button("Bake"))
         {
             map.Bake();
@@ -40,6 +41,10 @@ public class ECMMapEditor : Editor
             {
                 map.DeleteObstacle();
             }
+        }
+        if(GUILayout.Button("Test Grouping"))
+        {
+            map.TestGroup();
         }
     }
     void OnSceneGUI()

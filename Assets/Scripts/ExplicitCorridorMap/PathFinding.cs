@@ -6,12 +6,11 @@ using UnityEngine.Assertions;
 namespace ExplicitCorridorMap
 {
     public class PathFinding
-    {      
-        public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition, Vector2 endPosition)
+    {
+        public static List<Vector2> FindPath(ECM ecm, int radiusIndex, Edge startEdge, Vector2 startPosition1, Vector2 startPosition2, Vector2 endPosition)
         {
             var radius = ecm.AgentRadius[radiusIndex];
-            var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
-            var endEdge = ecm.GetNearestEdge(ref endPosition,radius);
+            var endEdge = ecm.GetNearestEdge(ref endPosition, radius);
             if (startEdge == null || endEdge == null) return new List<Vector2>();
             //check goal clearance
             var endEdgeProperty = endEdge.EdgeProperties[radiusIndex];
@@ -19,12 +18,21 @@ namespace ExplicitCorridorMap
             {
                 return new List<Vector2>();
             }
-            var vertexList = FindPathFromVertexToVertex(ecm, radiusIndex, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition);
+            var vertexList = FindPathFromVertexToVertex(ecm, radiusIndex, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition1, startPosition2, endPosition);
             if (vertexList.Count == 0) return new List<Vector2>();
-            else if (vertexList.Count == 1) return new List<Vector2>() { startPosition,endPosition};
+            Vector2 choosenStartPosition;
+            if (vertexList[0] == startEdge.Start) choosenStartPosition = startPosition1;
+            else choosenStartPosition = startPosition2;
+            if (vertexList.Count == 1) return new List<Vector2>() { choosenStartPosition, endPosition };
             var edgeList = ConvertToEdgeList(vertexList);
-            ComputePortals(radiusIndex,edgeList, startPosition, endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
+            ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
             return GetShortestPath(portalsLeft, portalsRight);
+        }
+        public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition, Vector2 endPosition)
+        {
+            var radius = ecm.AgentRadius[radiusIndex];
+            var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
+            return FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition, endPosition);
         }
         
         private static List<Edge> ConvertToEdgeList(List<Vertex> path)
@@ -45,7 +53,7 @@ namespace ExplicitCorridorMap
         //Simple Astar Algorithm
         //start1,start2 are two vertex of start edge
         //end1,end2 are two vertex of end edge
-        private static List<Vertex> FindPathFromVertexToVertex(ECM graph, int radiusIndex, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
+        private static List<Vertex> FindPathFromVertexToVertex(ECM graph, int radiusIndex, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition1,Vector2 startPosition2, Vector2 endPosition)
         {
             List<Vertex> result = new List<Vertex>();
             var radius = graph.AgentRadius[radiusIndex];
@@ -57,19 +65,19 @@ namespace ExplicitCorridorMap
             var cameFrom = new Dictionary<Vertex, Vertex>();
             var gScore = new Dictionary<Vertex, float>();
             var fScore = new Dictionary<Vertex, float>();
-            gScore[start1] = HeuristicCost(startPosition, start1.Position);
+            gScore[start1] = HeuristicCost(startPosition1, start1.Position);
             fScore[start1] = HeuristicCost(start1.Position, endPosition);
-            gScore[start2] = HeuristicCost(startPosition, start2.Position);
+            gScore[start2] = HeuristicCost(startPosition2, start2.Position);
             fScore[start2] = HeuristicCost(start2.Position, endPosition);
 
             while (openSet.Count != 0)
             {
                 var current = LowestFScore(openSet, fScore);
-                if (current.Equals(end1)||current.Equals(end2)) return RecontructPath(cameFrom, current);
+                if (current.Equals(end1) || current.Equals(end2)) return RecontructPath(cameFrom, current);
                 openSet.Remove(current);
                 closeSet.Add(current);
 
-                foreach(var edge in current.Edges)
+                foreach (var edge in current.Edges)
                 {
                     var neigborVertex = edge.End;
                     if (closeSet.Contains(neigborVertex) || edge.HasEnoughClearance(radius)) continue;
@@ -83,6 +91,10 @@ namespace ExplicitCorridorMap
             }
             return result;
 
+        }
+        private static List<Vertex> FindPathFromVertexToVertex(ECM graph, int radiusIndex, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition)
+        {
+            return FindPathFromVertexToVertex(graph, radiusIndex, start1, start2, end1, end2, startPosition, startPosition, endPosition);
         }
         public static List<Vertex> RecontructPath(Dictionary<Vertex, Vertex> cameFrom, Vertex current)
         {

@@ -43,17 +43,20 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)){
-            finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            wayPointList = PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget);       
-            currentWayPoint = 1;
-
-            DrawPath(Color.magenta); //Debug
-        }
-        if (Input.GetMouseButtonDown(1))
+        if (!ecmMap.grouping)
         {
-            var test = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Debug.Log(test.x + " - " + test.y);
+            if (Input.GetMouseButtonDown(0))
+            {
+                finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                SetNewPath( PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget));
+
+                DrawPath(Color.magenta); //Debug
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                var test = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                Debug.Log(test.x + " - " + test.y);
+            }
         }
         if (currentWayPoint < wayPointList.Count)
         {
@@ -61,7 +64,11 @@ public class Player : MonoBehaviour
             Walk();
         }          
     }
-
+    public void SetNewPath(List<Vector2> path)
+    {
+        wayPointList = path;
+        currentWayPoint = 1;
+    }
     void Walk()
     {   
         DynamicReplanning.HandleDynamicEvent(this);

@@ -35,7 +35,7 @@ namespace ExplicitCorridorMap
                 }
                 Transform obj = Object.Instantiate(gameManager.defaultObstacle, position,Quaternion.identity);
                 gameManager.getECM().AddPolygonDynamic(new Obstacle(gameManager.addedObstacle));
-                gameManager.ecmmap.ComputeCurveEdge();
+                //gameManager.ecmmap.ComputeCurveEdge();
               
                 rvo.Simulator.Instance.addObstacle(obj);
                 //TODO change to effective way to add obstacle
@@ -181,7 +181,7 @@ namespace ExplicitCorridorMap
         {
             List<Vector2> newPath = new List<Vector2>();
             ecmmap.ecm.AddPolygonDynamic(new Obstacle(obstacle));
-            ecmmap.ComputeCurveEdge();
+            //ecmmap.ComputeCurveEdge();
             if (listAffectPath.Count > 0)
                 return PathFinding.FindPath(ecmmap.ecm, radiusIndex, startPosition, endPosition);
 
@@ -203,7 +203,7 @@ namespace ExplicitCorridorMap
         {
             int ID = FindObstacleID(ecmmap.ecm, obstacle);
             ecmmap.ecm.DeletePolygonDynamic(ID);
-            ecmmap.ComputeCurveEdge();
+            //ecmmap.ComputeCurveEdge();
             var shortestPath = PathFinding.FindPath(ecmmap.ecm, 0, startPosition, endPosition);
 
             return shortestPath;

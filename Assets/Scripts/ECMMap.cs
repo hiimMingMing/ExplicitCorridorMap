@@ -14,6 +14,8 @@ public class ECMMap : MonoBehaviour
 
     public ECM ecm;
     public List<float> AgentRadiusList;
+    [HideInInspector] public bool grouping = false;
+    public Transform AgentGroup;
 
     void Awake()
     {
@@ -30,7 +32,32 @@ public class ECMMap : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (grouping)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                var finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                List<Player> agents = new List<Player>();
+                foreach (Transform a in AgentGroup)
+                {
+                    agents.Add(a.GetComponent<Player>());
+                }
+                var gh = new GroupHandler(ecm, agents);
+                gh.FindPath(finalTarget);
+            }
+        }
+    }
+    public void TestGroup()
+    {
+        if (!grouping) return;
+        List<Player> agents = new List<Player>();
+        foreach (Transform a in AgentGroup)
+        {
+            agents.Add(a.GetComponent<Player>());
+        }
+        Vector2 finalTarget = EndPoint.transform.position;
+        var gh = new GroupHandler(ecm, agents);
+        gh.FindPath(finalTarget);
     }
 
     #region DrawGizmos
