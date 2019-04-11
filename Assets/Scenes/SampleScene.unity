@@ -139,7 +139,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 35098612}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 224, y: 22, z: 0}
+  m_LocalPosition: {x: 262, y: 19, z: 0}
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 0}
@@ -222,7 +222,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &85262496
 Transform:
   m_ObjectHideFlags: 0
@@ -231,11 +231,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 85262495}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -58.131348, y: -97.3425, z: -489.94366}
+  m_LocalPosition: {x: 97.7, y: 134.5, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 6
+  m_Father: {fileID: 0}
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &85262497
 MonoBehaviour:
@@ -253,8 +253,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 97.7, y: 134.5}
+  - {x: 167, y: 170}
+  - {x: 177, y: 180}
+  - {x: 177, y: 280}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -449,8 +454,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 34, y: 159}
+  - {x: 42, y: 441}
+  - {x: 46.081978, y: 449.06082}
+  - {x: 52, y: 451}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -733,7 +743,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &403804903
 Transform:
   m_ObjectHideFlags: 0
@@ -742,11 +752,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 403804902}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -137.33134, y: -65.442505, z: -489.94366}
+  m_LocalPosition: {x: 18.5, y: 166.4, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 1
+  m_Father: {fileID: 0}
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &403804904
 MonoBehaviour:
@@ -764,8 +774,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 18.5, y: 166.4}
+  - {x: 42, y: 441}
+  - {x: 46.081978, y: 449.06082}
+  - {x: 52, y: 451}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -852,7 +867,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &628800585
 Transform:
   m_ObjectHideFlags: 0
@@ -861,11 +876,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 628800584}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -70.731346, y: -72.1425, z: -489.94366}
+  m_LocalPosition: {x: 85.1, y: 159.7, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 3
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &628800586
 MonoBehaviour:
@@ -883,8 +898,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 85.1, y: 159.7}
+  - {x: 167, y: 170}
+  - {x: 177, y: 180}
+  - {x: 177, y: 280}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -1062,7 +1082,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &640375604
 Transform:
   m_ObjectHideFlags: 0
@@ -1071,11 +1091,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 640375603}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -50.03134, y: -68.442505, z: -489.94366}
+  m_LocalPosition: {x: 105.8, y: 163.4, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 7
+  m_Father: {fileID: 0}
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &640375605
 MonoBehaviour:
@@ -1093,8 +1113,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 105.8, y: 163.4}
+  - {x: 167, y: 170}
+  - {x: 177, y: 180}
+  - {x: 177, y: 280}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -1181,7 +1206,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &661405567
 Transform:
   m_ObjectHideFlags: 0
@@ -1190,11 +1215,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 661405566}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2, y: -71, z: -489.94366}
+  m_LocalPosition: {x: 153.83134, y: 160.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 11
+  m_Father: {fileID: 0}
+  m_RootOrder: 18
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &661405568
 MonoBehaviour:
@@ -1212,8 +1237,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 153.83134, y: 160.8425}
+  - {x: 167, y: 170}
+  - {x: 177, y: 180}
+  - {x: 177, y: 280}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -1300,7 +1330,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &683640519
 Transform:
   m_ObjectHideFlags: 0
@@ -1309,11 +1339,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 683640518}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -30.731346, y: -72.1425, z: -489.94366}
+  m_LocalPosition: {x: 125.1, y: 159.7, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 4
+  m_Father: {fileID: 0}
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &683640520
 MonoBehaviour:
@@ -1331,8 +1361,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 125.1, y: 159.7}
+  - {x: 167, y: 170}
+  - {x: 177, y: 180}
+  - {x: 177, y: 280}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -1418,7 +1453,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &733367010
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1601,7 +1636,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &902636693
 Transform:
   m_ObjectHideFlags: 0
@@ -1610,11 +1645,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 902636692}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -28.531342, y: -97.3425, z: -489.94366}
+  m_LocalPosition: {x: 127.3, y: 134.5, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 5
+  m_Father: {fileID: 0}
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &902636694
 MonoBehaviour:
@@ -1632,8 +1667,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 127.3, y: 134.5}
+  - {x: 167, y: 170}
+  - {x: 177, y: 180}
+  - {x: 177, y: 280}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -1720,7 +1760,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &923786412
 Transform:
   m_ObjectHideFlags: 0
@@ -1729,11 +1769,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 923786411}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -104, y: -90, z: -489.94366}
+  m_LocalPosition: {x: 51.831345, y: 141.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 12
+  m_Father: {fileID: 0}
+  m_RootOrder: 19
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &923786413
 MonoBehaviour:
@@ -1751,8 +1791,14 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 51.831345, y: 141.8425}
+  - {x: 42, y: 341}
+  - {x: 42, y: 441}
+  - {x: 46.081978, y: 449.06082}
+  - {x: 52, y: 451}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -1839,7 +1885,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &948431066
 Transform:
   m_ObjectHideFlags: 0
@@ -1848,11 +1894,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 948431065}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 59, y: -48, z: -489.94366}
+  m_LocalPosition: {x: 214.83134, y: 183.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 9
+  m_Father: {fileID: 0}
+  m_RootOrder: 16
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &948431067
 MonoBehaviour:
@@ -1870,8 +1916,10 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 214.83134, y: 183.8425}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -2049,7 +2097,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1135785283
 Transform:
   m_ObjectHideFlags: 0
@@ -2058,11 +2106,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1135785282}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 31, y: -66, z: -489.94366}
+  m_LocalPosition: {x: 186.83134, y: 165.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 10
+  m_Father: {fileID: 0}
+  m_RootOrder: 17
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1135785284
 MonoBehaviour:
@@ -2080,8 +2128,10 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 186.83134, y: 165.8425}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -2186,7 +2236,7 @@ MonoBehaviour:
   - 10
   - 20
   - 30
-  grouping: 1
+  grouping: 0
   AgentGroup: {fileID: 2141912890}
   drawGraph: 1
   inputPointRadius: 2
@@ -2227,7 +2277,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1147697164
 Transform:
   m_ObjectHideFlags: 0
@@ -2236,11 +2286,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1147697163}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -103, y: -75, z: -489.94366}
+  m_LocalPosition: {x: 52.831345, y: 156.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 13
+  m_Father: {fileID: 0}
+  m_RootOrder: 20
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1147697165
 MonoBehaviour:
@@ -2258,8 +2308,14 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 52.831345, y: 156.8425}
+  - {x: 42, y: 341}
+  - {x: 42, y: 441}
+  - {x: 46.081978, y: 449.06082}
+  - {x: 52, y: 451}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -2483,7 +2539,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1589357381
 Transform:
   m_ObjectHideFlags: 0
@@ -2492,11 +2548,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1589357380}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -127, y: -88, z: -489.94366}
+  m_LocalPosition: {x: 28.831345, y: 143.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 15
+  m_Father: {fileID: 0}
+  m_RootOrder: 22
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1589357382
 MonoBehaviour:
@@ -2514,8 +2570,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 28.831345, y: 143.8425}
+  - {x: 42, y: 441}
+  - {x: 46.081978, y: 449.06082}
+  - {x: 52, y: 451}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -2602,7 +2663,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1733780359
 Transform:
   m_ObjectHideFlags: 0
@@ -2611,11 +2672,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1733780358}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -92, y: -94, z: -489.94366}
+  m_LocalPosition: {x: 63.831345, y: 137.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 14
+  m_Father: {fileID: 0}
+  m_RootOrder: 21
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1733780360
 MonoBehaviour:
@@ -2633,8 +2694,15 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 63.831345, y: 137.8425}
+  - {x: 57, y: 180}
+  - {x: 42, y: 341}
+  - {x: 42, y: 441}
+  - {x: 46.081978, y: 449.06082}
+  - {x: 52, y: 451}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -2721,7 +2789,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1787668268
 Transform:
   m_ObjectHideFlags: 0
@@ -2730,11 +2798,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1787668267}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 50, y: -91, z: -489.94366}
+  m_LocalPosition: {x: 205.83134, y: 140.8425, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 8
+  m_Father: {fileID: 0}
+  m_RootOrder: 15
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1787668269
 MonoBehaviour:
@@ -2752,8 +2820,10 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 205.83134, y: 140.8425}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -2840,7 +2910,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1875024915
 Transform:
   m_ObjectHideFlags: 0
@@ -2849,11 +2919,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1875024914}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -115.831345, y: -61.042496, z: -489.94366}
+  m_LocalPosition: {x: 40, y: 170.8, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 10}
   m_Children: []
-  m_Father: {fileID: 2141912890}
-  m_RootOrder: 2
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1875024916
 MonoBehaviour:
@@ -2871,8 +2941,13 @@ MonoBehaviour:
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 0
   Radius: 10
-  currentWayPoint: 0
-  wayPointList: []
+  currentWayPoint: 1
+  wayPointList:
+  - {x: 40, y: 170.8}
+  - {x: 42, y: 441}
+  - {x: 46.081978, y: 449.06082}
+  - {x: 52, y: 451}
+  - {x: 165, y: 480}
   finalTarget: {x: 0, y: 0, z: 0}
   drawPath: 1
   check: 0
@@ -3095,7 +3170,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2117351241}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 297, y: 472, z: 0}
+  m_LocalPosition: {x: 94, y: 18, z: 0}
   m_LocalScale: {x: 10.244054, y: 10.244054, z: 10.244054}
   m_Children: []
   m_Father: {fileID: 0}
@@ -3256,21 +3331,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 269251436}
-  - {fileID: 403804903}
-  - {fileID: 1875024915}
-  - {fileID: 628800585}
-  - {fileID: 683640519}
-  - {fileID: 902636693}
-  - {fileID: 85262496}
-  - {fileID: 640375604}
-  - {fileID: 1787668268}
-  - {fileID: 948431066}
-  - {fileID: 1135785283}
-  - {fileID: 661405567}
-  - {fileID: 923786412}
-  - {fileID: 1147697164}
-  - {fileID: 1733780359}
-  - {fileID: 1589357381}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 23
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

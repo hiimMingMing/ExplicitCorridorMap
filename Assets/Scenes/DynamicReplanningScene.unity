@@ -235,7 +235,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 148c0b9261e4ebf42b1315b359460cf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 50
+  speed: 200
   ecmMap: {fileID: 1141242255}
   RadiusIndex: 1
   Radius: 20
@@ -905,6 +905,8 @@ MonoBehaviour:
   - 10
   - 20
   - 30
+  grouping: 0
+  AgentGroup: {fileID: 0}
   drawGraph: 1
   inputPointRadius: 2
   outputPointRadius: 2

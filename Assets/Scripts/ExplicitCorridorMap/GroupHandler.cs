@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using ExplicitCorridorMap.Maths;
 namespace ExplicitCorridorMap
 {
     class GroupHandler
@@ -52,34 +53,47 @@ namespace ExplicitCorridorMap
     class SubGroup
     {
         public Edge Edge;
-        public List<Player> Agents { get; set; }
+        public Dictionary<Player,SurroundingInfomation> AgentDictionary { get; set; }
         private ECM Ecm;
         private Vector2 NearestPositionOfStart;
         private Vector2 NearestPositionOfEnd;
         public SubGroup(ECM ecm, Edge edge)
         {
-            Agents = new List<Player>();
+            AgentDictionary = new Dictionary<Player, SurroundingInfomation>();
             this.Ecm = ecm;
             this.Edge = edge;
         }
 
         public void AddAgent(Player a)
         {
-            Agents.Add(a);
+            AgentDictionary.Add(a,new SurroundingInfomation());
         }
         public void FindPath(int radiusIndex, Vector2 endPosition)
         {
-            if (Agents.Count == 0) throw new Exception("Subgroup count == 0");
+            if (AgentDictionary.Count == 0) throw new Exception("Subgroup count == 0");
 
-            var path = PathFinding.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd, endPosition);
-            foreach(var a in Agents)
+            var portals = PathFinding.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd, endPosition, out Vertex choosenVertex);
+            var path = portals.ConvertAll(x => x.Point);
+            //reverse edge to connect to path
+            if (choosenVertex == Edge.Start) Edge = Edge.Twin;
+
+            foreach(var kv in AgentDictionary)
+            {
+                var a = kv.Key;
+                var si = kv.Value;
+                si.Compute(Ecm, Edge, a.transform.position);
+                //Debug.Log("Agent "+a.transform.position +" L:"+ si.LeftDistance+" R:"+ si.RightDistance);
+                
+            }
+
+            foreach (var a in AgentDictionary.Keys)
             {
                 a.SetNewPath(path);
             }
         }
         public void ComputeNearestPosition()
         {
-            if (Agents.Count == 0) throw new Exception("Subgroup count == 0");
+            if (AgentDictionary.Count == 0) throw new Exception("Subgroup count == 0");
             NearestPositionOfStart = FindNearestPositionOfVertex(Edge.Start);
             NearestPositionOfEnd = FindNearestPositionOfVertex(Edge.End);
         }
@@ -87,7 +101,7 @@ namespace ExplicitCorridorMap
         {
             var nearestPosition = Vector2.zero;
             var nearestDistance = float.PositiveInfinity;
-            foreach(var a in Agents)
+            foreach(var a in AgentDictionary.Keys)
             {
                 float d = SquareDistance(a.transform.position, v.Position);
                 if(d < nearestDistance)
@@ -107,13 +121,28 @@ namespace ExplicitCorridorMap
     {
         public float LeftDistance;
         public float RightDistance;
-        public SurroundingInfomation()
+        public SurroundingInfomation() { }
+        public void Compute(ECM ecm, Edge e, Vector2 pos)
         {
-
+            LeftDistance = ComputeDistance(ecm, e, pos);
+            RightDistance = ComputeDistance(ecm, e.Twin, pos);
         }
-        public void Compute(Vector2 pos, Edge e)
+        protected float ComputeDistance(ECM ecm, Edge cell, Vector2 position)
         {
-
+            if (cell.ContainsPoint)
+            {
+                var pointSite = ecm.RetrieveInputPoint(cell);
+                return (pointSite - position).magnitude;
+            }
+            else
+            {
+                var lineSite = ecm.RetrieveInputSegment(cell);
+                var startLineSite = new Vector2(lineSite.Start.x, lineSite.Start.y);
+                var endLineSite = new Vector2(lineSite.End.x, lineSite.End.y);
+                var nearestPointOfStartVertex = Distance.GetClosestPointOnLine(startLineSite, endLineSite, position, out float distance);
+                return distance;
+            }
         }
     }
+    
 }

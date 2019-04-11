@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
-
+using ExplicitCorridorMap.Maths;
 public class Player : MonoBehaviour
 {
     public float speed = 50;
@@ -71,19 +71,17 @@ public class Player : MonoBehaviour
     }
     void Walk()
     {   
-        DynamicReplanning.HandleDynamicEvent(this);
+        //DynamicReplanning.HandleDynamicEvent(this);
 
         // move towards the target    
-        transform.position = Vector3.MoveTowards(transform.position, targetWayPoint, speed * Time.deltaTime);        
-
-        if (transform.position == (Vector3)targetWayPoint)
+        transform.position = Vector3.MoveTowards(transform.position, targetWayPoint, speed * Time.deltaTime);
+        if (transform.position.Approximately(targetWayPoint))
         {
             currentWayPoint++;
             if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
             else DeletePath(); //Debug
         }
     }
-
     #region Debug
     public void DrawPath(Color color)
     {

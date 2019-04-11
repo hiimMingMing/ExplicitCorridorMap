@@ -1,38 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 namespace ExplicitCorridorMap
 {
     public class PathFinding
     {
-        public static List<Vector2> FindPath(ECM ecm, int radiusIndex, Edge startEdge, Vector2 startPosition1, Vector2 startPosition2, Vector2 endPosition)
+        public static List<Portal> FindPath(ECM ecm, int radiusIndex, Edge startEdge, Vector2 startPosition1, Vector2 startPosition2, Vector2 endPosition, out Vertex choosenVertex)
         {
+            //find end edge
+            choosenVertex = null;
             var radius = ecm.AgentRadius[radiusIndex];
             var endEdge = ecm.GetNearestEdge(ref endPosition, radius);
-            if (startEdge == null || endEdge == null) return new List<Vector2>();
+            if (startEdge == null || endEdge == null) return new List<Portal>();
             //check goal clearance
             var endEdgeProperty = endEdge.EdgeProperties[radiusIndex];
             if (endEdgeProperty.ClearanceOfStart < 0 && endEdgeProperty.ClearanceOfEnd < 0)
             {
-                return new List<Vector2>();
+                return new List<Portal>();
             }
+            //run astar
             var vertexList = FindPathFromVertexToVertex(ecm, radiusIndex, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition1, startPosition2, endPosition);
-            if (vertexList.Count == 0) return new List<Vector2>();
+            if (vertexList.Count == 0) return new List<Portal>();
+
+            //choose best start position for group
+            choosenVertex = vertexList[0];
             Vector2 choosenStartPosition;
-            if (vertexList[0] == startEdge.Start) choosenStartPosition = startPosition1;
+            if (choosenVertex == startEdge.Start) choosenStartPosition = startPosition1;
             else choosenStartPosition = startPosition2;
-            if (vertexList.Count == 1) return new List<Vector2>() { choosenStartPosition, endPosition };
+            if (vertexList.Count == 1) return new List<Portal>() { new Portal( choosenStartPosition),new Portal( endPosition )};
+
+            //convert to path
             var edgeList = ConvertToEdgeList(vertexList);
-            ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight);
-            return GetShortestPath(portalsLeft, portalsRight);
+            ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition, out List<Portal> portals);
+            return GetShortestPath(portals);
         }
         public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition, Vector2 endPosition)
         {
             var radius = ecm.AgentRadius[radiusIndex];
             var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
-            return FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition, endPosition);
+            var portals =  FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition, endPosition, out Vertex v);
+            return portals.ConvertAll(x => x.Point);
         }
         
         private static List<Edge> ConvertToEdgeList(List<Vertex> path)
@@ -140,21 +150,22 @@ namespace ExplicitCorridorMap
         }
 
         //Simple Stupid Funnel Algorithm
-        public static List<Vector2> GetShortestPath(List<Vector2> portalsLeft, List<Vector2> portalsRight)
+        public static List<Portal> GetShortestPath(List<Portal> portals)
         {
-            List<Vector2> path = new List<Vector2>();
-            if (portalsLeft.Count == 0) return path;
-            Vector2 portalApex, portalLeft, portalRight;
+            var path = new List<Portal>();
+            if (portals.Count == 0) return path;
             int apexIndex = 0, leftIndex = 0, rightIndex = 0;
-            portalApex = portalsLeft[0];
-            portalLeft = portalsLeft[0];
-            portalRight = portalsRight[0];
-            AddToPath(path,portalApex);
+            Vector2 portalApex = portals[0].Left;
+            Vector2 portalLeft = portals[0].Left;
+            Vector2 portalRight = portals[0].Right;
+            portals[0].IsLeft = true;
+            portals[0].Point = portalApex;
+            AddToPath(path,portals[0]);
 
-            for (int i = 1; i < portalsLeft.Count; i++)
+            for (int i = 1; i < portals.Count; i++)
             {
-                var left = portalsLeft[i];
-                var right = portalsRight[i];
+                var left = portals[i].Left;
+                var right = portals[i].Right;
                 // Update left vertex.
                 if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
                 {
@@ -167,7 +178,10 @@ namespace ExplicitCorridorMap
                     else
                     {
                         // Left over right, insert right to path and restart scan from portal right point.
-                        AddToPath(path, portalRight);
+                        var p = portals[rightIndex];
+                        p.IsLeft = false;
+                        p.Point = portalRight;
+                        AddToPath(path, p);
                         // Make current right the new apex.
                         portalApex = portalRight;
                         apexIndex = rightIndex;
@@ -192,7 +206,10 @@ namespace ExplicitCorridorMap
                     }
                     else
                     {
-                        AddToPath(path, portalLeft);
+                        var p = portals[leftIndex];
+                        p.IsLeft = true;
+                        p.Point = portalLeft;
+                        AddToPath(path, p);
                         // Make current left the new apex.
                         portalApex = portalLeft;
                         apexIndex = leftIndex;
@@ -208,16 +225,17 @@ namespace ExplicitCorridorMap
                 }
 
             }//for
-            AddToPath(path,portalsLeft[portalsLeft.Count - 1]);
+            var lastPortal = portals[portals.Count - 1];
+            lastPortal.IsLeft = true;
+            lastPortal.Point = lastPortal.Left;
+            AddToPath(path,lastPortal);
             return path;
         }//funtion
 
-        public static void ComputePortals(int radiusIndex, List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition, out List<Vector2> portalsLeft, out List<Vector2> portalsRight)
+        public static void ComputePortals(int radiusIndex, List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition, out List<Portal> portals)
         {
-            portalsLeft = new List<Vector2>();
-            portalsRight = new List<Vector2>();
-            portalsLeft.Add(startPosition);
-            portalsRight.Add(startPosition);
+            portals = new List<Portal>();
+            portals.Add(new Portal(startPosition));
             //heuristic
             bool containsStart = true;
             bool containsEnd = true;
@@ -240,11 +258,13 @@ namespace ExplicitCorridorMap
             for (int i = start; i <= end; i++)
             {
                 var edge = edgeList[i];
-                if (portalsLeft.Count != 0 &&
-                    edge.EdgeProperties[radiusIndex].LeftObstacleOfStart == portalsLeft[portalsLeft.Count - 1] &&
-                    edge.EdgeProperties[radiusIndex].RightObstacleOfStart == portalsRight[portalsRight.Count - 1]) continue;
-                portalsLeft.Add(edge.EdgeProperties[radiusIndex].LeftObstacleOfStart);
-                portalsRight.Add(edge.EdgeProperties[radiusIndex].RightObstacleOfStart);
+                if (portals.Count != 0 &&
+                    edge.EdgeProperties[radiusIndex].LeftObstacleOfStart == portals[portals.Count - 1].Left &&
+                    edge.EdgeProperties[radiusIndex].RightObstacleOfStart == portals[portals.Count - 1].Right) continue;
+                var p = new Portal();
+                p.Left = edge.EdgeProperties[radiusIndex].LeftObstacleOfStart;
+                p.Right = edge.EdgeProperties[radiusIndex].RightObstacleOfStart;
+                portals.Add(p);
             }
             //add last end portal
             if (end >= start)
@@ -253,16 +273,18 @@ namespace ExplicitCorridorMap
                 containsEnd = Geometry.PolygonContainsPoint(endEdge.End.Position, endEdge.EdgeProperties[radiusIndex].LeftObstacleOfEnd, endEdge.EdgeProperties[radiusIndex].RightObstacleOfEnd, endPosition);
                 if (!containsEnd)
                 {
-                    portalsLeft.Add(endEdge.EdgeProperties[radiusIndex].LeftObstacleOfEnd);
-                    portalsRight.Add(endEdge.EdgeProperties[radiusIndex].RightObstacleOfEnd);
+                    var p = new Portal();
+                    p.Left = endEdge.EdgeProperties[radiusIndex].LeftObstacleOfEnd;
+                    p.Right = endEdge.EdgeProperties[radiusIndex].RightObstacleOfEnd;
+                    portals.Add(p);
                 }
             }
-            portalsLeft.Add(endPosition);
-            portalsRight.Add(endPosition);
+            portals.Add(new Portal(endPosition));
+
         }
-        private static void AddToPath(List<Vector2> path, Vector2 point)
+        private static void AddToPath(List<Portal> path, Portal point)
         {
-            if(path.Count != 0 && point == path[path.Count - 1])
+            if(path.Count != 0 && point.Point == path[path.Count - 1].Point)
             {
                 return;
             }
@@ -271,5 +293,25 @@ namespace ExplicitCorridorMap
                 path.Add(point);
             }
         }
+    }
+
+    public class Portal
+    {
+        public Vector2 Point;
+        public bool IsLeft;
+        public Vector2 Left;
+        public Vector2 Right;
+        public Portal(Vector2 l, Vector2 r)
+        {
+            Left = l;
+            Right = r;
+        }
+        public Portal(Vector2 l)
+        {
+            Left = l;
+            Right = l;
+            Point = l;
+        }
+        public Portal() { }
     }
 }
