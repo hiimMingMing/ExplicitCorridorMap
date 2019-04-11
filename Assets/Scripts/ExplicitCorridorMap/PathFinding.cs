@@ -26,12 +26,11 @@ namespace ExplicitCorridorMap
             if (vertexList.Count == 0) return new List<Portal>();
 
             //choose best start position for group
-            choosenVertex = vertexList[0];
+            choosenVertex = vertexList[vertexList.Count-1];
             Vector2 choosenStartPosition;
             if (choosenVertex == startEdge.Start) choosenStartPosition = startPosition1;
             else choosenStartPosition = startPosition2;
             if (vertexList.Count == 1) return new List<Portal>() { new Portal( choosenStartPosition),new Portal( endPosition )};
-
             //convert to path
             var edgeList = ConvertToEdgeList(vertexList);
             ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition, out List<Portal> portals);
@@ -158,7 +157,6 @@ namespace ExplicitCorridorMap
             Vector2 portalApex = portals[0].Left;
             Vector2 portalLeft = portals[0].Left;
             Vector2 portalRight = portals[0].Right;
-            portals[0].IsLeft = true;
             portals[0].Point = portalApex;
             AddToPath(path,portals[0]);
 
@@ -207,7 +205,7 @@ namespace ExplicitCorridorMap
                     else
                     {
                         var p = portals[leftIndex];
-                        p.IsLeft = true;
+                        //Default p.IsLeft = true;
                         p.Point = portalLeft;
                         AddToPath(path, p);
                         // Make current left the new apex.
@@ -226,7 +224,6 @@ namespace ExplicitCorridorMap
 
             }//for
             var lastPortal = portals[portals.Count - 1];
-            lastPortal.IsLeft = true;
             lastPortal.Point = lastPortal.Left;
             AddToPath(path,lastPortal);
             return path;
@@ -264,6 +261,7 @@ namespace ExplicitCorridorMap
                 var p = new Portal();
                 p.Left = edge.EdgeProperties[radiusIndex].LeftObstacleOfStart;
                 p.Right = edge.EdgeProperties[radiusIndex].RightObstacleOfStart;
+                p.Length = edge.EdgeProperties[radiusIndex].WidthClearanceOfStart;
                 portals.Add(p);
             }
             //add last end portal
@@ -276,6 +274,7 @@ namespace ExplicitCorridorMap
                     var p = new Portal();
                     p.Left = endEdge.EdgeProperties[radiusIndex].LeftObstacleOfEnd;
                     p.Right = endEdge.EdgeProperties[radiusIndex].RightObstacleOfEnd;
+                    p.Length = endEdge.EdgeProperties[radiusIndex].WidthClearanceOfEnd;
                     portals.Add(p);
                 }
             }
@@ -298,9 +297,12 @@ namespace ExplicitCorridorMap
     public class Portal
     {
         public Vector2 Point;
-        public bool IsLeft;
+        public bool IsLeft = true;
         public Vector2 Left;
         public Vector2 Right;
+        public float Length;
+        public Vector2 RightToLeft;
+        public Vector2 LeftToRight;
         public Portal(Vector2 l, Vector2 r)
         {
             Left = l;
@@ -311,7 +313,13 @@ namespace ExplicitCorridorMap
             Left = l;
             Right = l;
             Point = l;
+            Length = 0.0f;
         }
         public Portal() { }
+        public void ComputeVector()
+        {
+            RightToLeft = (Left - Right).normalized;
+            LeftToRight = (Right - Left).normalized;
+        }
     }
 }

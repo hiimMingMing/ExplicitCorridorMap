@@ -73,23 +73,76 @@ namespace ExplicitCorridorMap
             if (AgentDictionary.Count == 0) throw new Exception("Subgroup count == 0");
 
             var portals = PathFinding.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd, endPosition, out Vertex choosenVertex);
-            var path = portals.ConvertAll(x => x.Point);
+            portals.ForEach(x => x.ComputeVector());
             //reverse edge to connect to path
             if (choosenVertex == Edge.Start) Edge = Edge.Twin;
 
+            //compute distance infos
             foreach(var kv in AgentDictionary)
             {
                 var a = kv.Key;
                 var si = kv.Value;
                 si.Compute(Ecm, Edge, a.transform.position);
                 //Debug.Log("Agent "+a.transform.position +" L:"+ si.LeftDistance+" R:"+ si.RightDistance);
-                
             }
 
-            foreach (var a in AgentDictionary.Keys)
+            //find agent nearest to the left and the right of Edge
+            var leftNearestDistance = float.PositiveInfinity;
+            var rightNearestDistance = float.PositiveInfinity;
+            var leftFarthestDistance = float.NegativeInfinity;
+            var rightFarthestDistance = float.NegativeInfinity;
+            foreach (var kv in AgentDictionary)
             {
+                var a = kv.Key;
+                var si = kv.Value;
+                if(si.LeftDistance < leftNearestDistance)
+                {
+                    leftNearestDistance = si.LeftDistance;
+                }
+                if (si.LeftDistance > leftFarthestDistance)
+                {
+                    leftFarthestDistance = si.LeftDistance;
+                }
+                if (si.RightDistance < rightNearestDistance)
+                {
+                    rightNearestDistance = si.RightDistance;
+                }
+                if (si.RightDistance > rightFarthestDistance)
+                {
+                    rightFarthestDistance = si.RightDistance;
+                }
+            }
+            var widthLeft = leftFarthestDistance - leftNearestDistance;
+            var widthRight = rightFarthestDistance - rightNearestDistance;
+            foreach (var kv in AgentDictionary)
+            {
+                var a = kv.Key;
+                var si = kv.Value;
+                var path = new List<Vector2>();
+                foreach(var p in portals)
+                {
+                    if (p.IsLeft)
+                    {
+                        var d = si.LeftDistance - leftNearestDistance;
+                        var phi = ComputePhi( p.Length , widthLeft);
+                        var newPoint = p.Point + d*phi* p.LeftToRight;
+                        path.Add(newPoint);
+                    }
+                    else
+                    {
+                        var d = si.RightDistance - rightNearestDistance;
+                        var phi = ComputePhi (p.Length , widthRight);
+                        var newPoint = p.Point + d * phi * p.RightToLeft;
+                        path.Add(newPoint);
+                    }
+                }
                 a.SetNewPath(path);
             }
+        }
+        public float ComputePhi(float portalLength, float width)
+        {
+            if (Mathf.Approximately(width, 0.0f)) return 1;
+            else return Mathf.Min(1, portalLength / width);
         }
         public void ComputeNearestPosition()
         {
