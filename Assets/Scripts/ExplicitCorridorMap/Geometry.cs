@@ -29,30 +29,21 @@ namespace ExplicitCorridorMap
         public static RectInt ConvertToRect(Transform cube)
         {
             int w, h, x, y;
-            if (GameMainManager.Instance.isNull())
-            {
-                GameMainManager.Instance.is3D = false;
-                w = (int)cube.localScale.x;
-                h = (int)cube.localScale.y;
-                x = (int)cube.position.x;
-                y = (int)cube.position.y;
-                return new RectInt(x - w / 2, y - h / 2, w, h);
-
-            }
-            if (GameMainManager.Instance.is3D) {
-                w = (int)cube.localScale.x;
-                h = (int)cube.localScale.z;
-                x = (int)cube.position.x;
-                y = (int)cube.position.z;
-                return new RectInt(x - w / 2, y - h / 2, w, h);
-            }
+            w = (int)cube.localScale.x;
+            h = (int)cube.localScale.z;
+            x = (int)cube.position.x;
+            y = (int)cube.position.z;
+            return new RectInt(x - w / 2, y - h / 2, w, h);
+        }
+        public static RectInt ConvertToRect2D(Transform cube)
+        {
+            int w, h, x, y;
             w = (int)cube.localScale.x;
             h = (int)cube.localScale.y;
             x = (int)cube.position.x;
             y = (int)cube.position.y;
             return new RectInt(x - w / 2, y - h / 2, w, h);
         }
-        
         public static MBRectangle ComputeMBRectangle(List<Vector2> points)
         {
             float minX = float.PositiveInfinity;

@@ -9,9 +9,9 @@ namespace ExplicitCorridorMap
 {
     class GroupHandler
     {
-        public List<Player> Agents { get; set; }
+        public List<GameAgent> Agents { get; set; }
         private ECM Ecm;
-        public GroupHandler(ECM ecm,List<Player> agents)
+        public GroupHandler(ECM ecm,List<GameAgent> agents)
         {
             Agents = agents;
             this.Ecm = ecm;
@@ -53,18 +53,18 @@ namespace ExplicitCorridorMap
     class SubGroup
     {
         public Edge Edge;
-        public Dictionary<Player,SurroundingInfomation> AgentDictionary { get; set; }
+        public Dictionary<GameAgent,SurroundingInfomation> AgentDictionary { get; set; }
         private ECM Ecm;
         private Vector2 NearestPositionOfStart;
         private Vector2 NearestPositionOfEnd;
         public SubGroup(ECM ecm, Edge edge)
         {
-            AgentDictionary = new Dictionary<Player, SurroundingInfomation>();
+            AgentDictionary = new Dictionary<GameAgent, SurroundingInfomation>();
             this.Ecm = ecm;
             this.Edge = edge;
         }
 
-        public void AddAgent(Player a)
+        public void AddAgent(GameAgent a)
         {
             AgentDictionary.Add(a,new SurroundingInfomation());
         }
@@ -72,7 +72,7 @@ namespace ExplicitCorridorMap
         {
             if (AgentDictionary.Count == 0) throw new Exception("Subgroup count == 0");
 
-            var pathPortals = PathFinding.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd,ref endPosition, out Vertex choosenVertex);
+            var pathPortals = PathFinding2D.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd,ref endPosition, out Vertex choosenVertex);
             //reverse edge to connect to path
             if (choosenVertex == Edge.Start) Edge = Edge.Twin;
 
@@ -117,9 +117,9 @@ namespace ExplicitCorridorMap
             {
                 var a = kv.Key;
                 var si = kv.Value;
-                var path = new List<Vector2>();
+                var path = new List<Vector3>();
                 pathPortals[0] = new Portal(a.transform.position);
-                var shortestPathPortal = PathFinding.GetShortestPath(pathPortals);
+                var shortestPathPortal = PathFinding2D.GetShortestPath(pathPortals);
                 shortestPathPortal.ForEach(x => x.ComputeVector());
                 foreach (var p in shortestPathPortal)
                 {

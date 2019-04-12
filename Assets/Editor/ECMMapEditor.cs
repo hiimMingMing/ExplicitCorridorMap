@@ -1,71 +1,71 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using ExplicitCorridorMap;
-using System;
+﻿//using System.Collections;
+//using System.Collections.Generic;
+//using UnityEngine;
+//using UnityEditor;
+//using ExplicitCorridorMap;
+//using System;
 
-[CustomEditor(typeof(ECMMap))]
-public class ECMMapEditor : Editor
-{
+//[CustomEditor(typeof(ECMMap))]
+//public class ECMMapEditor : Editor
+//{
 
-    ECMMap map;
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
-        map = (ECMMap)target;
-        map.drawGraph = EditorGUILayout.Toggle("Show Graph", map.drawGraph);
+//    ECMMap map;
+//    public override void OnInspectorGUI()
+//    {
+//        DrawDefaultInspector();
+//        map = (ECMMap)target;
+//        map.drawGraph = EditorGUILayout.Toggle("Show Graph", map.drawGraph);
 
-        if (map.drawGraph)
-        {
-            map.inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", map.inputPointRadius);
-            map.outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", map.outputPointRadius);
-            map.drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", map.drawNearestObstaclePoints);
-            map.drawShortestPath = EditorGUILayout.Toggle("Draw Path", map.drawShortestPath);
+//        if (map.drawGraph)
+//        {
+//            map.inputPointRadius = EditorGUILayout.FloatField("Input Point Radius", map.inputPointRadius);
+//            map.outputPointRadius = EditorGUILayout.FloatField("Output Point Radius", map.outputPointRadius);
+//            map.drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", map.drawNearestObstaclePoints);
+//            map.drawShortestPath = EditorGUILayout.Toggle("Draw Path", map.drawShortestPath);
 
-        }
-        map.grouping = EditorGUILayout.Toggle("Grouping", map.grouping);
-        if (GUILayout.Button("Bake"))
-        {
-            map.Bake();
-        }
-        if (map.drawGraph)
-        {
-            if (GUILayout.Button("Add Obstacle"))
-            {
-                map.AddObstacle();
-            }
+//        }
+//        map.grouping = EditorGUILayout.Toggle("Grouping", map.grouping);
+//        if (GUILayout.Button("Bake"))
+//        {
+//            map.Bake();
+//        }
+//        if (map.drawGraph)
+//        {
+//            if (GUILayout.Button("Add Obstacle"))
+//            {
+//                map.AddObstacle();
+//            }
 
-            map.obstacleToDelete = EditorGUILayout.IntField("ObstacleToDelete", map.obstacleToDelete);
-            if (GUILayout.Button("Delete Obstacle"))
-            {
-                map.DeleteObstacle();
-            }
-        }
-        if(GUILayout.Button("Test Grouping"))
-        {
-            map.TestGroup();
-        }
-    }
-    void OnSceneGUI()
-    {
-        var ecm = map?.ecm;
-        if (ecm == null || !map.drawGraph) return;
-        foreach (var obs in ecm.Obstacles.Values)
-        {
-            var x = ((float)obs.mBRectangle.LeftTop.X + (float)obs.mBRectangle.RightBottom.X) / 2;
-            var y = ((float)obs.mBRectangle.LeftTop.Y + (float)obs.mBRectangle.RightBottom.Y) / 2;
+//            map.obstacleToDelete = EditorGUILayout.IntField("ObstacleToDelete", map.obstacleToDelete);
+//            if (GUILayout.Button("Delete Obstacle"))
+//            {
+//                map.DeleteObstacle();
+//            }
+//        }
+//        if(GUILayout.Button("Test Grouping"))
+//        {
+//            map.TestGroup();
+//        }
+//    }
+//    void OnSceneGUI()
+//    {
+//        var ecm = map?.ecm;
+//        if (ecm == null || !map.drawGraph) return;
+//        foreach (var obs in ecm.Obstacles.Values)
+//        {
+//            var x = ((float)obs.mBRectangle.LeftTop.X + (float)obs.mBRectangle.RightBottom.X) / 2;
+//            var y = ((float)obs.mBRectangle.LeftTop.Y + (float)obs.mBRectangle.RightBottom.Y) / 2;
 
-            Handles.Label(new Vector2(x,y).to3D(), obs.ID.ToString());
-        }
-        foreach (var vertex in ecm.Vertices.Values)
-        {
-            Handles.Label(vertex.Position.to3D(), vertex.ID + "");
-        }
-    }
+//            Handles.Label(new Vector2(x,y).to3D(), obs.ID.ToString());
+//        }
+//        foreach (var vertex in ecm.Vertices.Values)
+//        {
+//            Handles.Label(vertex.Position.to3D(), vertex.ID + "");
+//        }
+//    }
 
 
-}
+//}
 
 
 

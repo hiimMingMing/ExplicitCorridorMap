@@ -349,18 +349,18 @@ namespace RVO
             for (int i = 0; i < boxColliders.Length; i++)
             {
                 float minX, minY, maxX, maxY;
-                if (GameMainManager.Instance.is3D)
-                {
-                    minX = boxColliders[i].transform.position.x -
-                           boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
-                    minY = boxColliders[i].transform.position.z -
-                                 boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
-                    maxX = boxColliders[i].transform.position.x +
-                                 boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
-                    maxY = boxColliders[i].transform.position.z +
-                                 boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
-                }
-                else
+                //if (GameMainManager.Instance.is3D)
+                //{
+                //    minX = boxColliders[i].transform.position.x -
+                //           boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                //    minY = boxColliders[i].transform.position.z -
+                //                 boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
+                //    maxX = boxColliders[i].transform.position.x +
+                //                 boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                //    maxY = boxColliders[i].transform.position.z +
+                //                 boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
+                //}
+                //else
                 {
                     minX = boxColliders[i].transform.position.x -
                            boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
