@@ -14,6 +14,8 @@ public class ECMMap : MonoBehaviour
 
     public ECM ecm;
     public List<float> AgentRadiusList;
+    [HideInInspector] public bool grouping = false;
+    public Transform AgentGroup;
 
     void Awake()
     {
@@ -30,6 +32,30 @@ public class ECMMap : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (grouping)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                var finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                GroupPathFinding(finalTarget);
+            }
+        }
+    }
+    private void GroupPathFinding(Vector2 finalTarget)
+    {
+        List<Player> agents = new List<Player>();
+        foreach (Transform a in AgentGroup)
+        {
+            agents.Add(a.GetComponent<Player>());
+        }
+        var gh = new GroupHandler(ecm, agents);
+        gh.FindPath(finalTarget);
+    }
+    public void TestGroup()
+    {
+        if (!grouping) return;
+        Vector2 finalTarget = EndPoint.transform.position;
+        GroupPathFinding(finalTarget);
 
     }
 
@@ -143,6 +169,21 @@ public class ECMMap : MonoBehaviour
             Gizmos.color = Color.red;
             DrawPolyLine(shortestPath);
         }
+
+        //Draw path for group
+        foreach (Transform aT in AgentGroup)
+        {
+            Gizmos.color = Color.red;
+            var agent = aT.GetComponent<Player>();
+            var path = agent.wayPointList;
+            if (path.Count != 0)
+            {
+                path[0] = agent.transform.position;
+                DrawPolyLine(path);
+            }
+        }
+
+
         //if (portalsLeft != null && drawShortestPath)
         //{
         //    for (int i = 0; i < portalsLeft.Count; i++)

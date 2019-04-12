@@ -93,6 +93,7 @@ namespace ExplicitCorridorMap
                 p.RightObstacleOfStart = RightObstacleOfStart + radius * (Start.Position - RightObstacleOfStart).normalized;
             }
             p.ClearanceOfStart = ClearanceOfStart - radius;
+            p.WidthClearanceOfStart = (p.LeftObstacleOfStart - p.RightObstacleOfStart).magnitude;
 
             if (radius >= ClearanceOfEnd)
             {
@@ -104,6 +105,7 @@ namespace ExplicitCorridorMap
                 p.RightObstacleOfEnd = RightObstacleOfEnd + radius * (End.Position - RightObstacleOfEnd).normalized;
             }
             p.ClearanceOfEnd = ClearanceOfEnd - radius;
+            p.WidthClearanceOfEnd = (p.LeftObstacleOfEnd - p.RightObstacleOfEnd).magnitude;
 
             EdgeProperties.Add(p);
         }
@@ -116,6 +118,7 @@ namespace ExplicitCorridorMap
         public Vector2 RightObstacleOfEnd { get; set; }
         public float ClearanceOfStart { get; set; }
         public float ClearanceOfEnd { get; set; }
-        
+        public float WidthClearanceOfStart { get; set; }
+        public float WidthClearanceOfEnd { get; set; }
     }
 }

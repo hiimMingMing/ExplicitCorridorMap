@@ -35,7 +35,7 @@ namespace ExplicitCorridorMap
                 }
                 Transform obj = Object.Instantiate(gameManager.defaultObstacle, position,Quaternion.identity);
                 gameManager.getECM().AddPolygonDynamic(new Obstacle(gameManager.addedObstacle));
-                gameManager.ecmmap.ComputeCurveEdge();
+                //gameManager.ecmmap.ComputeCurveEdge();
               
                 rvo.Simulator.Instance.addObstacle(obj);
                 //TODO change to effective way to add obstacle
@@ -181,7 +181,7 @@ namespace ExplicitCorridorMap
         {
             List<Vector2> newPath = new List<Vector2>();
             ecmmap.ecm.AddPolygonDynamic(new Obstacle(obstacle));
-            ecmmap.ComputeCurveEdge();
+            //ecmmap.ComputeCurveEdge();
             if (listAffectPath.Count > 0)
                 return PathFinding.FindPath(ecmmap.ecm, radiusIndex, startPosition, endPosition);
 
@@ -203,7 +203,7 @@ namespace ExplicitCorridorMap
         {
             int ID = FindObstacleID(ecmmap.ecm, obstacle);
             ecmmap.ecm.DeletePolygonDynamic(ID);
-            ecmmap.ComputeCurveEdge();
+            //ecmmap.ComputeCurveEdge();
             var shortestPath = PathFinding.FindPath(ecmmap.ecm, 0, startPosition, endPosition);
 
             return shortestPath;
@@ -216,107 +216,107 @@ namespace ExplicitCorridorMap
         //}
 
         //Dynamic find the new path using ODPA* - Delete obstacle case
-        public static List<Vector2> DynamicFindPath2(ECM ecm, int radiusIndex, Vector2 startPosition, Vector2 endPosition, RectInt obstacle)
-        {
-            List<Vector2> intersectPoint = new List<Vector2>();
-            List<Vector2> shortertPath = new List<Vector2>();
-            List<Vector2> portalsLeft, portalsRight;
-            List<Vector2> portalsLeft2, portalsRight2;
+        //public static List<Vector2> DynamicFindPath2(ECM ecm, int radiusIndex, Vector2 startPosition, Vector2 endPosition, RectInt obstacle)
+        //{
+        //    List<Vector2> intersectPoint = new List<Vector2>();
+        //    List<Vector2> shortertPath = new List<Vector2>();
+        //    List<Vector2> portalsLeft, portalsRight;
+        //    List<Vector2> portalsLeft2, portalsRight2;
 
-            Vector2 bottomLeft = obstacle.min;
-            Vector2 bottomRight = new Vector2(obstacle.xMax, obstacle.yMin);
-            Vector2 topRight = obstacle.max;
-            Vector2 topLeft = new Vector2(obstacle.xMin, obstacle.yMax);
+        //    Vector2 bottomLeft = obstacle.min;
+        //    Vector2 bottomRight = new Vector2(obstacle.xMax, obstacle.yMin);
+        //    Vector2 topRight = obstacle.max;
+        //    Vector2 topLeft = new Vector2(obstacle.xMin, obstacle.yMax);
 
-            float oldFScore = 0, newFScore = 0;
-            List<Edge> oldEdgeList, newEdgeList, newEdgeList2;
+        //    float oldFScore = 0, newFScore = 0;
+        //    List<Edge> oldEdgeList, newEdgeList, newEdgeList2;
 
-            var startEdge = ecm.GetNearestEdge(ref startPosition, radiusIndex);
-            var endEdge = ecm.GetNearestEdge(ref endPosition, radiusIndex);
+        //    var startEdge = ecm.GetNearestEdge(ref startPosition, radiusIndex);
+        //    var endEdge = ecm.GetNearestEdge(ref endPosition, radiusIndex);
        
-            oldEdgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition, out oldFScore);
+        //    oldEdgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition, endPosition, out oldFScore);
 
-            //Find intersectPoint
-            if (DRMath.IsIntersecting(bottomLeft, bottomRight, startPosition, endPosition))
-                intersectPoint.Add(DRMath.LineLineIntersection(bottomLeft, bottomRight, startPosition, endPosition));
+        //    //Find intersectPoint
+        //    if (DRMath.IsIntersecting(bottomLeft, bottomRight, startPosition, endPosition))
+        //        intersectPoint.Add(DRMath.LineLineIntersection(bottomLeft, bottomRight, startPosition, endPosition));
 
-            if (DRMath.IsIntersecting(bottomRight, topRight, startPosition, endPosition))
-                intersectPoint.Add(DRMath.LineLineIntersection(bottomRight, topRight, startPosition, endPosition));
+        //    if (DRMath.IsIntersecting(bottomRight, topRight, startPosition, endPosition))
+        //        intersectPoint.Add(DRMath.LineLineIntersection(bottomRight, topRight, startPosition, endPosition));
 
-            if (DRMath.IsIntersecting(topRight, topLeft, startPosition, endPosition))
-                intersectPoint.Add(DRMath.LineLineIntersection(topRight, topLeft, startPosition, endPosition));
+        //    if (DRMath.IsIntersecting(topRight, topLeft, startPosition, endPosition))
+        //        intersectPoint.Add(DRMath.LineLineIntersection(topRight, topLeft, startPosition, endPosition));
 
-            if (DRMath.IsIntersecting(topLeft, bottomLeft, startPosition, endPosition))
-                intersectPoint.Add(DRMath.LineLineIntersection(topLeft, bottomLeft, startPosition, endPosition));
+        //    if (DRMath.IsIntersecting(topLeft, bottomLeft, startPosition, endPosition))
+        //        intersectPoint.Add(DRMath.LineLineIntersection(topLeft, bottomLeft, startPosition, endPosition));
         
-            ////
-            if (intersectPoint.Count == 0) //The new path is still the old path
-            {               
-                Debug.Log("TH0: No change!");
-                PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
-                shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
-            }
-            else if (intersectPoint.Count == 1)
-            {               
-                Debug.Log("TH1: " + intersectPoint[0]);
-                var tempPoint = intersectPoint[0];
-                var midEdge = ecm.GetNearestEdge(ref tempPoint, radiusIndex);
+        //    ////
+        //    if (intersectPoint.Count == 0) //The new path is still the old path
+        //    {               
+        //        Debug.Log("TH0: No change!");
+        //        PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
+        //        shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
+        //    }
+        //    else if (intersectPoint.Count == 1)
+        //    {               
+        //        Debug.Log("TH1: " + intersectPoint[0]);
+        //        var tempPoint = intersectPoint[0];
+        //        var midEdge = ecm.GetNearestEdge(ref tempPoint, radiusIndex);
 
-                newEdgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, midEdge.Start, midEdge.End, startPosition, intersectPoint[0], out newFScore);
-                float tempFScore = newFScore;
-                newEdgeList2 = FindEdgePathFromVertexToVertex(ecm, midEdge.Start, midEdge.End, endEdge.Start, endEdge.End, intersectPoint[0], endPosition, out newFScore);
-                newFScore += tempFScore;
+        //        newEdgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, midEdge.Start, midEdge.End, startPosition, intersectPoint[0], out newFScore);
+        //        float tempFScore = newFScore;
+        //        newEdgeList2 = FindEdgePathFromVertexToVertex(ecm, midEdge.Start, midEdge.End, endEdge.Start, endEdge.End, intersectPoint[0], endPosition, out newFScore);
+        //        newFScore += tempFScore;
 
-                Debug.Log(oldFScore + " - " + newFScore);
-                if (oldFScore < newFScore) //The new path is still the old path
-                {
-                    Debug.Log("No change!!!");
-                    PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
-                    shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
-                }
-                else //Change the path
-                {
-                    Debug.Log("Change!!!");
-                    PathFinding.ComputePortals(radiusIndex, newEdgeList, startPosition, intersectPoint[0], out portalsLeft, out portalsRight);
-                    PathFinding.ComputePortals(radiusIndex, newEdgeList2, intersectPoint[0], endPosition, out portalsLeft2, out portalsRight2);
-                    shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
-                    shortertPath.AddRange(PathFinding.GetShortestPath(portalsLeft2, portalsRight2));
-                }
-            }
-            else if (intersectPoint.Count == 2)
-            {
-                Debug.Log("TH2: " + intersectPoint[0] + " - " + intersectPoint[1]);
-                var tempPoint = intersectPoint[0];
-                var tempPoint2 = intersectPoint[1];
-                var midEdge1 = ecm.GetNearestEdge(ref tempPoint, radiusIndex);
-                var midEdge2 = ecm.GetNearestEdge(ref tempPoint2, radiusIndex);
+        //        Debug.Log(oldFScore + " - " + newFScore);
+        //        if (oldFScore < newFScore) //The new path is still the old path
+        //        {
+        //            Debug.Log("No change!!!");
+        //            PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
+        //            shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
+        //        }
+        //        else //Change the path
+        //        {
+        //            Debug.Log("Change!!!");
+        //            PathFinding.ComputePortals(radiusIndex, newEdgeList, startPosition, intersectPoint[0], out portalsLeft, out portalsRight);
+        //            PathFinding.ComputePortals(radiusIndex, newEdgeList2, intersectPoint[0], endPosition, out portalsLeft2, out portalsRight2);
+        //            shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
+        //            shortertPath.AddRange(PathFinding.GetShortestPath(portalsLeft2, portalsRight2));
+        //        }
+        //    }
+        //    else if (intersectPoint.Count == 2)
+        //    {
+        //        Debug.Log("TH2: " + intersectPoint[0] + " - " + intersectPoint[1]);
+        //        var tempPoint = intersectPoint[0];
+        //        var tempPoint2 = intersectPoint[1];
+        //        var midEdge1 = ecm.GetNearestEdge(ref tempPoint, radiusIndex);
+        //        var midEdge2 = ecm.GetNearestEdge(ref tempPoint2, radiusIndex);
 
-                if (PathFinding.HeuristicCost(startPosition, intersectPoint[0]) > PathFinding.HeuristicCost(startPosition, intersectPoint[1]))
-                    intersectPoint.Reverse();
+        //        if (PathFinding.HeuristicCost(startPosition, intersectPoint[0]) > PathFinding.HeuristicCost(startPosition, intersectPoint[1]))
+        //            intersectPoint.Reverse();
 
-                newEdgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, midEdge1.Start, midEdge1.End, startPosition, intersectPoint[0], out newFScore);
-                float tempFScore = newFScore;
-                newEdgeList2 = FindEdgePathFromVertexToVertex(ecm, midEdge2.Start, midEdge2.End, endEdge.Start, endEdge.End, intersectPoint[1], endPosition, out newFScore);
-                newFScore += (PathFinding.HeuristicCost(intersectPoint[0], intersectPoint[1]) + tempFScore);
+        //        newEdgeList = FindEdgePathFromVertexToVertex(ecm, startEdge.Start, startEdge.End, midEdge1.Start, midEdge1.End, startPosition, intersectPoint[0], out newFScore);
+        //        float tempFScore = newFScore;
+        //        newEdgeList2 = FindEdgePathFromVertexToVertex(ecm, midEdge2.Start, midEdge2.End, endEdge.Start, endEdge.End, intersectPoint[1], endPosition, out newFScore);
+        //        newFScore += (PathFinding.HeuristicCost(intersectPoint[0], intersectPoint[1]) + tempFScore);
 
-                Debug.Log(oldFScore + " - " + newFScore);
-                if (oldFScore < newFScore) //The new path is still the old path
-                {
-                    Debug.Log("No change!!!");
-                    PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
-                    shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
-                }
-                else //Change the path
-                {
-                    Debug.Log("Change!!!");
-                    PathFinding.ComputePortals(radiusIndex, newEdgeList, startPosition, intersectPoint[0], out portalsLeft, out portalsRight);
-                    PathFinding.ComputePortals(radiusIndex, newEdgeList2, intersectPoint[1], endPosition, out portalsLeft2, out portalsRight2);
-                    shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
-                    shortertPath.AddRange(PathFinding.GetShortestPath(portalsLeft2, portalsRight2));
-                }
-            }
-            return shortertPath;
-        }
+        //        Debug.Log(oldFScore + " - " + newFScore);
+        //        if (oldFScore < newFScore) //The new path is still the old path
+        //        {
+        //            Debug.Log("No change!!!");
+        //            PathFinding.ComputePortals(radiusIndex, oldEdgeList, startPosition, endPosition, out portalsLeft, out portalsRight);
+        //            shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
+        //        }
+        //        else //Change the path
+        //        {
+        //            Debug.Log("Change!!!");
+        //            PathFinding.ComputePortals(radiusIndex, newEdgeList, startPosition, intersectPoint[0], out portalsLeft, out portalsRight);
+        //            PathFinding.ComputePortals(radiusIndex, newEdgeList2, intersectPoint[1], endPosition, out portalsLeft2, out portalsRight2);
+        //            shortertPath = PathFinding.GetShortestPath(portalsLeft, portalsRight);
+        //            shortertPath.AddRange(PathFinding.GetShortestPath(portalsLeft2, portalsRight2));
+        //        }
+        //    }
+        //    return shortertPath;
+        //}
 
         private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition, out float finalFScore)
         {

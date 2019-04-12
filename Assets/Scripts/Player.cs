@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
-
+using ExplicitCorridorMap.Maths;
 public class Player : MonoBehaviour
 {
     public float speed = 50;
@@ -37,23 +37,27 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        ecm = ecmMap.ecm;     
+        ecm = ecmMap.ecm;
+        wayPointList = new List<Vector2>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)){
-            finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            wayPointList = PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget);       
-            currentWayPoint = 1;
-
-            DrawPath(Color.magenta); //Debug
-        }
-        if (Input.GetMouseButtonDown(1))
+        if (!ecmMap.grouping)
         {
-            var test = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Debug.Log(test.x + " - " + test.y);
+            if (Input.GetMouseButtonDown(0))
+            {
+                finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                SetNewPath( PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget));
+
+                DrawPath(Color.magenta); //Debug
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                var test = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                Debug.Log(test.x + " - " + test.y);
+            }
         }
         if (currentWayPoint < wayPointList.Count)
         {
@@ -61,22 +65,24 @@ public class Player : MonoBehaviour
             Walk();
         }          
     }
-
+    public void SetNewPath(List<Vector2> path)
+    {
+        wayPointList = path;
+        currentWayPoint = 1;
+    }
     void Walk()
     {   
-        DynamicReplanning.HandleDynamicEvent(this);
+        //DynamicReplanning.HandleDynamicEvent(this);
 
         // move towards the target    
-        transform.position = Vector3.MoveTowards(transform.position, targetWayPoint, speed * Time.deltaTime);        
-
-        if (transform.position == (Vector3)targetWayPoint)
+        transform.position = Vector3.MoveTowards(transform.position, targetWayPoint, speed * Time.deltaTime);
+        if (transform.position.Approximately(targetWayPoint))
         {
             currentWayPoint++;
             if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
             else DeletePath(); //Debug
         }
     }
-
     #region Debug
     public void DrawPath(Color color)
     {
