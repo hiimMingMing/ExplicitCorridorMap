@@ -15215,7 +15215,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5f8b68b90069dc49b29fb96f2f3ecfd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isGroupTarget: 0
+  isGroupTarget: 1
   group: []
   lastClick: {x: 0, y: 0, z: 0}
   mouseHelddownTime: 0

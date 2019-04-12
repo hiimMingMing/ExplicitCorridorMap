@@ -274,8 +274,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
 
                     }
                     GameObject[] allAgent = GameObject.FindGameObjectsWithTag("Player");
-                    group.Clear();
-
+                    resetGroup();
                     Vector2 click = new Vector2(mousePosition.x_, mousePosition.y_);
                     List<UnityEngine.Vector2> bound = new List<UnityEngine.Vector2> { new UnityEngine.Vector2(lastClick.x, lastClick.z), new UnityEngine.Vector2(lastClick.x, click.y_), new UnityEngine.Vector2(click.x_, click.y_), new UnityEngine.Vector2(click.x_, lastClick.z) };
 
@@ -284,13 +283,19 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
                         UnityEngine.Vector2 position = new UnityEngine.Vector2(item.transform.position.x, item.transform.position.z);
                         if (Geometry.PolygonContainsPoint(bound, position))
                         {
+                            item.transform.GetChild(0).gameObject.SetActive(true); 
                             group.Add(item);
                         }
                     }
                     mouseHelddownTime = 0;
                     return;
                 }
+                else
+                {
+                    resetGroup();
+                }
             }
+          
             if (Input.GetKey(KeyCode.Delete))
             {
                 DeleteAgent();
@@ -320,4 +325,14 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
         Simulator.Instance.doStep();
     }
 
+
+    void resetGroup() {
+        foreach (var item in group)
+        {
+            item.transform.GetChild(0).gameObject.SetActive(false);
+        }
+
+        group.Clear();
+
+    }
 }
