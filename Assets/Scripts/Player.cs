@@ -37,7 +37,8 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        ecm = ecmMap.ecm;     
+        ecm = ecmMap.ecm;
+        wayPointList = new List<Vector2>();
     }
 
     // Update is called once per frame

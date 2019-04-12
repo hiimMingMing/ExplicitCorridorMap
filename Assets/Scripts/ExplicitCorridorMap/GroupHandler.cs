@@ -72,13 +72,12 @@ namespace ExplicitCorridorMap
         {
             if (AgentDictionary.Count == 0) throw new Exception("Subgroup count == 0");
 
-            var portals = PathFinding.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd, endPosition, out Vertex choosenVertex);
-            portals.ForEach(x => x.ComputeVector());
+            var pathPortals = PathFinding.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd,ref endPosition, out Vertex choosenVertex);
             //reverse edge to connect to path
             if (choosenVertex == Edge.Start) Edge = Edge.Twin;
 
             //compute distance infos
-            foreach(var kv in AgentDictionary)
+            foreach (var kv in AgentDictionary)
             {
                 var a = kv.Key;
                 var si = kv.Value;
@@ -95,7 +94,7 @@ namespace ExplicitCorridorMap
             {
                 var a = kv.Key;
                 var si = kv.Value;
-                if(si.LeftDistance < leftNearestDistance)
+                if (si.LeftDistance < leftNearestDistance)
                 {
                     leftNearestDistance = si.LeftDistance;
                 }
@@ -119,19 +118,22 @@ namespace ExplicitCorridorMap
                 var a = kv.Key;
                 var si = kv.Value;
                 var path = new List<Vector2>();
-                foreach(var p in portals)
+                pathPortals[0] = new Portal(a.transform.position);
+                var shortestPathPortal = PathFinding.GetShortestPath(pathPortals);
+                shortestPathPortal.ForEach(x => x.ComputeVector());
+                foreach (var p in shortestPathPortal)
                 {
                     if (p.IsLeft)
                     {
                         var d = si.LeftDistance - leftNearestDistance;
-                        var phi = ComputePhi( p.Length , widthLeft);
-                        var newPoint = p.Point + d*phi* p.LeftToRight;
+                        var phi = ComputePhi(p.Length, widthLeft);
+                        var newPoint = p.Point + d * phi * p.LeftToRight;
                         path.Add(newPoint);
                     }
                     else
                     {
                         var d = si.RightDistance - rightNearestDistance;
-                        var phi = ComputePhi (p.Length , widthRight);
+                        var phi = ComputePhi(p.Length, widthRight);
                         var newPoint = p.Point + d * phi * p.RightToLeft;
                         path.Add(newPoint);
                     }

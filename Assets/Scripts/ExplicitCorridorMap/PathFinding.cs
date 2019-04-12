@@ -8,40 +8,46 @@ namespace ExplicitCorridorMap
 {
     public class PathFinding
     {
-        public static List<Portal> FindPath(ECM ecm, int radiusIndex, Edge startEdge, Vector2 startPosition1, Vector2 startPosition2, Vector2 endPosition, out Vertex choosenVertex)
+        public static List<Portal> FindPath(ECM ecm, int radiusIndex, Edge startEdge, Vector2 startPosition1, Vector2 startPosition2,ref Vector2 endPosition, out Vertex choosenVertex)
         {
             //find end edge
             choosenVertex = null;
+            var pathPortals = new List<Portal>();
             var radius = ecm.AgentRadius[radiusIndex];
             var endEdge = ecm.GetNearestEdge(ref endPosition, radius);
-            if (startEdge == null || endEdge == null) return new List<Portal>();
+            if (startEdge == null || endEdge == null) return pathPortals;
             //check goal clearance
             var endEdgeProperty = endEdge.EdgeProperties[radiusIndex];
             if (endEdgeProperty.ClearanceOfStart < 0 && endEdgeProperty.ClearanceOfEnd < 0)
             {
-                return new List<Portal>();
+                return pathPortals;
             }
             //run astar
             var vertexList = FindPathFromVertexToVertex(ecm, radiusIndex, startEdge.Start, startEdge.End, endEdge.Start, endEdge.End, startPosition1, startPosition2, endPosition);
-            if (vertexList.Count == 0) return new List<Portal>();
+            if (vertexList.Count == 0) return pathPortals;
 
             //choose best start position for group
             choosenVertex = vertexList[vertexList.Count-1];
             Vector2 choosenStartPosition;
             if (choosenVertex == startEdge.Start) choosenStartPosition = startPosition1;
             else choosenStartPosition = startPosition2;
-            if (vertexList.Count == 1) return new List<Portal>() { new Portal( choosenStartPosition),new Portal( endPosition )};
+            if (vertexList.Count == 1)
+            {
+                pathPortals.Add(new Portal(choosenStartPosition));
+                pathPortals.Add( new Portal(endPosition) );
+                return pathPortals;
+            }
             //convert to path
             var edgeList = ConvertToEdgeList(vertexList);
-            ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition, out List<Portal> portals);
-            return GetShortestPath(portals);
+            pathPortals = ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition);
+            return pathPortals;
         }
         public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition, Vector2 endPosition)
         {
             var radius = ecm.AgentRadius[radiusIndex];
             var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
-            var portals =  FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition, endPosition, out Vertex v);
-            return portals.ConvertAll(x => x.Point);
+            var pathPortals =  FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition,ref endPosition, out Vertex v);
+            return GetShortestPath(pathPortals).ConvertAll(x => x.Point);
         }
         
         private static List<Edge> ConvertToEdgeList(List<Vertex> path)
@@ -229,9 +235,9 @@ namespace ExplicitCorridorMap
             return path;
         }//funtion
 
-        public static void ComputePortals(int radiusIndex, List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition, out List<Portal> portals)
+        public static List<Portal> ComputePortals(int radiusIndex, List<Edge> edgeList, Vector2 startPosition, Vector2 endPosition)
         {
-            portals = new List<Portal>();
+            var portals = new List<Portal>();
             portals.Add(new Portal(startPosition));
             //heuristic
             bool containsStart = true;
@@ -279,7 +285,7 @@ namespace ExplicitCorridorMap
                 }
             }
             portals.Add(new Portal(endPosition));
-
+            return portals;
         }
         private static void AddToPath(List<Portal> path, Portal point)
         {
