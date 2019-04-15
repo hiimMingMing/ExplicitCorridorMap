@@ -31,7 +31,7 @@ public class GroupDestinationSetter : MonoBehaviour
         {
             mousePosition = mouseRay.GetPoint(rayDistance).To2D();
         }
-        Debug.Log(group.Count+"G");
+
         if (Input.GetMouseButtonDown(1))
         {
             foreach (var ga in group)
