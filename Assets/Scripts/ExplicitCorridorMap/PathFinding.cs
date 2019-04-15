@@ -8,14 +8,6 @@ namespace ExplicitCorridorMap
 {
     public static class PathFinding
     {
-        public static List<Vector3> FindPath(ECM ecm, int radiusIndex, Vector2 startPosition, Vector2 endPosition)
-        {
-            var path = PathFinding2D.FindPath(ecm, radiusIndex, startPosition, endPosition);
-            return path.ConvertAll(a => new Vector3(a.x, 0.0f, a.y));
-        }
-    }
-    public static class PathFinding2D
-    {
         public static List<Portal> FindPath(ECM ecm, int radiusIndex, Edge startEdge, Vector2 startPosition1, Vector2 startPosition2,ref Vector2 endPosition, out Vertex choosenVertex)
         {
             //find end edge
@@ -50,12 +42,12 @@ namespace ExplicitCorridorMap
             pathPortals = ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition);
             return pathPortals;
         }
-        public static List<Vector3> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition, Vector2 endPosition)
+        public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition,ref Vector2 endPosition)
         {
             var radius = ecm.AgentRadius[radiusIndex];
             var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
             var pathPortals =  FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition,ref endPosition, out Vertex v);
-            return GetShortestPath(pathPortals).ConvertAll(a => (Vector3) a.Point);
+            return GetShortestPath(pathPortals).ConvertAll(a => a.Point);
         }
         
         private static List<Edge> ConvertToEdgeList(List<Vertex> path)

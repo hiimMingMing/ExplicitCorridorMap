@@ -63,5 +63,39 @@ namespace ExplicitCorridorMap
         {
             return new Rectangle(new Point(e.LeftTop.X -d, e.LeftTop.Y + d), new Point(e.RightBottom.X + d, e.RightBottom.Y - d));
         }
+
+        public static Obstacle ConvertToObstacle(Transform ga)
+        {
+            BoxCollider boxColliders = ga.GetComponent<BoxCollider>();
+            float minX, minY, maxX, maxY;
+            minX = boxColliders.transform.position.x -
+                       boxColliders.size.x * boxColliders.transform.lossyScale.x * 0.5f;
+            minY = boxColliders.transform.position.z -
+                         boxColliders.size.z * boxColliders.transform.lossyScale.z * 0.5f;
+            maxX = boxColliders.transform.position.x +
+                         boxColliders.size.x * boxColliders.transform.lossyScale.x * 0.5f;
+            maxY = boxColliders.transform.position.z +
+                         boxColliders.size.z * boxColliders.transform.lossyScale.z * 0.5f;
+            return new Obstacle(new RectInt((int)minX, (int)minY, (int)(maxX - minX), (int)(maxY - minY)));
+        }
+        public static IList<RVO.Vector2> ConvertToListOfLine(Transform ga)
+        {
+            BoxCollider boxColliders = ga.GetComponent<BoxCollider>();
+            float minX, minY, maxX, maxY;
+            minX = boxColliders.transform.position.x -
+                       boxColliders.size.x * boxColliders.transform.lossyScale.x * 0.5f;
+            minY = boxColliders.transform.position.z -
+                         boxColliders.size.z * boxColliders.transform.lossyScale.z * 0.5f;
+            maxX = boxColliders.transform.position.x +
+                         boxColliders.size.x * boxColliders.transform.lossyScale.x * 0.5f;
+            maxY = boxColliders.transform.position.z +
+                         boxColliders.size.z * boxColliders.transform.lossyScale.z * 0.5f;
+            IList<RVO.Vector2> obstacle = new List<RVO.Vector2>();
+            obstacle.Add(new RVO.Vector2(maxX, maxY));
+            obstacle.Add(new RVO.Vector2(minX, maxY));
+            obstacle.Add(new RVO.Vector2(minX, minY));
+            obstacle.Add(new RVO.Vector2(maxX, minY));
+            return obstacle;
+        }
     }
 }

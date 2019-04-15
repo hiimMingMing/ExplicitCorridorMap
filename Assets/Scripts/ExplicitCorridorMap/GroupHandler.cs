@@ -26,7 +26,7 @@ namespace ExplicitCorridorMap
             foreach(var a in Agents)
             {
                 if (a.RadiusIndex != radiusIndex) throw new Exception("All agents in group must have same radius");
-                var e = Ecm.GetNearestEdge(a.transform.position);
+                var e = Ecm.GetNearestEdge(a.GetPosition2D());
                 if (e == null) throw new NullReferenceException("Group Edge is null");
                 if (subgroupDict.ContainsKey(e))
                 {
@@ -72,7 +72,7 @@ namespace ExplicitCorridorMap
         {
             if (AgentDictionary.Count == 0) throw new Exception("Subgroup count == 0");
 
-            var pathPortals = PathFinding2D.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd,ref endPosition, out Vertex choosenVertex);
+            var pathPortals = PathFinding.FindPath(Ecm, radiusIndex, Edge, NearestPositionOfStart, NearestPositionOfEnd,ref endPosition, out Vertex choosenVertex);
             //reverse edge to connect to path
             if (choosenVertex == Edge.Start) Edge = Edge.Twin;
 
@@ -81,8 +81,8 @@ namespace ExplicitCorridorMap
             {
                 var a = kv.Key;
                 var si = kv.Value;
-                si.Compute(Ecm, Edge, a.transform.position);
-                //Debug.Log("Agent "+a.transform.position +" L:"+ si.LeftDistance+" R:"+ si.RightDistance);
+                si.Compute(Ecm, Edge, a.GetPosition2D());
+                //Debug.Log("Agent "+a.GetPosition2D() +" L:"+ si.LeftDistance+" R:"+ si.RightDistance);
             }
 
             //find agent nearest to the left and the right of Edge
@@ -117,9 +117,9 @@ namespace ExplicitCorridorMap
             {
                 var a = kv.Key;
                 var si = kv.Value;
-                var path = new List<Vector3>();
-                pathPortals[0] = new Portal(a.transform.position);
-                var shortestPathPortal = PathFinding2D.GetShortestPath(pathPortals);
+                var path = new List<Vector2>();
+                pathPortals[0] = new Portal(a.GetPosition2D());
+                var shortestPathPortal = PathFinding.GetShortestPath(pathPortals);
                 shortestPathPortal.ForEach(x => x.ComputeVector());
                 foreach (var p in shortestPathPortal)
                 {
@@ -158,10 +158,10 @@ namespace ExplicitCorridorMap
             var nearestDistance = float.PositiveInfinity;
             foreach(var a in AgentDictionary.Keys)
             {
-                float d = SquareDistance(a.transform.position, v.Position);
+                float d = SquareDistance(a.GetPosition2D(), v.Position);
                 if(d < nearestDistance)
                 {
-                    nearestPosition = a.transform.position;
+                    nearestPosition = a.GetPosition2D();
                     nearestDistance = d;
                 }
             }
