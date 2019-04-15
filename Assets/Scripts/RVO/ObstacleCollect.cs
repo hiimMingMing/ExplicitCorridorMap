@@ -11,14 +11,29 @@ public class ObstacleCollect : MonoBehaviour
         BoxCollider[] boxColliders = GetComponentsInChildren<BoxCollider>();
         for (int i = 0; i < boxColliders.Length; i++)
         {
-            float minX = boxColliders[i].transform.position.x -
-                         boxColliders[i].size.x*boxColliders[i].transform.lossyScale.x*0.5f;
-            float minY = boxColliders[i].transform.position.y -
-                         boxColliders[i].size.y*boxColliders[i].transform.lossyScale.y*0.5f;
-            float maxX = boxColliders[i].transform.position.x +
-                         boxColliders[i].size.x*boxColliders[i].transform.lossyScale.x*0.5f;
-            float maxY = boxColliders[i].transform.position.y +
-                         boxColliders[i].size.y*boxColliders[i].transform.lossyScale.y*0.5f;
+            float minX, minY, maxX, maxY;
+            if (GameMainManager.Instance.is3D)
+            {
+                minX = boxColliders[i].transform.position.x -
+                       boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                minY = boxColliders[i].transform.position.z -
+                             boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
+                maxX = boxColliders[i].transform.position.x +
+                             boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                maxY = boxColliders[i].transform.position.z +
+                             boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
+            }
+            else {
+                minX = boxColliders[i].transform.position.x -
+                       boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                minY = boxColliders[i].transform.position.y -
+                             boxColliders[i].size.y * boxColliders[i].transform.lossyScale.y * 0.5f;
+                maxX = boxColliders[i].transform.position.x +
+                             boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
+                maxY = boxColliders[i].transform.position.y +
+                             boxColliders[i].size.y * boxColliders[i].transform.lossyScale.y * 0.5f;
+            }
+          
 
             IList<Vector2> obstacle = new List<Vector2>();
             obstacle.Add(new Vector2(maxX, maxY));

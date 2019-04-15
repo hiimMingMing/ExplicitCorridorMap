@@ -10,6 +10,7 @@ public class GameManagerEditor : Editor
     
     public override void OnInspectorGUI()
     {
+        if (manager.isNull()) return;
         base.OnInspectorGUI();
         DrawSettingEditor(manager.agentSetting);
         var gameManager = (GameMainManager)target;

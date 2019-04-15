@@ -11,4 +11,32 @@ public static class ExtensionClass {
     public static Vector2 RVOVector2ToVector2(this RVO.Vector2 vector2) {
         return new Vector2(vector2.x_, vector2.y_);
     }
+    public static Vector3 to3D(this Vector3 value) {
+        if (GameMainManager.Instance.is3D)
+        {
+            return new Vector3(value.x, value.z, value.y);
+        }
+        else return value;
+    }
+
+    public static Vector3 to3D(this Vector2 value)
+    {
+        if (GameMainManager.Instance.is3D)
+        {
+            return new Vector3(value.x, 0, value.y);
+        }
+        else return value;
+    }
+
+    public static Vector3 to2D(this Vector3 value)
+    {
+        if (GameMainManager.Instance.is3D)
+        {
+            return new Vector3(value.x, value.z, 0);
+        }
+        else return value;
+       
+    }
+
+   
 }

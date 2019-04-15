@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
-
+using ExplicitCorridorMap.Maths;
 public class Player : MonoBehaviour
 {
     public float speed = 50;
@@ -44,12 +44,20 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)){
-            finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            wayPointList = PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget);       
-            currentWayPoint = 1;
+        if (!ecmMap.grouping)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                SetNewPath( PathFinding.FindPath(ecm, RadiusIndex, transform.position, finalTarget));
 
-            if (drawPath) LineDrawer.DrawPath(wayPointList, lineList, Color.magenta); //Debug
+                DrawPath(Color.magenta); //Debug
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                var test = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                Debug.Log(test.x + " - " + test.y);
+            }
         }
 
         if (currentWayPoint < wayPointList.Count)
@@ -58,15 +66,18 @@ public class Player : MonoBehaviour
             Walk();
         }          
     }
-
+    public void SetNewPath(List<Vector2> path)
+    {
+        wayPointList = path;
+        currentWayPoint = 1;
+    }
     void Walk()
     {   
-        DynamicReplanning.HandleDynamicEvent(this);
+        //DynamicReplanning.HandleDynamicEvent(this);
 
         // move towards the target    
-        transform.position = Vector3.MoveTowards(transform.position, targetWayPoint, speed * Time.deltaTime);        
-
-        if (transform.position == (Vector3)targetWayPoint)
+        transform.position = Vector3.MoveTowards(transform.position, targetWayPoint, speed * Time.deltaTime);
+        if (transform.position.Approximately(targetWayPoint))
         {
             currentWayPoint++;
             if (currentWayPoint < wayPointList.Count) targetWayPoint = wayPointList[currentWayPoint];
@@ -75,30 +86,30 @@ public class Player : MonoBehaviour
         }
     }
 
-    //#region Debug
-    //public void DrawPath(Color color)
-    //{
-    //    if (drawPath)
-    //    {
-    //        for (int i = 0; i < wayPointList.Count - 1; i++)
-    //        {
-    //            //Draw the path
-    //            LineDrawer lineDrawer = new LineDrawer();
-    //            var start = new Vector3(wayPointList[i].x, wayPointList[i].y);
-    //            var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y);
-    //            lineDrawer.DrawLineInGameView(start, end, color, 2.0f);
-    //            lineList.Add(lineDrawer);
-    //        }
-    //    }
-    //}
+    #region Debug
+    public void DrawPath(Color color)
+    {
+        if (drawPath)
+        {
+            for (int i = 0; i < wayPointList.Count - 1; i++)
+            {
+                //Draw the path
+                LineDrawer lineDrawer = new LineDrawer();
+                var start = new Vector3(wayPointList[i].x, wayPointList[i].y);
+                var end = new Vector3(wayPointList[i + 1].x, wayPointList[i + 1].y);
+                lineDrawer.DrawLineInGameView(start, end, color, 2.0f);
+                lineList.Add(lineDrawer);
+            }
+        }
+    }
 
-    //void DeletePath()
-    //{
-    //    if (drawPath)
-    //    {
-    //        foreach (var l in lineList)
-    //            l.Destroy();
-    //    }
-    //}
-    //#endregion
+    void DeletePath()
+    {
+        if (drawPath)
+        {
+            foreach (var l in lineList)
+                l.Destroy();
+        }
+    }
+    #endregion
 }
