@@ -6,6 +6,7 @@ using UnityEngine.Assertions;
 using ExplicitCorridorMap.Maths;
 using RVO;
 using Vector2 = UnityEngine.Vector2;
+using DebugUtils;
 
 public class GameAgent : MonoBehaviour
 {
@@ -70,9 +71,18 @@ public class GameAgent : MonoBehaviour
         //follow path
         if (CurrentWayPoint == WayPointList.Count)
         {
+            var goalVector = TargetWayPoint.To2DRVO() - Simulator.Instance.getAgentPosition(Sid);
+            goalVector = RVOMath.normalize(goalVector);
+            Simulator.Instance.setAgentPrefVelocity(Sid, goalVector);
+            /* Perturb a little to avoid deadlocks due to perfect symmetry. */
+            float angle = Random.value * 2.0f * Mathf.PI;
+            float dist = Random.value * 0.0001f;
+
+            Simulator.Instance.setAgentPrefVelocity(Sid, Simulator.Instance.getAgentPrefVelocity(Sid) +
+                                                         dist * new RVO.Vector2(Mathf.Cos(angle), Mathf.Sin(angle)));
             if (CheckDestinationStuck())
             {
-                Debug.Log("STOPP");
+                CurrentWayPoint++;
                 Simulator.Instance.setAgentPrefVelocity(Sid, new RVO.Vector2(0, 0));
             }
         }
@@ -176,4 +186,14 @@ public class GameAgent : MonoBehaviour
         return false;
 
     }
+#if UNITY_EDITOR
+    #region Draw
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.white;
+        DrawUtils.DrawPolyLine(WayPointList);
+    }
+    #endregion
+
+#endif
 }

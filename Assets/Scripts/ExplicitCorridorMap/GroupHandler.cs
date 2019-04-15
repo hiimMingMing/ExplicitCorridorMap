@@ -40,7 +40,7 @@ namespace ExplicitCorridorMap
                 }
             }
 
-            Debug.Log("Number of group " + subgroupDict.Values.Count);
+            //Debug.Log("Number of group " + subgroupDict.Values.Count);
             foreach (var sg in subgroupDict.Values)
             {
                 //Debug.Log("E " + sg.Edge+" "+sg.Agents.Count);

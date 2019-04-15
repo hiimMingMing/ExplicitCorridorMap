@@ -19,6 +19,10 @@ public static class VectorExtension
     {
         return new Vector2(a.x, a.z);
     }
+    public static Vector3 To3D(this Vector2 a)
+    {
+        return new Vector3(a.x,0, a.y);
+    }
     public static RVO.Vector2 To2DRVO(this Vector3 a)
     {
         return new RVO.Vector2(a.x, a.z);
