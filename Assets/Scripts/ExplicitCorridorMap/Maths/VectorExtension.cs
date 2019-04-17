@@ -31,6 +31,7 @@ public static class VectorExtension
     {
         return new RVO.Vector2(a.x, a.y);
     }
+  
     public static Vector2 RVOVector2ToVector2(this RVO.Vector2 vector2)
     {
         return new Vector2(vector2.x_, vector2.y_);

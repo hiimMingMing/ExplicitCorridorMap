@@ -770,7 +770,7 @@ Transform:
   m_GameObject: {fileID: 5507474019436848124}
   m_LocalRotation: {x: 0, y: 0.074239075, z: 0, w: 0.9972405}
   m_LocalPosition: {x: 133.38062, y: 1.7686749, z: 131.32443}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 15, y: 15, z: 15}
   m_Children:
   - {fileID: 989765640958034393}
   - {fileID: 5507474019436848084}
@@ -789,14 +789,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89259aa854c02884d9acf21195df0dfd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sid: -1
-  ecmMap: {fileID: 0}
-  targetWayPoint: {x: 0, y: 0}
-  finalTarget: {x: 0, y: 0, z: 0}
-  currentWayPoint: 0
-  debugTarget: {x: 0, y: 0, z: 0}
-  wayPointList: []
-  radiusIndex: 0
+  CurrentWayPoint: 0
+  WayPointList: []
+  ECMMap: {fileID: 0}
+  RadiusIndex: 0
+  Radius: 10
+  Speed: 2
+  Priority: 1
+  DestinationRadius: 5
+  Sid: 0
 --- !u!120 &2925194994916513305
 LineRenderer:
   m_ObjectHideFlags: 0
