@@ -13,7 +13,7 @@ public class GameAgent : MonoBehaviour
     [HideInInspector] Vector2 TargetWayPoint;
     [HideInInspector] public int CurrentWayPoint;
     [HideInInspector] public List<Vector2> WayPointList;
-    [HideInInspector] public Vector2 FinalTarget;
+   
     [HideInInspector] public ECMMap ECMMap;
     private ECM ECMGraph;
     [HideInInspector] public int RadiusIndex = 0;
@@ -46,9 +46,9 @@ public class GameAgent : MonoBehaviour
     }
     public void FindPath(Vector2 goalPosition)
     {
-        FinalTarget = goalPosition;
+        
         //if (ECMMap.Grouping) throw new System.Exception("Agent cannot self call when ECMMap.Grouping is on, use ECMMap.FindPathGroup instead");
-        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), ref FinalTarget);
+        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), ref goalPosition);
         SetNewPath(path);
     }
 
@@ -157,6 +157,8 @@ public class GameAgent : MonoBehaviour
 
     bool CheckDestinationStuck()
     {
+
+        Vector2 FinalTarget = WayPointList[WayPointList.Count - 1];
         float distanceToDesSqr = (transform.position.To2D() - FinalTarget).sqrMagnitude;
         
         float sumAgentS = 0;
@@ -173,6 +175,7 @@ public class GameAgent : MonoBehaviour
 
         if (sumAgentS >= 3.14f * distanceToDesSqr * 0.6f)
         {
+           
             return true;
         }
 
