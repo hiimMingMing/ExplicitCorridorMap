@@ -76,14 +76,14 @@ public class ECMMapManager : MonoBehaviour {
 
 		int obstaclesCOunt = obstacles.transform.childCount;
 
-		for (int i = 0; i < obstaclesCOunt; i++) 
+		for (int i = 0; i < obstaclesCOunt; i++)
         {
 			surface.transform.position = new Vector3(obstacles.transform.GetChild(0).transform.position.x, 0, obstacles.transform.GetChild(0).transform.position.z);
 			obstacles.transform.GetChild(0).transform.parent = surface.transform;
-            surface.BuildNavMesh();   
+            surface.BuildNavMesh();
 			surface.transform.GetChild(0).transform.parent = obstacles.transform;
 			NavMeshToVertices();
-        }   
+        }
 
 		return getBakedMap();
 	}
@@ -122,10 +122,10 @@ public class ECMMapManager : MonoBehaviour {
 		}
 
 		for (int i = 0; i < vertices.Count; i++) {
-			if(Round(vertices[i].x) == Round(xMax) ||
-			   Round(vertices[i].x) == Round(xMin) ||
-			   Round(vertices[i].z) == Round(zMax) ||
-			   Round(vertices[i].z) == Round(zMin)
+			if(vertices[i].x == xMax ||
+			   vertices[i].x == xMin ||
+			   vertices[i].z == zMax ||
+			   vertices[i].z == zMin
 			) {
 				vertices.RemoveAt(i);
 				i--;
@@ -139,22 +139,81 @@ public class ECMMapManager : MonoBehaviour {
 			}
 		}
 
-		int iCount = 0;
-		int temp = vertices.Count;
-		int vertexToPutOnList_Index = 0;
-		ObstaclesVertices result = new ObstaclesVertices();
-		while (iCount < temp) {
-		Debug.Log(vertexToPutOnList_Index);
-			result.vertices.Add(vertices[vertexToPutOnList_Index]);
-			for (int index = 0; index < vertices.Count; index++) {
-				if(index != vertexToPutOnList_Index && vertices[index] == vertices[vertexToPutOnList_Index + 1] && index % 2 == 0) {
-					vertexToPutOnList_Index = index;
-					Debug.Log(vertexToPutOnList_Index);
-					break;
+		for (int i = 0; i < vertices.Count - 1; i = i + 2) {
+			if (Physics.Linecast(vertices[i], vertices[i+1])) {
+			Debug.Log("Raycast hit" + i);
+				vertices.RemoveAt(i+1);
+				vertices.RemoveAt(i);
+				i = i - 2;
+			}
+		}
+
+		for (int i = 0; i < vertices.Count - 1; i++) {
+			for (int j = i + 1; j < vertices.Count; j++) {
+				if(vertices[i] == vertices[j]) {
+					vertices.RemoveAt(j);
+					j--;
 				}
 			}
-			iCount += 2;
 		}
+
+		for (int i = 0; i < vertices.Count - 1; i++) {
+			for (int j = i + 1; j < vertices.Count; j++) {
+				if((vertices[i] - vertices[j]).magnitude < 0.2f) {
+					vertices[i] = (vertices[i] + vertices[j]) / 2;
+					vertices.RemoveAt(j);
+					j--;
+				}
+			}
+		}
+
+		float minNextDist = 9999;
+
+		for (int i = 0; i < vertices.Count - 1; i++) {
+			for (int j = 0; j < vertices.Count; j++) {
+				Vector3 normal = vertices[j] - vertices[i];
+				normal = new Vector3(-normal.z, 0.0f, normal.x);
+				Vector3 startPoint = (vertices[j] + vertices[i]) / 2;
+				Vector3 endPoint = startPoint + normal;
+				Vector3 endPoint2 = startPoint - normal;
+				if (Physics.Linecast(startPoint, endPoint) && !Physics.Linecast(startPoint, endPoint2) && !Physics.Linecast(vertices[i], vertices[j])) {
+					if(j == 0) {
+						vertices.RemoveRange(i + 1, vertices.Count - i - 1);
+						break;
+					}
+					if((vertices[j] - vertices[i]).magnitude < minNextDist) {
+						Vector3 tempPoint = vertices[i + 1];
+						vertices[i + 1] = vertices[j];
+						vertices[j] = tempPoint;
+						minNextDist = normal.magnitude;
+					}
+				}
+			}
+			if(minNextDist == 9999) {
+				vertices.RemoveRange(i + 1, vertices.Count - i - 1);
+			}
+			minNextDist = 9999;
+		}
+
+		for (int i = 0; i < vertices.Count; i++) {
+			Vector3 vec1 = vertices[i] - vertices[(i + 1) % vertices.Count] ;
+			Vector3 vec2 = vertices[(i + 1) % vertices.Count] - vertices[(i + 2) % vertices.Count];
+			float angle = Vector3.Angle(vec1, vec2);
+			if(angle < 10.0f || angle > 170.0f) {
+				Debug.Log("angle: " + angle);
+				vertices.RemoveAt((i + 1) % vertices.Count);
+				i--;
+			}
+		}
+
+		for (int i = 0; i < vertices.Count; i++) {
+			vertices[i] -= surface.transform.position;
+			vertices[i] -= vertices[i].normalized * 0.3f;
+			vertices[i] += surface.transform.position;
+		}
+
+		ObstaclesVertices result = new ObstaclesVertices();
+		result.vertices = vertices;
 
 		result.vertices.Reverse();
 		bakedECMMap.Add(result);
@@ -166,5 +225,5 @@ public class ECMMapManager : MonoBehaviour {
 		public List<Vector3> vertices = new List<Vector3>();
 	}
 
-	
+
 }
