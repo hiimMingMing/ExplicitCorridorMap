@@ -96,7 +96,7 @@ namespace ExplicitCorridorMap
                 {
                     var neigborVertex = edge.End;
                     if (closeSet.Contains(neigborVertex) || edge.HasEnoughClearance(radius)) continue;
-                    var tentativeGScore = gScore[current] + edge.Length;
+                    var tentativeGScore = gScore[current] + edge.Cost;
                     if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
                     else if (tentativeGScore >= gScore[neigborVertex]) continue;
                     cameFrom[neigborVertex] = current;

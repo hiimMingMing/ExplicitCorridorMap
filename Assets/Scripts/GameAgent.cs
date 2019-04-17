@@ -51,7 +51,13 @@ public class GameAgent : MonoBehaviour
         var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), ref goalPosition);
         SetNewPath(path);
     }
-
+    public void ReplanPath()
+    {
+        if (CurrentWayPoint >= WayPointList.Count-1) return;
+        var goalPosition = WayPointList[WayPointList.Count - 1];
+        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), ref goalPosition);
+        SetNewPath(path);
+    }
     public Vector2 GetPosition2D()
     {
         return transform.position.To2D();

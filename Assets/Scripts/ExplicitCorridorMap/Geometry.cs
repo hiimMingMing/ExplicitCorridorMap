@@ -8,7 +8,7 @@ using Advanced.Algorithms.DataStructures;
 
 namespace ExplicitCorridorMap
 {
-    public class Geometry
+    public static class Geometry
     {
         public static bool PolygonContainsPoint(List<Vector2> polyPoints, Vector2 p)
         {
@@ -96,6 +96,20 @@ namespace ExplicitCorridorMap
             obstacle.Add(new RVO.Vector2(minX, minY));
             obstacle.Add(new RVO.Vector2(maxX, minY));
             return obstacle;
+        }
+        public static float ComputeAreaOfPolygon(List<Vector2> p)
+        {
+            if (p.Count <= 2) return 0.0f;
+            float a = 0;
+            for (int i = 0; i < p.Count - 2; i++)
+            {
+                a += p[i].x * p[i + 1].y;
+                a -= p[i + 1].x * p[i].y;
+            }
+            a += p[p.Count - 1].x * p[0].y;
+            a -= p[0].x * p[p.Count - 1].y;
+            a = a / 2.0f;
+            return a;
         }
     }
 }

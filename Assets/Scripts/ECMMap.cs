@@ -5,6 +5,7 @@ using RVO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Obstacle = ExplicitCorridorMap.Obstacle;
 using Vector2 = UnityEngine.Vector2;
@@ -15,6 +16,7 @@ public class ECMMap : MonoBehaviour
     public Transform GroundPlane;
     public List<float> AgentRadiusList;
     public bool Grouping = false;
+    public bool CrowDensity = false;
     public ECM ECMGraph { get; protected set; }
     private List<Obstacle> Obstacles;
 
@@ -45,20 +47,103 @@ public class ECMMap : MonoBehaviour
             Simulator.Instance.addObstacle(Geometry.ConvertToListOfLine(obs));
         }
         Simulator.Instance.processObstacles();
+        Simulator.Instance.SetNumWorkers(10);
     }
-
+    private float time = 0.0f;
+    private float densityTimeStep = 1.0f;
     private void FixedUpdate()
     {
         Simulator.Instance.doStep();
+
+        if (CrowDensity)
+        {
+            time += Time.deltaTime;
+            if(time > densityTimeStep)
+            {
+                SimulateDesityCrowd();
+                time = 0.0f;
+            }
+        }
+    }
+    private void SimulateDesityCrowd()
+    {
+        var densityDict = ComputeDensityDictionary();
+        ComputeEdgeCost(densityDict);
+        //replan path for all agent
+        //Debug.Log("Replanned");
+        foreach (var a in AgentMap.Values)
+        {
+            a.ReplanPath();
+        }
+    }
+    private Dictionary<Edge, List<GameAgent>> ComputeDensityDictionary()
+    {
+        var densityDict = new Dictionary<Edge, List<GameAgent>>();
+        foreach (var a in AgentMap.Values)
+        {
+            var e = ECMGraph.GetNearestEdge(a.GetPosition2D());
+            if (e == null) throw new NullReferenceException("Group Edge is null");
+            if (densityDict.ContainsKey(e))
+            {
+                densityDict[e].Add(a);
+            }
+            else
+            {
+                var l = new List<GameAgent> { a };
+                densityDict[e] = l;
+            }
+        }
+        return densityDict;
+    }
+    private void ComputeEdgeCost(Dictionary<Edge, List<GameAgent>> densityDict)
+    {
+        if (densityDict.Count == 0) return;
+        //do if have any agent in map    
+
+        var id = densityDict.First().Value.First().Sid;
+        float groupMaxVelocity = Simulator.Instance.getAgentMaxSpeed(id);
+
+        foreach (var edge in ECMGraph.Edges.Values)
+        {
+            if (densityDict.ContainsKey(edge))
+            {
+                //float groupMaxVelocity = 0;
+                //float groupCurVelocity = 0;
+                float groupArea = 0;
+                var agentList = densityDict[edge];
+                foreach (var agent in agentList)
+                {
+                    //    groupMaxVelocity += Simulator.Instance.getAgentMaxSpeed(agent.Sid);
+                    //    groupCurVelocity += Simulator.Instance.getAgentVelocity(agent.Sid).Length();
+                    groupArea += agent.Radius * agent.Radius * Mathf.PI;
+                }
+                //groupMaxVelocity /= agentList.Count;
+                //groupCurVelocity /= agentList.Count;
+                float desityValue = Mathf.Min(1.0f, groupArea / edge.Area);
+                edge.Cost = edge.Length / Phi(desityValue, groupMaxVelocity);
+                //Debug.Log(edge + " Cost:" + edge.Cost);
+            }
+            else
+            {
+                edge.Cost = edge.Length / Phi(0,groupMaxVelocity);
+            }
+        }
     }
 
+    private float Phi(float density, float maxSpeed)
+    {
+        float minSpeed = 0.001f;
+        return density * minSpeed + (1.0f - density) * maxSpeed;
+        //if (density < 0.5f) return maxSpeed;
+        //else return 0.000001f;
+    }
     public void FindPathGroup( List<GameAgent> AgentGroup, Vector2 finalTarget)
     {
         if (!Grouping) throw new Exception("Cannot call is function when ECMMap.Grouping is off");
         var gh = new GroupHandler(ECMGraph, AgentGroup);
         gh.FindPath(finalTarget);
     }
-
+    
 #if UNITY_EDITOR
     #region Draw
     [HideInInspector]
@@ -70,7 +155,7 @@ public class ECMMap : MonoBehaviour
     [HideInInspector]
     public bool drawNearestObstaclePoints = false;
     [HideInInspector]
-    public bool drawShortestPath = false;
+    public bool drawVertexLabel = false;
     [HideInInspector]
     public int obstacleToDelete = 0;
     [HideInInspector]
@@ -119,17 +204,8 @@ public class ECMMap : MonoBehaviour
                 DrawUtils.DrawObstaclePoint(edge);
             }
         }
-        if (shortestPath != null && drawShortestPath)
-        {
-            Gizmos.color = Color.red;
-            DrawUtils.DrawPolyLine(shortestPath);
-        }
+        
     }
-
-
-
-
-    
 
     public void ComputeCurveEdge()
     {

@@ -35,4 +35,8 @@ public static class VectorExtension
     {
         return new Vector2(vector2.x_, vector2.y_);
     }
+    public static float Length(this RVO.Vector2 a)
+    {
+        return Mathf.Sqrt(a.x_ * a.x_ + a.y_ * a.y_);
+    }
 }

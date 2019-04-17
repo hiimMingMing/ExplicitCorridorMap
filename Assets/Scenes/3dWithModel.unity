@@ -2530,6 +2530,7 @@ MonoBehaviour:
   AgentRadiusList:
   - 10
   Grouping: 1
+  CrowDensity: 1
   drawGraph: 1
   inputPointRadius: 2
   outputPointRadius: 2
