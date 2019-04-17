@@ -109,7 +109,7 @@ public class GameAgent : MonoBehaviour
 
 
         ///
-        if (currentWayPoint == wayPointList.Count) {
+        if (currentWayPoint == wayPointList.Count-1) {
          
             if (checkDestinationStuck()) {
                 // immediately stop
@@ -275,9 +275,10 @@ public class GameAgent : MonoBehaviour
                 sumAgentS += listOfAgent[i].radius_ * listOfAgent[i].radius_ * 3.14f;
             }
         }
-
-        if (sumAgentS >= 3.14f * distanceToDesSqr * 0.1f) {
+        Debug.Log(sumAgentS + "   " +3.14f * distanceToDesSqr * 0.6f);
+        if (sumAgentS >= 3.14f * distanceToDesSqr * 0.6f) {
          
+            
             return true;
         }
            

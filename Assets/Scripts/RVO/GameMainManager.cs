@@ -63,7 +63,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
         //End
         Simulator.Instance.setTimeStep(1f);
         //Simulator.Instance.setAgentDefaults(120.0f, 50, 1.0f, 0.5f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
-        Simulator.Instance.setAgentDefaults(200.0f, 50, 0.1f, 0.05f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(200.0f, 10, 0.1f, 0.05f, 10.0f, 10.0f, new Vector2(0.0f, 0.0f));
         if (is3D)
         {
             m_hPlane = new Plane(Vector3.up, Vector3.zero);
