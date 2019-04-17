@@ -38,6 +38,7 @@ public class GameMainManager : SingletonBehaviour<GameMainManager>
     [HideInInspector]
     public RectInt addedObstacle;
     public Transform defaultObstacle;
+    public bool usingODPA = true;
     [Header("Agent setting")]
     public AgentSetting agentSetting;
     public ExplicitCorridorMap.ECM getECM() {

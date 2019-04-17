@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ExplicitCorridorMap.Maths;
 using rvo =  RVO;
 namespace ExplicitCorridorMap
 {
@@ -35,7 +36,6 @@ namespace ExplicitCorridorMap
                 }
                 Transform obj = Object.Instantiate(gameManager.defaultObstacle, position,Quaternion.identity);
                 gameManager.getECM().AddPolygonDynamic(new Obstacle(gameManager.addedObstacle));
-                //gameManager.ecmmap.ComputeCurveEdge();
               
                 rvo.Simulator.Instance.addObstacle(obj);
                 //TODO change to effective way to add obstacle
@@ -45,20 +45,21 @@ namespace ExplicitCorridorMap
                 {
                     GameAgent player = item.Value;
                     var listAffectPath = ListAffectedPath(player.wayPointList, gameManager.addedObstacle, player.currentWayPoint);
-                    List<Vector2> newPath;
+                    List<Vector2> newPath = new List<Vector2>();
                     if (GameMainManager.Instance.is3D)
                     {
-                        newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position.to3D(), player.finalTarget, listAffectPath);
+                        if (!gameManager.usingODPA)
+                            newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position.to3D(), player.finalTarget, listAffectPath);
                     }
                     else {
-                        newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position, player.finalTarget, listAffectPath);
+                        if (!gameManager.usingODPA)
+                            newPath = DynamicFindPathByECMVer2(player.ecmMap, player.radiusIndex, player.transform.position, player.finalTarget, listAffectPath);
                     }
                     if (newPath.Count > 0)
                     {
                         player.currentWayPoint = 0;
                         player.wayPointList = newPath;
                     }
-                    player.DrawPath(Color.green);
                 }
                
             }
@@ -70,8 +71,8 @@ namespace ExplicitCorridorMap
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    BoxCollider bc = (BoxCollider)hit.collider;
-                    if (bc != null)
+                    var bc = hit.collider;
+                    if (bc is BoxCollider && bc != null)
                     {
                         var xScale = bc.gameObject.transform.localScale.x;
                         var yScale = bc.gameObject.transform.localScale.y;
@@ -79,16 +80,28 @@ namespace ExplicitCorridorMap
                         GameMainManager.Instance.addedObstacle = DRMath.ConvertToRect(xScale, yScale, position);
 
                         Object.Destroy(bc.gameObject);
-                    }
-                }
 
-                //Handle the path
-                foreach (var item in gameManager.m_agentMap)
-                {
-                    GameAgent player = item.Value;
-                    player.wayPointList = DynamicFindPathByECM2(player.ecmMap, player.radiusIndex, player.transform.position, player.finalTarget, GameMainManager.Instance.addedObstacle);
-                    player.DrawPath(Color.green);
-                }
+                        int ID = FindObstacleID(gameManager.getECM(), GameMainManager.Instance.addedObstacle);
+                        gameManager.getECM().DeletePolygonDynamic(ID);
+
+                        //TODO change to effective way to delete obstacle
+
+                        //Handle the path
+                        foreach (var item in gameManager.m_agentMap)
+                        {
+                            GameAgent player = item.Value;
+                            List<Vector2> newPath;
+
+                            newPath = PathFinding.FindPath(player.ecmMap.ecm, player.radiusIndex, player.transform.position, player.finalTarget);                          
+
+                            if (newPath.Count > 0)
+                            {
+                                player.currentWayPoint = 0;
+                                player.wayPointList = newPath;
+                            }
+                        }
+                    }                   
+                }            
             }
         }
 
@@ -201,9 +214,7 @@ namespace ExplicitCorridorMap
         //Dynamic find the new path by rebuild ECMMap - Delete obstacle case
         public static List<Vector2> DynamicFindPathByECM2(ECMMap ecmmap, int radiusIndex, Vector2 startPosition, Vector2 endPosition, RectInt obstacle)
         {
-            int ID = FindObstacleID(ecmmap.ecm, obstacle);
-            ecmmap.ecm.DeletePolygonDynamic(ID);
-            //ecmmap.ComputeCurveEdge();
+            
             var shortestPath = PathFinding.FindPath(ecmmap.ecm, 0, startPosition, endPosition);
 
             return shortestPath;
@@ -380,12 +391,21 @@ namespace ExplicitCorridorMap
         
         public static int FindObstacleID(ECM ecm, RectInt obstacle)
         {
+            float distance;
+            float minDistance = Mathf.Infinity;
+            int ID = -1;
+
             foreach (var o in ecm.Obstacles)
             {
-                if (o.Value.Points.Contains(obstacle.min) && o.Value.Points.Contains(obstacle.max))
-                    return o.Value.ID;
+                distance = Distance.ComputeDistanceBetweenPoints(o.Value.Points[0], obstacle.min);
+
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    ID = o.Value.ID;
+                }
             }
-            return -1;
+            return ID;
         }  
     }
 }

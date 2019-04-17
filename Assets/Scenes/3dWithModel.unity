@@ -2269,6 +2269,8 @@ MonoBehaviour:
   - 5
   - 10
   - 15
+  grouping: 0
+  AgentGroup: {fileID: 0}
   drawGraph: 0
   inputPointRadius: 2
   outputPointRadius: 2
@@ -15233,6 +15235,7 @@ MonoBehaviour:
     width: 0
     height: 0
   defaultObstacle: {fileID: 760780659}
+  usingODPA: 1
   agentSetting: {fileID: 11400000, guid: b9a7788c8cb2fcd4a8b552fc17e2a4a1, type: 2}
 --- !u!4 &1949713827
 Transform:
