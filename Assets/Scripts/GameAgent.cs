@@ -69,24 +69,17 @@ public class GameAgent : MonoBehaviour
         if (Mathf.Abs(vel.x()) > 0.01f && Mathf.Abs(vel.y()) > 0.01f)
             transform.forward = new Vector3(vel.x(), 0, vel.y()).normalized;
         //follow path
-        if (CurrentWayPoint == WayPointList.Count)
+        if (CurrentWayPoint == WayPointList.Count-1)
         {
-            var goalVector = TargetWayPoint.To2DRVO() - Simulator.Instance.getAgentPosition(Sid);
-            goalVector = RVOMath.normalize(goalVector);
-            Simulator.Instance.setAgentPrefVelocity(Sid, goalVector);
-            /* Perturb a little to avoid deadlocks due to perfect symmetry. */
-            float angle = Random.value * 2.0f * Mathf.PI;
-            float dist = Random.value * 0.0001f;
-
-            Simulator.Instance.setAgentPrefVelocity(Sid, Simulator.Instance.getAgentPrefVelocity(Sid) +
-                                                         dist * new RVO.Vector2(Mathf.Cos(angle), Mathf.Sin(angle)));
+          
             if (CheckDestinationStuck())
             {
                 CurrentWayPoint++;
                 Simulator.Instance.setAgentPrefVelocity(Sid, new RVO.Vector2(0, 0));
             }
         }
-        else if (CurrentWayPoint < WayPointList.Count)
+        
+		if (CurrentWayPoint < WayPointList.Count)
         {
 
             TargetWayPoint = WayPointList[CurrentWayPoint];
@@ -178,7 +171,7 @@ public class GameAgent : MonoBehaviour
             }
         }
 
-        if (sumAgentS >= 3.14f * distanceToDesSqr * 0.1f)
+        if (sumAgentS >= 3.14f * distanceToDesSqr * 0.6f)
         {
             return true;
         }
