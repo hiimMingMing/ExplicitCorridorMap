@@ -46,7 +46,7 @@ public class ManipulateAgentComponent : MonoBehaviour
     void DeleteAgent()
     {
         //float rangeSq = float.MaxValue;
-        int agentNo = Simulator.Instance.queryNearAgent(mousePosition.To2DRVO(), 1.5f);
+        int agentNo = Simulator.Instance.queryNearAgent(mousePosition, 1.5f);
         if (agentNo == -1 || !ECMMap.AgentMap.ContainsKey(agentNo))
             return;
 

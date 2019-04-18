@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using ExplicitCorridorMap.Maths;
 using RVO;
-using Vector2 = UnityEngine.Vector2;
+ 
 using DebugUtils;
 
 public class GameAgent : MonoBehaviour
@@ -30,7 +30,7 @@ public class GameAgent : MonoBehaviour
         CurrentWayPoint = 1;
         WayPointList = new List<Vector2>();
 
-        Sid = Simulator.Instance.addAgent(transform.position.To2DRVO(), Radius, Speed, Priority);
+        Sid = Simulator.Instance.addAgent(transform.position.To2D(), Radius, Speed, Priority);
         ECMMap.AgentMap.Add(Sid, this);
     }
 
@@ -68,12 +68,12 @@ public class GameAgent : MonoBehaviour
     }
     void UpdateMovement()
     {
-        RVO.Vector2 vel = Simulator.Instance.getAgentVelocity(Sid);
-        RVO.Vector2 pos = Simulator.Instance.getAgentPosition(Sid);
-        transform.position = new Vector3(pos.x(), transform.position.y, pos.y());
+        Vector2 vel = Simulator.Instance.getAgentVelocity(Sid);
+        Vector2 pos = Simulator.Instance.getAgentPosition(Sid);
+        transform.position = new Vector3(pos.x, transform.position.y, pos.y);
 
-        if (Mathf.Abs(vel.x()) > 0.01f && Mathf.Abs(vel.y()) > 0.01f)
-            transform.forward = new Vector3(vel.x(), 0, vel.y()).normalized;
+        if (Mathf.Abs(vel.x) > 0.01f && Mathf.Abs(vel.y) > 0.01f)
+            transform.forward = new Vector3(vel.x, 0, vel.y).normalized;
         //follow path
         if (CurrentWayPoint == WayPointList.Count-1)
         {
@@ -81,7 +81,7 @@ public class GameAgent : MonoBehaviour
             if (CheckDestinationStuck())
             {
                 CurrentWayPoint++;
-                Simulator.Instance.setAgentPrefVelocity(Sid, new RVO.Vector2(0, 0));
+                Simulator.Instance.setAgentPrefVelocity(Sid, new Vector2(0, 0));
             }
         }
         
@@ -90,18 +90,18 @@ public class GameAgent : MonoBehaviour
 
             TargetWayPoint = WayPointList[CurrentWayPoint];
 
-            var goalVector = TargetWayPoint.To2DRVO() - Simulator.Instance.getAgentPosition(Sid);
-            goalVector = RVOMath.normalize(goalVector);
+            var goalVector = TargetWayPoint - Simulator.Instance.getAgentPosition(Sid);
+            goalVector = (goalVector).normalized;
             Simulator.Instance.setAgentPrefVelocity(Sid, goalVector);
             /* Perturb a little to avoid deadlocks due to perfect symmetry. */
             float angle = Random.value * 2.0f * Mathf.PI;
             float dist = Random.value * 0.0001f;
 
             Simulator.Instance.setAgentPrefVelocity(Sid, Simulator.Instance.getAgentPrefVelocity(Sid) +
-                                                         dist * new RVO.Vector2(Mathf.Cos(angle), Mathf.Sin(angle)));
+                                                         dist * new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)));
 
-            RVO.Vector2 position;
-            position = transform.position.To2DRVO();
+            Vector2 position;
+            position = transform.position.To2D();
 
             //check pass waypoint
             if (CurrentWayPoint < WayPointList.Count - 1)
@@ -118,14 +118,14 @@ public class GameAgent : MonoBehaviour
         }
         else
         {
-            Simulator.Instance.setAgentPrefVelocity(Sid, new RVO.Vector2(0, 0));
+            Simulator.Instance.setAgentPrefVelocity(Sid, new  Vector2(0, 0));
             return;
         }
 
     }
-    bool RadiusApproach(RVO.Vector2 position)
+    bool RadiusApproach( Vector2 position)
     {
-        if (RVOMath.compareVector2WithinDist(position, new RVO.Vector2(TargetWayPoint.x, TargetWayPoint.y), DestinationRadius))
+        if (RVOMath.compareVector2WithinDist(position, new  Vector2(TargetWayPoint.x, TargetWayPoint.y), DestinationRadius))
         {
 
             CurrentWayPoint++;
@@ -137,16 +137,16 @@ public class GameAgent : MonoBehaviour
     }
 
     // using for waypoints expect the last one
-    bool SameSideApproach(RVO.Vector2 position)
+    bool SameSideApproach(Vector2 position)
     {
-        var curWayPoint = new RVO.Vector2(TargetWayPoint.x, TargetWayPoint.y);
-        var nextWayPoint = new RVO.Vector2(WayPointList[CurrentWayPoint + 1].x, WayPointList[CurrentWayPoint + 1].y);
+        var curWayPoint = new  Vector2(TargetWayPoint.x, TargetWayPoint.y);
+        var nextWayPoint = new  Vector2(WayPointList[CurrentWayPoint + 1].x, WayPointList[CurrentWayPoint + 1].y);
         var np = nextWayPoint - curWayPoint;
-        np = new RVO.Vector2(-np.y_, np.x_);
+        np = new  Vector2(-np.y, np.x);
         var y = curWayPoint + np;
         var x = curWayPoint;
 
-        float val = ((x.y_ - y.y_) * (position.x_ - y.x_) + (y.x_ - x.x_) * (position.y_ - y.y_)) * ((x.y_ - y.y_) * (nextWayPoint.x_ - y.x_) + (y.x_ - x.x_) * (nextWayPoint.y_ - y.y_));
+        float val = ((x.y - y.y) * (position.x - y.x) + (y.x - x.x) * (position.y - y.y)) * ((x.y - y.y) * (nextWayPoint.x - y.x) + (y.x - x.x) * (nextWayPoint.y - y.y));
 
         if (val > 0)
         {
@@ -171,9 +171,9 @@ public class GameAgent : MonoBehaviour
         IList<Agent> listOfAgent = Simulator.Instance.GetListAgents();
         for (int i = 0; i < listOfAgent.Count; i++)
         {
-            var x = listOfAgent[i].position_.RVOVector2ToVector2();
+            var x = listOfAgent[i].position_;
             var d = (x - FinalTarget).sqrMagnitude;
-            if ((listOfAgent[i].position_.RVOVector2ToVector2() - FinalTarget).sqrMagnitude <= distanceToDesSqr)
+            if ((listOfAgent[i].position_  - FinalTarget).sqrMagnitude <= distanceToDesSqr)
             {
                 sumAgentS += listOfAgent[i].radius_ * listOfAgent[i].radius_ * 3.14f;
             }

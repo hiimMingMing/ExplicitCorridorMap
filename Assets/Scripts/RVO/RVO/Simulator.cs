@@ -298,7 +298,7 @@ namespace RVO
          */
         public void addObstacle(ExplicitCorridorMap.Obstacle obs)
         {
-            var rvoID = addObstacle(obs.ToRVO());
+            var rvoID = addObstacle(obs.ToList());
             obs.RvoID = rvoID;
         }
         private int addObstacle(IList<Vector2> vertices)
@@ -327,7 +327,7 @@ namespace RVO
                     obstacle.next_.previous_ = obstacle;
                 }
 
-                obstacle.direction_ = RVOMath.normalize(vertices[(i == vertices.Count - 1 ? 0 : i + 1)] - vertices[i]);
+                obstacle.direction_ = (vertices[(i == vertices.Count - 1 ? 0 : i + 1)] - vertices[i]).normalized;
 
                 if (vertices.Count == 2)
                 {

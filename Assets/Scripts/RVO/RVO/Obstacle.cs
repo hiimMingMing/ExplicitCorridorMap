@@ -29,7 +29,7 @@
  *
  * <http://gamma.cs.unc.edu/RVO2/>
  */
-
+using UnityEngine;
 namespace RVO
 {
     /**

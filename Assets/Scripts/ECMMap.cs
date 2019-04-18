@@ -40,7 +40,7 @@ public class ECMMap : MonoBehaviour
         ComputeCurveEdge();
         //RVO
         Simulator.Instance.setTimeStep(1f);
-        Simulator.Instance.setAgentDefaults(200.0f, 50, 0.1f, 0.05f, 10.0f, 10.0f, new RVO.Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(200.0f, 50, 0.1f, 0.05f, 10.0f, 10.0f, new  Vector2(0.0f, 0.0f));
         foreach (var obs in Obstacles)
         {
             Simulator.Instance.addObstacle(obs);

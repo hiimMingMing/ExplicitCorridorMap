@@ -69,22 +69,10 @@ namespace RVO
          */
         public static float absSq(Vector2 vector)
         {
-            return vector * vector;
+            return Vector2.Dot(vector,vector);
         }
 
-        /**
-         * <summary>Computes the normalization of the specified two-dimensional
-         * vector.</summary>
-         *
-         * <returns>The normalization of the two-dimensional vector.</returns>
-         *
-         * <param name="vector">The two-dimensional vector whose normalization
-         * is to be computed.</param>
-         */
-        public static Vector2 normalize(Vector2 vector)
-        {
-            return vector / abs(vector);
-        }
+     
 
 
         public static bool compareVector2WithinDist(Vector2 v1, Vector2 v2, float radius) {
@@ -93,22 +81,10 @@ namespace RVO
             }
             return false;
         }
-        /**
-         * <summary>Computes the determinant of a two-dimensional square matrix
-         * with rows consisting of the specified two-dimensional vectors.
-         * </summary>
-         *
-         * <returns>The determinant of the two-dimensional square matrix.
-         * </returns>
-         *
-         * <param name="vector1">The top row of the two-dimensional square
-         * matrix.</param>
-         * <param name="vector2">The bottom row of the two-dimensional square
-         * matrix.</param>
-         */
+      
         internal static float det(Vector2 vector1, Vector2 vector2)
         {
-            return vector1.x_ * vector2.y_ - vector1.y_ * vector2.x_;
+            return vector1.x * vector2.y - vector1.y * vector2.x;
         }
 
         /**
@@ -126,7 +102,7 @@ namespace RVO
          */
         internal static float distSqPointLineSegment(Vector2 vector1, Vector2 vector2, Vector2 vector3)
         {
-            float r = ((vector3 - vector1) * (vector2 - vector1)) / absSq(vector2 - vector1);
+            float r = (Vector2.Dot((vector3 - vector1) , (vector2 - vector1))) / absSq(vector2 - vector1);
 
             if (r < 0.0f)
             {

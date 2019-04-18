@@ -21,8 +21,8 @@ public class TestScript : MonoBehaviour
         //var pv = Simulator.Instance.getAgentPrefVelocity(gameAgent.Sid);
         //Debug.Log("MS:" + ms + " , V:" + Length(v) + " , PV:" + Length(pv));
     }
-    float Length(RVO.Vector2 a)
+    float Length(Vector2 a)
     {
-        return Mathf.Sqrt(a.x_ * a.x_ + a.y_ * a.y_);
+        return Mathf.Sqrt(a.x * a.x + a.y * a.y);
     }
 }

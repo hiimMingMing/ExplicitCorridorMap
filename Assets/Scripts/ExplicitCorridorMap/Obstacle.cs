@@ -53,12 +53,12 @@ namespace ExplicitCorridorMap
         {
             return mBRectangle;
         }
-        public IList<RVO.Vector2> ToRVO()
+        public IList<Vector2> ToList()
         {
-            IList<RVO.Vector2> obs = new List<RVO.Vector2>();
+            IList<Vector2> obs = new List<Vector2>();
             for(int i = Points.Count-1; i >= 0; i--)
             {
-                obs.Add(new RVO.Vector2(Points[i].x, Points[i].y));
+                obs.Add(new Vector2(Points[i].x, Points[i].y));
             }
             return obs;
         }
