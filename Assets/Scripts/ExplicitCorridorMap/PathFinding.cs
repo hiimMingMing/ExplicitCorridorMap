@@ -49,7 +49,7 @@ namespace ExplicitCorridorMap
             var pathPortals =  FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition,ref endPosition, out Vertex v);
             return GetShortestPath(pathPortals).ConvertAll(a => a.Point);
         }
-        private static List<Edge> ConvertToEdgeList(List<Vertex> path)
+        public static List<Edge> ConvertToEdgeList(List<Vertex> path)
         {
             var edgeList = new List<Edge>();
             
