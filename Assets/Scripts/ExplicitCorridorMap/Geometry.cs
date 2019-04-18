@@ -8,7 +8,7 @@ using Advanced.Algorithms.DataStructures;
 
 namespace ExplicitCorridorMap
 {
-    public class Geometry
+    public static class Geometry
     {
         public static bool PolygonContainsPoint(List<Vector2> polyPoints, Vector2 p)
         {
@@ -29,30 +29,21 @@ namespace ExplicitCorridorMap
         public static RectInt ConvertToRect(Transform cube)
         {
             int w, h, x, y;
-            if (GameMainManager.Instance.isNull())
-            {
-                GameMainManager.Instance.is3D = false;
-                w = (int)cube.localScale.x;
-                h = (int)cube.localScale.y;
-                x = (int)cube.position.x;
-                y = (int)cube.position.y;
-                return new RectInt(x - w / 2, y - h / 2, w, h);
-
-            }
-            if (GameMainManager.Instance.is3D) {
-                w = (int)cube.localScale.x;
-                h = (int)cube.localScale.z;
-                x = (int)cube.position.x;
-                y = (int)cube.position.z;
-                return new RectInt(x - w / 2, y - h / 2, w, h);
-            }
+            w = (int)cube.localScale.x;
+            h = (int)cube.localScale.z;
+            x = (int)cube.position.x;
+            y = (int)cube.position.z;
+            return new RectInt(x - w / 2, y - h / 2, w, h);
+        }
+        public static RectInt ConvertToRect2D(Transform cube)
+        {
+            int w, h, x, y;
             w = (int)cube.localScale.x;
             h = (int)cube.localScale.y;
             x = (int)cube.position.x;
             y = (int)cube.position.y;
             return new RectInt(x - w / 2, y - h / 2, w, h);
         }
-        
         public static MBRectangle ComputeMBRectangle(List<Vector2> points)
         {
             float minX = float.PositiveInfinity;
@@ -71,6 +62,32 @@ namespace ExplicitCorridorMap
         public static Rectangle ExtendRectangle(Rectangle e, float d)
         {
             return new Rectangle(new Point(e.LeftTop.X -d, e.LeftTop.Y + d), new Point(e.RightBottom.X + d, e.RightBottom.Y - d));
+        }
+        public static Obstacle ConvertToObstacle(Transform go)
+        {
+            return new Obstacle(ConvertToRectInt(go));
+        }
+        public static RectInt ConvertToRectInt(Transform go)
+        {
+            var bound = go.GetComponent<Renderer>().bounds;
+            var min = Vector2Int.FloorToInt(bound.min.To2D());
+            var size = Vector2Int.FloorToInt(bound.size.To2D());
+            return new RectInt(min, size);
+        }
+
+        public static float ComputeAreaOfPolygon(List<Vector2> p)
+        {
+            if (p.Count <= 2) return 0.0f;
+            float a = 0;
+            for (int i = 0; i < p.Count - 2; i++)
+            {
+                a += p[i].x * p[i + 1].y;
+                a -= p[i + 1].x * p[i].y;
+            }
+            a += p[p.Count - 1].x * p[0].y;
+            a -= p[0].x * p[p.Count - 1].y;
+            a = a / 2.0f;
+            return a;
         }
     }
 }

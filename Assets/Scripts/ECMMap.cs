@@ -1,65 +1,150 @@
-﻿using ExplicitCorridorMap;
+﻿using DebugUtils;
+using ExplicitCorridorMap;
 using ExplicitCorridorMap.Maths;
+using RVO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using Obstacle = ExplicitCorridorMap.Obstacle;
+using Vector2 = UnityEngine.Vector2;
 
 public class ECMMap : MonoBehaviour
 {
-    public Transform StartPoint;
-    public Transform EndPoint;
-    public Transform Obstacles;
-    public Transform DynamicObstacle;
-
-    public ECM ecm;
+    public Transform ObstaclesTransform;
+    public Transform GroundPlane;
     public List<float> AgentRadiusList;
-    [HideInInspector] public bool grouping = false;
-    public Transform AgentGroup;
+    [HideInInspector] public bool Grouping = false;
+    [HideInInspector] public bool CrowDensity = false;
+    [HideInInspector] public bool GroupBehavior = true;
+    public ECM ECMGraph { get; protected set; }
+    private List<Obstacle> Obstacles;
+
+    public Dictionary<int, GameAgent> AgentMap;
 
     void Awake()
     {
-        var obsList = new List<Obstacle>();
-        foreach (Transform obs in Obstacles)
+        Obstacles = new List<Obstacle>();
+        AgentMap = new Dictionary<int, GameAgent>();
+        foreach (Transform o in ObstaclesTransform)
         {
-            obsList.Add(new Obstacle(Geometry.ConvertToRect(obs)));
+            var obs = Geometry.ConvertToObstacle(o);
+            obs.GameObject = o.gameObject;
+            Obstacles.Add(obs);
         }
-        ecm = new ECM(obsList, new Obstacle(new RectInt(0, 0, 500, 500)));
-        ecm.Construct();
-        ecm.AddAgentRadius(AgentRadiusList);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (grouping)
+        var border = Geometry.ConvertToObstacle(GroundPlane);
+        ECMGraph = new ECM(Obstacles, border);
+        ECMGraph.Construct();
+        ECMGraph.AddAgentRadius(AgentRadiusList);
+        ComputeCurveEdge();
+        //RVO
+        Simulator.Instance.setTimeStep(1f);
+        Simulator.Instance.setAgentDefaults(200.0f, 50, 0.1f, 0.05f, 10.0f, 10.0f, new RVO.Vector2(0.0f, 0.0f));
+        foreach (var obs in Obstacles)
         {
-            if (Input.GetMouseButtonDown(0))
+            Simulator.Instance.addObstacle(obs);
+        }
+        Simulator.Instance.processObstacles();
+        Simulator.Instance.SetNumWorkers(10);
+    }
+    private float time = 0.0f;
+    private float densityTimeStep = 1.0f;
+    private void FixedUpdate()
+    {
+        Simulator.Instance.doStep();
+
+        if (CrowDensity)
+        {
+            time += Time.deltaTime;
+            if(time > densityTimeStep)
             {
-                var finalTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                GroupPathFinding(finalTarget);
+                SimulateDesityCrowd();
+                time = 0.0f;
             }
         }
     }
-    private void GroupPathFinding(Vector2 finalTarget)
+    private void SimulateDesityCrowd()
     {
-        List<Player> agents = new List<Player>();
-        foreach (Transform a in AgentGroup)
+        var densityDict = ComputeDensityDictionary();
+        ComputeEdgeCost(densityDict);
+        //replan path for all agent
+        //Debug.Log("Replanned");
+        foreach (var a in AgentMap.Values)
         {
-            agents.Add(a.GetComponent<Player>());
+            a.ReplanPath();
         }
-        var gh = new GroupHandler(ecm, agents);
-        gh.FindPath(finalTarget);
     }
-    public void TestGroup()
+    private Dictionary<Edge, List<GameAgent>> ComputeDensityDictionary()
     {
-        if (!grouping) return;
-        Vector2 finalTarget = EndPoint.transform.position;
-        GroupPathFinding(finalTarget);
+        var densityDict = new Dictionary<Edge, List<GameAgent>>();
+        foreach (var a in AgentMap.Values)
+        {
+            var e = ECMGraph.GetNearestEdge(a.GetPosition2D());
+            if (e == null) throw new NullReferenceException("Group Edge is null");
+            if (densityDict.ContainsKey(e))
+            {
+                densityDict[e].Add(a);
+            }
+            else
+            {
+                var l = new List<GameAgent> { a };
+                densityDict[e] = l;
+            }
+        }
+        return densityDict;
+    }
+    private void ComputeEdgeCost(Dictionary<Edge, List<GameAgent>> densityDict)
+    {
+        if (densityDict.Count == 0) return;
+        //do if have any agent in map    
 
+        var id = densityDict.First().Value.First().Sid;
+        float groupMaxVelocity = Simulator.Instance.getAgentMaxSpeed(id);
+
+        foreach (var edge in ECMGraph.Edges.Values)
+        {
+            if (densityDict.ContainsKey(edge))
+            {
+                //float groupMaxVelocity = 0;
+                //float groupCurVelocity = 0;
+                float groupArea = 0;
+                var agentList = densityDict[edge];
+                foreach (var agent in agentList)
+                {
+                    //    groupMaxVelocity += Simulator.Instance.getAgentMaxSpeed(agent.Sid);
+                    //    groupCurVelocity += Simulator.Instance.getAgentVelocity(agent.Sid).Length();
+                    groupArea += agent.Radius * agent.Radius * Mathf.PI;
+                }
+                //groupMaxVelocity /= agentList.Count;
+                //groupCurVelocity /= agentList.Count;
+                float desityValue = Mathf.Min(1.0f, groupArea / edge.Area);
+                edge.Cost = edge.Length / Phi(desityValue, groupMaxVelocity);
+                //Debug.Log(edge + " Cost:" + edge.Cost);
+            }
+            else
+            {
+                edge.Cost = edge.Length / Phi(0,groupMaxVelocity);
+            }
+        }
     }
 
-    #region DrawGizmos
+    private float Phi(float density, float maxSpeed)
+    {
+        float minSpeed = 0.001f;
+        return density * minSpeed + (1.0f - density) * maxSpeed;
+        //if (density < 0.5f) return maxSpeed;
+        //else return 0.000001f;
+    }
+    public void FindPathGroup( List<GameAgent> AgentGroup, Vector2 finalTarget)
+    {
+        if (!Grouping) throw new Exception("Cannot call is function when ECMMap.Grouping is off");
+        var gh = new GroupHandler(ECMGraph, AgentGroup);
+        gh.FindPath(finalTarget,GroupBehavior);
+    }
+    
+#if UNITY_EDITOR
+    #region Draw
     [HideInInspector]
     public bool drawGraph = true;
     [HideInInspector]
@@ -69,7 +154,7 @@ public class ECMMap : MonoBehaviour
     [HideInInspector]
     public bool drawNearestObstaclePoints = false;
     [HideInInspector]
-    public bool drawShortestPath = false;
+    public bool drawVertexLabel = false;
     [HideInInspector]
     public int obstacleToDelete = 0;
     [HideInInspector]
@@ -79,200 +164,64 @@ public class ECMMap : MonoBehaviour
     List<Edge> selectedEdge;
     List<Segment> segments = new List<Segment>();
     List<List<Vector2>> curveEdges = new List<List<Vector2>>();
-    public void Bake()
-    {
-        //populate segment
-        var obstacles = new List<Obstacle>();
-        foreach (Transform obs in Obstacles)
-        {
-            obstacles.Add(new Obstacle(Geometry.ConvertToRect(obs)));
-        }
-
-        ecm = new ECM(obstacles, new Obstacle(new RectInt(0, 0, 500, 500)));
-        ecm.Construct();
-        ComputeCurveEdge();
-        foreach (var r in AgentRadiusList)
-        {
-            ecm.AddAgentRadius(r);
-
-        }
-        shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position, EndPoint.position);
-    }
-    public void AddObstacle()
-    {
-        if (ecm == null)
-        {
-            Debug.Log("Ecm must be baked");
-        }
-        else
-        {
-            ecm.AddPolygonDynamic(new Obstacle(Geometry.ConvertToRect(DynamicObstacle)));
-            ComputeCurveEdge();
-            shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position, EndPoint.position);
-        }
-    }
-    public void DeleteObstacle()
-    {
-        if (ecm == null)
-        {
-            Debug.Log("Ecm must be baked");
-        }
-        else
-        {
-            ecm.DeletePolygonDynamic(obstacleToDelete);
-            ComputeCurveEdge();
-            shortestPath = PathFinding.FindPath(ecm, 0, StartPoint.position, EndPoint.position);
-        }
-    }
     void OnDrawGizmos()
     {
-
         //Draw input point
-        if (ecm == null || !drawGraph) return;
+        if (ECMGraph == null || !drawGraph) return;
 
         //Draw input segment
         Gizmos.color = Color.yellow;
-        foreach (var inputSegment in ecm.InputSegments.Values)
+        foreach (var inputSegment in ECMGraph.InputSegments.Values)
         {
-            var startPoint = new Vector3(inputSegment.Start.x, inputSegment.Start.y);
-            var endPoint = new Vector3(inputSegment.End.x, inputSegment.End.y);
+            var startPoint = new Vector2(inputSegment.Start.x, inputSegment.Start.y);
+            var endPoint = new Vector2(inputSegment.End.x, inputSegment.End.y);
 
-            Gizmos.DrawSphere(startPoint, inputPointRadius);
-            Gizmos.DrawSphere(endPoint, inputPointRadius);
-            Gizmos.DrawLine(startPoint, endPoint);
+            Gizmos.DrawSphere(startPoint.To3D(), inputPointRadius);
+            Gizmos.DrawSphere(endPoint.To3D(), inputPointRadius);
+            Gizmos.DrawLine(startPoint.To3D(), endPoint.To3D());
         }
 
         //Draw ouput edge and vertex
-        foreach (var vertex in ecm.Vertices.Values)
+        foreach (var vertex in ECMGraph.Vertices.Values)
         {
-            DrawVertex(vertex);
+            DrawUtils.DrawVertex(vertex);
             foreach (var edge in vertex.Edges)
             {
-                DrawEdge(edge);
+                DrawUtils.DrawEdge(edge);
             }
         }
         Gizmos.color = Color.blue;
         foreach (var l in curveEdges)
         {
-            DrawPolyLine(l);
+            DrawUtils.DrawPolyLine(l);
         }
         //Draw Nearest Obstacle Point
         if (drawNearestObstaclePoints)
         {
-            foreach (var edge in ecm.Edges.Values)
+            foreach (var edge in ECMGraph.Edges.Values)
             {
-                DrawObstaclePoint(edge);
+                DrawUtils.DrawObstaclePoint(edge);
             }
         }
-        if (shortestPath != null && drawShortestPath)
-        {
-            Gizmos.color = Color.red;
-            DrawPolyLine(shortestPath);
-        }
-
-        //Draw path for group
-        foreach (Transform aT in AgentGroup)
-        {
-            Gizmos.color = Color.red;
-            var agent = aT.GetComponent<Player>();
-            var path = agent.wayPointList;
-            if (path.Count != 0)
-            {
-                path[0] = agent.transform.position;
-                DrawPolyLine(path);
-            }
-        }
-
-
-        //if (portalsLeft != null && drawShortestPath)
-        //{
-        //    for (int i = 0; i < portalsLeft.Count; i++)
-        //    {
-        //        DrawPortal(portalsLeft[i], portalsRight[i]);
-        //    }
-        //}
-    }
-
-
-
-
-    void DrawPortal(Vector2 begin, Vector2 end)
-    {
-        Gizmos.color = Color.magenta;
-        Gizmos.DrawLine(begin, end);
-    }
-    void DrawObstaclePoint(Edge edge)
-    {
-        var startVertex = edge.Start.Position;
-        var endVertex = edge.End.Position;
-        var begin = startVertex;
-        var obsLeft = edge.LeftObstacleOfStart;
-        var obsRight = edge.RightObstacleOfStart;
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(begin, obsLeft);
-        Gizmos.DrawLine(begin, obsRight);
-
-        begin = endVertex;
-        obsLeft = edge.LeftObstacleOfEnd;
-        obsRight = edge.RightObstacleOfEnd;
-        Gizmos.DrawLine(begin, obsLeft);
-        Gizmos.DrawLine(begin, obsRight);
-
-    }
-    void DrawObstaclePointProperty(Edge edge, int index)
-    {
-        var startVertex = edge.Start.Position;
-        var endVertex = edge.End.Position;
-        var begin = startVertex;
-        var obsLeft = edge.EdgeProperties[index].LeftObstacleOfStart;
-        var obsRight = edge.EdgeProperties[index].RightObstacleOfStart;
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(begin, obsLeft);
-        Gizmos.DrawLine(begin, obsRight);
-
-        begin = endVertex;
-        obsLeft = edge.EdgeProperties[index].LeftObstacleOfEnd;
-        obsRight = edge.EdgeProperties[index].RightObstacleOfEnd;
-        Gizmos.DrawLine(begin, obsLeft);
-        Gizmos.DrawLine(begin, obsRight);
-    }
-    void DrawVertex(Vertex vertex)
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(vertex.Position, outputPointRadius);
-    }
-    void DrawEdge(Edge edge)
-    {
-        if (edge.IsLinear && !edge.IsTwin)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(edge.Start.Position, edge.End.Position);
-        }
+        
     }
 
     public void ComputeCurveEdge()
     {
+        #if UNITY_EDITOR
         curveEdges.Clear();
-        foreach (var vertex in ecm.Vertices.Values)
+        foreach (var vertex in ECMGraph.Vertices.Values)
         {
             foreach (var e in vertex.Edges)
             {
                 if (!e.IsLinear && !e.IsTwin)
                 {
-                    List<Vector2> discretizedEdge = SampleCurvedEdge(ecm, e, 10);
+                    List<Vector2> discretizedEdge = SampleCurvedEdge(ECMGraph, e, 10);
                     curveEdges.Add(discretizedEdge);
                 }
             }
         }
-    }
-    void DrawPolyLine(List<Vector2> l)
-    {
-        for (int i = 0; i < l.Count - 1; i++)
-        {
-            Gizmos.DrawLine(l[i], l[i + 1]);
-        }
+        #endif
     }
     /// <summary>
     /// Generate a polyline representing a curved edge.
@@ -280,7 +229,7 @@ public class ECMMap : MonoBehaviour
     /// <param name="edge">The curvy edge.</param>
     /// <param name="max_distance">The maximum distance between two vertex on the output polyline.</param>
     /// <returns></returns>
-    public List<Vector2> SampleCurvedEdge(ECM ecm, Edge edge, float max_distance)
+    public List<Vector2> SampleCurvedEdge(ECM ECMGraph, Edge edge, float max_distance)
     {
         //test
         //return new List<Vector2>() { edge.Start.Position, edge.End.Position };
@@ -311,8 +260,8 @@ public class ECMMap : MonoBehaviour
             pointCell = twin;
         }
 
-        pointSite = ecm.RetrieveInputPoint(pointCell);
-        segmentSite = ecm.RetrieveInputSegment(lineCell);
+        pointSite = ECMGraph.RetrieveInputPoint(pointCell);
+        segmentSite = ECMGraph.RetrieveInputSegment(lineCell);
 
         List<Vector2> discretization = new List<Vector2>(){
                 edge.Start.Position,
@@ -334,4 +283,6 @@ public class ECMMap : MonoBehaviour
         );
     }
     #endregion
+
+#endif
 }
