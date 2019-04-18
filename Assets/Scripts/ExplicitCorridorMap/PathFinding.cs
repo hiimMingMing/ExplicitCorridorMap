@@ -42,19 +42,12 @@ namespace ExplicitCorridorMap
             pathPortals = ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition);
             return pathPortals;
         }
-        public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition,ref Vector2 endPosition)
+        public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition,Vector2 endPosition)
         {
             var radius = ecm.AgentRadius[radiusIndex];
             var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
             var pathPortals =  FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition,ref endPosition, out Vertex v);
             return GetShortestPath(pathPortals).ConvertAll(a => a.Point);
-        }
-        public static List<Vector2> FindPath(ECM ecm, int radiusIndex, Vector2 startPosition, Vector2 endPosition)
-        {
-            var radius = ecm.AgentRadius[radiusIndex];
-            var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
-            var pathPortals = FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition, ref endPosition, out Vertex v);
-            return GetShortestPath(pathPortals).ConvertAll(x => x.Point);
         }
         private static List<Edge> ConvertToEdgeList(List<Vertex> path)
         {

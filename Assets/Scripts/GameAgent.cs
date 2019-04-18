@@ -48,14 +48,14 @@ public class GameAgent : MonoBehaviour
     {
         
         //if (ECMMap.Grouping) throw new System.Exception("Agent cannot self call when ECMMap.Grouping is on, use ECMMap.FindPathGroup instead");
-        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), ref goalPosition);
+        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), goalPosition);
         SetNewPath(path);
     }
     public void ReplanPath()
     {
         if (CurrentWayPoint >= WayPointList.Count-1) return;
         var goalPosition = WayPointList[WayPointList.Count - 1];
-        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), ref goalPosition);
+        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), goalPosition);
         SetNewPath(path);
     }
     public Vector2 GetPosition2D()

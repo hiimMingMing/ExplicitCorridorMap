@@ -15,8 +15,9 @@ public class ECMMap : MonoBehaviour
     public Transform ObstaclesTransform;
     public Transform GroundPlane;
     public List<float> AgentRadiusList;
-    public bool Grouping = false;
-    public bool CrowDensity = false;
+    [HideInInspector] public bool Grouping = false;
+    [HideInInspector] public bool CrowDensity = false;
+    [HideInInspector] public bool GroupBehavior = true;
     public ECM ECMGraph { get; protected set; }
     private List<Obstacle> Obstacles;
 
@@ -141,7 +142,7 @@ public class ECMMap : MonoBehaviour
     {
         if (!Grouping) throw new Exception("Cannot call is function when ECMMap.Grouping is off");
         var gh = new GroupHandler(ECMGraph, AgentGroup);
-        gh.FindPath(finalTarget);
+        gh.FindPath(finalTarget,GroupBehavior);
     }
     
 #if UNITY_EDITOR
