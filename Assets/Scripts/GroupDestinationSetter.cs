@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-[RequireComponent(typeof(ECMMap))]
 public class GroupDestinationSetter : MonoBehaviour
 {
     protected ECMMap ECMMap;
@@ -18,11 +17,10 @@ public class GroupDestinationSetter : MonoBehaviour
 
     protected void Start()
     {
-        ECMMap = GetComponent<ECMMap>();
+        ECMMap = FindObjectOfType<ECMMap>();
     }
     protected void Update()
     {
-        if (!ECMMap.Grouping) return;
 
         Vector2 mousePosition = Vector2.zero;
         Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -34,11 +32,18 @@ public class GroupDestinationSetter : MonoBehaviour
         //Debug.Log(group.Count+"G");
         if (Input.GetMouseButtonDown(1))
         {
-            foreach (var ga in group)
+            if (!ECMMap.Grouping)
+            {
+                foreach (var ga in group)
+                { 
+                    ga.FindPath(mousePosition);
+                }
+            }
+            else
             {
                 ECMMap.FindPathGroup(group, mousePosition);
-                //ga.FindPath(mousePosition);
             }
+            
         }
         if (Input.GetMouseButtonDown(0))
         {

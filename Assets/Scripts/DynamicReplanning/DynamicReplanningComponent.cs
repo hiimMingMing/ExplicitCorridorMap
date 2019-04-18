@@ -24,11 +24,6 @@ namespace ExplicitCorridorMap
 
         public void addAgent(Transform _addingObstacle, Vector3 position) {
           
-
-
-          
-
-
             Vector3 ORCAposition = new Vector3(position.x, position.z, 0);
             RectInt addedObstacle = DRMath.ConvertToRect(_addingObstacle.localScale.x, _addingObstacle.localScale.z, ORCAposition);
              
