@@ -7,13 +7,13 @@ namespace ExplicitCorridorMap
 {
     public class DynamicReplanningComponent : MonoBehaviour
     {
-        public Transform addingObstacle;
+        public GameObject obstaclePrefab;
         private ECMMap ecmMap;
         public bool usingODPA = false;
         public KeyCode defaultAddKeyCode;
         void Awake() { }
         void Start() {
-            if (addingObstacle == null) {
+            if (obstaclePrefab == null) {
                 Debug.LogError("Please add default obstacle");
             }
             ecmMap = FindObjectOfType<ECMMap>();
@@ -22,27 +22,24 @@ namespace ExplicitCorridorMap
             }
         }
 
-        public void addAgent(Transform _addingObstacle, Vector3 position) {
+        public void addObstacle(GameObject obstaclePrefab, Vector3 position) {
           
-            Vector3 ORCAposition = new Vector3(position.x, position.z, 0);
-            RectInt addedObstacle = DRMath.ConvertToRect(_addingObstacle.localScale.x, _addingObstacle.localScale.z, ORCAposition);
-             
-
-            Transform obj = Object.Instantiate(_addingObstacle, position, Quaternion.identity);
-
-            ecmMap.ECMGraph.AddPolygonDynamic(new Obstacle(addedObstacle));
-
-            rvo.Simulator.Instance.addObstacle(obj);
+            GameObject go = Instantiate(obstaclePrefab, new Vector3(position.x, 0, position.z), Quaternion.identity);
+            var obsRect = Geometry.ConvertToRectInt(go.GetComponent<Transform>());
+            var obs = new Obstacle(obsRect);
+            obs.GameObject = go;
+            ecmMap.ECMGraph.AddPolygonDynamic(obs);
+            ecmMap.ComputeCurveEdge();
+            rvo.Simulator.Instance.addObstacle(obs);
             //TODO change to effective way to add obstacle
             rvo.Simulator.Instance.processObstacles();
             //Handle the path
             foreach (var item in ecmMap.AgentMap)
             {
-
                 GameAgent player = item.Value;
                 if (player.WayPointList.Count > 0)
                 {
-                    var listAffectPath = ListAffectedPath(player.WayPointList, addedObstacle, player.CurrentWayPoint);
+                    var listAffectPath = ListAffectedPath(player.WayPointList, obsRect, player.CurrentWayPoint);
                     List<Vector2> newPath = new List<Vector2>();
 
                     if (!usingODPA)
@@ -69,66 +66,63 @@ namespace ExplicitCorridorMap
             {
                 //Add a dynamic obstacle
                 Vector2 mousePosition;
+                
+                Vector3 _position = Vector3.zero;
+                Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Plane basePlane = new Plane(Vector3.up, Vector3.zero);
+                if (basePlane.Raycast(mouseRay, out float rayDistance))
                 {
-                    Vector3 _position = Vector3.zero;
-                    Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-                    float rayDistance;
-                    Plane basePlane = new Plane(Vector3.up, Vector3.zero); ;
-
-
-                    if (basePlane.Raycast(mouseRay, out rayDistance))
-                    {
-                        Vector3 temp = mouseRay.GetPoint(rayDistance);
-                        _position = new Vector3(temp.x, temp.z, 0);
-                    }
-
-                    mousePosition = new Vector2(_position.x, _position.y);
+                    Vector3 temp = mouseRay.GetPoint(rayDistance);
+                    _position = new Vector3(temp.x, temp.z, 0);
                 }
+
+                mousePosition = new Vector2(_position.x, _position.y);
+                
                 Vector3 position = new Vector3(mousePosition.x, 0, mousePosition.y);
-                addAgent(addingObstacle, position);
+                addObstacle(obstaclePrefab, position);
               
             
             }
             else if (Input.GetKeyDown(KeyCode.D))
             {
-                //Delete an obstacle
-                RaycastHit hit;
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Vector2 mousePosition;
 
-                if (Physics.Raycast(ray, out hit))
+                Vector3 _position = Vector3.zero;
+                Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Plane basePlane = new Plane(Vector3.up, Vector3.zero);
+                if (basePlane.Raycast(mouseRay, out float rayDistance))
                 {
-                    var bc = hit.collider;
-                    if (bc is BoxCollider && bc != null)
+                    Vector3 temp = mouseRay.GetPoint(rayDistance);
+                    _position = new Vector3(temp.x, temp.z, 0);
+                }
+
+                mousePosition = new Vector2(_position.x, _position.y);
+                //Delete an obstacle
+                
+                int ID = FindObstacleID(ecmMap.ECMGraph, mousePosition);
+                if (ID == -1) return;
+                var deleteObs = ecmMap.ECMGraph.Obstacles[ID];
+                Destroy(deleteObs.GameObject);
+                var rvoID = deleteObs.RvoID;
+                ecmMap.ECMGraph.DeletePolygonDynamic(ID);
+                ecmMap.ComputeCurveEdge();
+                rvo.Simulator.Instance.deleteObstacle(rvoID);
+                rvo.Simulator.Instance.processObstacles();
+                //Handle the path
+                foreach (var item in ecmMap.AgentMap)
+                {
+
+                    GameAgent player = item.Value;
+                    if (player.WayPointList.Count > 0)
                     {
-                        var xScale = bc.gameObject.transform.localScale.x;
-                        var yScale = bc.gameObject.transform.localScale.y;
-                        var position = bc.gameObject.transform.position;
-                        RectInt deletedObstacle= DRMath.ConvertToRect(xScale, yScale, position);
+                        List<Vector2> newPath;
 
-                        Object.Destroy(bc.gameObject);
+                        newPath = PathFinding.FindPath(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position, player.WayPointList[player.WayPointList.Count - 1]);
 
-                        int ID = FindObstacleID(ecmMap.ECMGraph, deletedObstacle);
-                        ecmMap.ECMGraph.DeletePolygonDynamic(ID);
-
-                        //TODO change to effective way to delete obstacle
-
-                        //Handle the path
-                        foreach (var item in ecmMap.AgentMap)
+                        if (newPath.Count > 0)
                         {
-                            
-                            GameAgent player = item.Value;
-                            if (player.WayPointList.Count > 0)
-                            {
-                                List<Vector2> newPath;
-
-                                newPath = PathFinding.FindPath(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position, player.WayPointList[player.WayPointList.Count - 1]);
-
-                                if (newPath.Count > 0)
-                                {
-                                    player.CurrentWayPoint = 0;
-                                    player.WayPointList = newPath;
-                                }
-                            }
+                            player.CurrentWayPoint = 0;
+                            player.WayPointList = newPath;
                         }
                     }
                 }
@@ -308,83 +302,77 @@ namespace ExplicitCorridorMap
         //    return shortertPath;
         //}
 
-        private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition, out float finalFScore)
-        {
-            var path = FindPathFromVertexToVertex(graph, start1, start2, end1, end2, startPosition, endPosition, out finalFScore);
-            var edgeList = new List<Edge>();
+        //private static List<Edge> FindEdgePathFromVertexToVertex(ECM graph, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition, out float finalFScore)
+        //{
+        //    var path = FindPathFromVertexToVertex(graph, start1, start2, end1, end2, startPosition, endPosition, out finalFScore);
+        //    var edgeList = new List<Edge>();
 
-            for (int i = path.Count - 1; i > 0; i--)
+        //    for (int i = path.Count - 1; i > 0; i--)
+        //    {
+        //        foreach (var edge in path[i].Edges)
+        //        {
+        //            var end = edge.End;
+        //            if (end.Equals(path[i - 1])) edgeList.Add(edge);
+        //        }
+        //    }
+        //    return edgeList;
+        //}
+
+        //public static List<Vertex> FindPathFromVertexToVertex(ECM graph, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition, out float finalFScore)
+        //{
+        //    var openSet = new HashSet<Vertex>();
+        //    openSet.Add(start1);
+        //    openSet.Add(start2);
+        //    var closeSet = new HashSet<Vertex>();
+        //    var cameFrom = new Dictionary<Vertex, Vertex>();
+        //    var gScore = new Dictionary<Vertex, float>();
+        //    var fScore = new Dictionary<Vertex, float>();
+        //    gScore[start1] = PathFinding.HeuristicCost(startPosition, start1.Position);
+        //    fScore[start1] = PathFinding.HeuristicCost(start1.Position, endPosition);
+        //    gScore[start2] = PathFinding.HeuristicCost(startPosition, start2.Position);
+        //    fScore[start2] = PathFinding.HeuristicCost(start2.Position, endPosition);
+
+        //    List<Vertex> result = new List<Vertex>();
+        //    while (openSet.Count != 0)
+        //    {
+        //        var current = PathFinding.LowestFScore(openSet, fScore);
+        //        if (current.Equals(end1) || current.Equals(end2))
+        //        {
+        //            if (current.Equals(end1)) finalFScore = fScore[end1];
+        //            else finalFScore = fScore[end2];
+        //            return PathFinding.RecontructPath(cameFrom, current);
+        //        }
+
+        //        openSet.Remove(current);
+        //        closeSet.Add(current);
+
+        //        foreach (var edge in current.Edges)
+        //        {
+        //            var neigborVertex = edge.End;
+        //            if (closeSet.Contains(neigborVertex)) continue;
+        //            var tentativeGScore = gScore[current] + PathFinding.HeuristicCost(current, neigborVertex);
+        //            if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
+        //            else if (tentativeGScore >= gScore[neigborVertex]) continue;
+        //            cameFrom[neigborVertex] = current;
+        //            gScore[neigborVertex] = tentativeGScore;
+        //            fScore[neigborVertex] = tentativeGScore + PathFinding.HeuristicCost(neigborVertex.Position, endPosition);
+        //        }
+        //    }
+        //    finalFScore = 0;
+        //    return result;
+        //}
+
+        public static int FindObstacleID(ECM ecm, Vector2 position)
+        {
+            var result = ecm.RTreeObstacle.RangeSearch(new Advanced.Algorithms.DataStructures.Rectangle(position));
+            foreach (var o in result)
             {
-                foreach (var edge in path[i].Edges)
+                if (o.ContainsPoint(position))
                 {
-                    var end = edge.End;
-                    if (end.Equals(path[i - 1])) edgeList.Add(edge);
+                    return o.ID;
                 }
             }
-            return edgeList;
-        }
-
-        public static List<Vertex> FindPathFromVertexToVertex(ECM graph, Vertex start1, Vertex start2, Vertex end1, Vertex end2, Vector2 startPosition, Vector2 endPosition, out float finalFScore)
-        {
-            var openSet = new HashSet<Vertex>();
-            openSet.Add(start1);
-            openSet.Add(start2);
-            var closeSet = new HashSet<Vertex>();
-            var cameFrom = new Dictionary<Vertex, Vertex>();
-            var gScore = new Dictionary<Vertex, float>();
-            var fScore = new Dictionary<Vertex, float>();
-            gScore[start1] = PathFinding.HeuristicCost(startPosition, start1.Position);
-            fScore[start1] = PathFinding.HeuristicCost(start1.Position, endPosition);
-            gScore[start2] = PathFinding.HeuristicCost(startPosition, start2.Position);
-            fScore[start2] = PathFinding.HeuristicCost(start2.Position, endPosition);
-
-            List<Vertex> result = new List<Vertex>();
-            while (openSet.Count != 0)
-            {
-                var current = PathFinding.LowestFScore(openSet, fScore);
-                if (current.Equals(end1) || current.Equals(end2))
-                {
-                    if (current.Equals(end1)) finalFScore = fScore[end1];
-                    else finalFScore = fScore[end2];
-                    return PathFinding.RecontructPath(cameFrom, current);
-                }
-
-                openSet.Remove(current);
-                closeSet.Add(current);
-
-                foreach (var edge in current.Edges)
-                {
-                    var neigborVertex = edge.End;
-                    if (closeSet.Contains(neigborVertex)) continue;
-                    var tentativeGScore = gScore[current] + PathFinding.HeuristicCost(current, neigborVertex);
-                    if (!openSet.Contains(neigborVertex)) openSet.Add(neigborVertex);
-                    else if (tentativeGScore >= gScore[neigborVertex]) continue;
-                    cameFrom[neigborVertex] = current;
-                    gScore[neigborVertex] = tentativeGScore;
-                    fScore[neigborVertex] = tentativeGScore + PathFinding.HeuristicCost(neigborVertex.Position, endPosition);
-                }
-            }
-            finalFScore = 0;
-            return result;
-        }
-
-        public static int FindObstacleID(ECM ecm, RectInt obstacle)
-        {
-            float distance;
-            float minDistance = Mathf.Infinity;
-            int ID = -1;
-
-            foreach (var o in ecm.Obstacles)
-            {
-                distance = Distance.ComputeDistanceBetweenPoints(o.Value.Points[0], obstacle.min);
-
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    ID = o.Value.ID;
-                }
-            }
-            return ID;
+            return -1;
         }
     }
 }

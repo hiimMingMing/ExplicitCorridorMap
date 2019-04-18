@@ -105,7 +105,8 @@ namespace RVO
         internal IDictionary<int, int> agentNo2indexDict_;
         internal IDictionary<int, int> index2agentNoDict_;
         internal IList<Agent> agents_;
-        internal IList<Obstacle> obstacles_;
+        internal Dictionary<int,Obstacle> obstacles_;
+        internal int CountObstacle;
         internal KdTree kdTree_;
         internal float timeStep_;
 
@@ -295,14 +296,19 @@ namespace RVO
          * the environment, the vertices should be listed in clockwise order.
          * </remarks>
          */
-        public int addObstacle(IList<Vector2> vertices)
+        public void addObstacle(ExplicitCorridorMap.Obstacle obs)
+        {
+            var rvoID = addObstacle(obs.ToRVO());
+            obs.RvoID = rvoID;
+        }
+        private int addObstacle(IList<Vector2> vertices)
         {
             if (vertices.Count < 2)
             {
                 return -1;
             }
 
-            int obstacleNo = obstacles_.Count;
+            int obstacleNo = CountObstacle;
 
             for (int i = 0; i < vertices.Count; ++i)
             {
@@ -311,7 +317,7 @@ namespace RVO
 
                 if (i != 0)
                 {
-                    obstacle.previous_ = obstacles_[obstacles_.Count - 1];
+                    obstacle.previous_ = obstacles_[CountObstacle - 1];
                     obstacle.previous_.next_ = obstacle;
                 }
 
@@ -332,93 +338,24 @@ namespace RVO
                     obstacle.convex_ = (RVOMath.leftOf(vertices[(i == 0 ? vertices.Count - 1 : i - 1)], vertices[i], vertices[(i == vertices.Count - 1 ? 0 : i + 1)]) >= 0.0f);
                 }
 
-                obstacle.id_ = obstacles_.Count;
-                obstacles_.Add(obstacle);
+                obstacle.id_ = CountObstacle;
+                obstacles_.Add(CountObstacle,obstacle);
+                CountObstacle++;
             }
 
             return obstacleNo;
         }
 
-
-
-        public int addObstacle(Transform transform)
+        public void deleteObstacle(int id)
         {
-
-            IList<Vector2> vertices = new List<Vector2>();
-            BoxCollider[] boxColliders = transform.GetComponentsInChildren<BoxCollider>();
-            for (int i = 0; i < boxColliders.Length; i++)
+            int obsId = id;
+            while (obstacles_.ContainsKey(obsId))
             {
-                float minX, minY, maxX, maxY;
-                //if (GameMainManager.Instance.is3D)
-                //{
-                minX = boxColliders[i].transform.position.x -
-                       boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
-                minY = boxColliders[i].transform.position.z -
-                             boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
-                maxX = boxColliders[i].transform.position.x +
-                             boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
-                maxY = boxColliders[i].transform.position.z +
-                             boxColliders[i].size.z * boxColliders[i].transform.lossyScale.z * 0.5f;
-                //}
-                ////else
-                //{
-                //    minX = boxColliders[i].transform.position.x -
-                //           boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
-                //    minY = boxColliders[i].transform.position.y -
-                //                 boxColliders[i].size.y * boxColliders[i].transform.lossyScale.y * 0.5f;
-                //    maxX = boxColliders[i].transform.position.x +
-                //                 boxColliders[i].size.x * boxColliders[i].transform.lossyScale.x * 0.5f;
-                //    maxY = boxColliders[i].transform.position.y +
-                //                 boxColliders[i].size.y * boxColliders[i].transform.lossyScale.y * 0.5f;
-                //}
-
-                vertices.Add(new Vector2(maxX, maxY));
-                vertices.Add(new Vector2(minX, maxY));
-                vertices.Add(new Vector2(minX, minY));
-                vertices.Add(new Vector2(maxX, minY));
+                var deleteID = obsId;
+                obsId = obstacles_[obsId].next_.id_;
+                obstacles_.Remove(deleteID);
             }
-            if (vertices.Count < 2)
-            {
-                return -1;
-            }
-
-            int obstacleNo = obstacles_.Count;
-
-            for (int i = 0; i < vertices.Count; ++i)
-            {
-                Obstacle obstacle = new Obstacle();
-                obstacle.point_ = vertices[i];
-
-                if (i != 0)
-                {
-                    obstacle.previous_ = obstacles_[obstacles_.Count - 1];
-                    obstacle.previous_.next_ = obstacle;
-                }
-
-                if (i == vertices.Count - 1)
-                {
-                    obstacle.next_ = obstacles_[obstacleNo];
-                    obstacle.next_.previous_ = obstacle;
-                }
-
-                obstacle.direction_ = RVOMath.normalize(vertices[(i == vertices.Count - 1 ? 0 : i + 1)] - vertices[i]);
-
-                if (vertices.Count == 2)
-                {
-                    obstacle.convex_ = true;
-                }
-                else
-                {
-                    obstacle.convex_ = (RVOMath.leftOf(vertices[(i == 0 ? vertices.Count - 1 : i - 1)], vertices[i], vertices[(i == vertices.Count - 1 ? 0 : i + 1)]) >= 0.0f);
-                }
-
-                obstacle.id_ = obstacles_.Count;
-                obstacles_.Add(obstacle);
-            }
-
-            return obstacleNo;
         }
-
         /**
          * <summary>Clears the simulation.</summary>
          */
@@ -429,10 +366,10 @@ namespace RVO
             index2agentNoDict_ = new Dictionary<int, int>();
             defaultAgent_ = null;
             kdTree_ = new KdTree();
-            obstacles_ = new List<Obstacle>();
+            obstacles_ = new Dictionary<int, Obstacle>();
             globalTime_ = 0.0f;
             timeStep_ = 0.1f;
-
+            CountObstacle = 0;
             SetNumWorkers(0);
         }
 

@@ -195,9 +195,9 @@ namespace RVO
 
             IList<Obstacle> obstacles = new List<Obstacle>(Simulator.Instance.obstacles_.Count);
 
-            for (int i = 0; i < Simulator.Instance.obstacles_.Count; ++i)
+            foreach (var obs in Simulator.Instance.obstacles_.Values)
             {
-                obstacles.Add(Simulator.Instance.obstacles_[i]);
+                obstacles.Add(obs);
             }
 
             obstacleTree_ = buildObstacleTreeRecursive(obstacles);
@@ -458,9 +458,10 @@ namespace RVO
                         newObstacle.convex_ = true;
                         newObstacle.direction_ = obstacleJ1.direction_;
 
-                        newObstacle.id_ = Simulator.Instance.obstacles_.Count;
+                        newObstacle.id_ = Simulator.Instance.CountObstacle;
 
-                        Simulator.Instance.obstacles_.Add(newObstacle);
+                        Simulator.Instance.obstacles_.Add(Simulator.Instance.CountObstacle, newObstacle);
+                        Simulator.Instance.CountObstacle++;
 
                         obstacleJ1.next_ = newObstacle;
                         obstacleJ2.previous_ = newObstacle;

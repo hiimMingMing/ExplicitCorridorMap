@@ -27,25 +27,23 @@ public class ECMMap : MonoBehaviour
     {
         Obstacles = new List<Obstacle>();
         AgentMap = new Dictionary<int, GameAgent>();
-        foreach (Transform obs in ObstaclesTransform)
+        foreach (Transform o in ObstaclesTransform)
         {
-            Obstacles.Add(Geometry.ConvertToObstacle(obs));
+            var obs = Geometry.ConvertToObstacle(o);
+            obs.GameObject = o.gameObject;
+            Obstacles.Add(obs);
         }
-        var mesh = GroundPlane.transform.GetComponent<MeshRenderer>();
-        float width = mesh.bounds.size.x;
-        float height = mesh.bounds.size.z;
-        ECMGraph = new ECM(Obstacles, new Obstacle(new RectInt((int)(GroundPlane.transform.position.z - (width / 2)), (int)(GroundPlane.transform.position.x - (height / 2)), (int)width, (int)height)));
+        var border = Geometry.ConvertToObstacle(GroundPlane);
+        ECMGraph = new ECM(Obstacles, border);
         ECMGraph.Construct();
         ECMGraph.AddAgentRadius(AgentRadiusList);
-#if UNITY_EDITOR
         ComputeCurveEdge();
-#endif
         //RVO
         Simulator.Instance.setTimeStep(1f);
         Simulator.Instance.setAgentDefaults(200.0f, 50, 0.1f, 0.05f, 10.0f, 10.0f, new RVO.Vector2(0.0f, 0.0f));
-        foreach (Transform obs in ObstaclesTransform)
+        foreach (var obs in Obstacles)
         {
-            Simulator.Instance.addObstacle(Geometry.ConvertToListOfLine(obs));
+            Simulator.Instance.addObstacle(obs);
         }
         Simulator.Instance.processObstacles();
         Simulator.Instance.SetNumWorkers(10);
@@ -210,6 +208,7 @@ public class ECMMap : MonoBehaviour
 
     public void ComputeCurveEdge()
     {
+        #if UNITY_EDITOR
         curveEdges.Clear();
         foreach (var vertex in ECMGraph.Vertices.Values)
         {
@@ -222,6 +221,7 @@ public class ECMMap : MonoBehaviour
                 }
             }
         }
+        #endif
     }
     /// <summary>
     /// Generate a polyline representing a curved edge.
