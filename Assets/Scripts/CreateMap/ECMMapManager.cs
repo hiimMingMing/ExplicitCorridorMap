@@ -86,8 +86,6 @@ public class ECMMapManager : MonoBehaviour {
 			NavMeshToVertices();
 			Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
 			surface.transform.GetChild(0).transform.parent = obstacles.transform;
-			surface.BuildNavMesh();
-			surface.navMeshData = null;
         }
 		return getBakedMap();
 	}
@@ -140,13 +138,16 @@ public class ECMMapManager : MonoBehaviour {
 		}
 
 		Debug.Log(surface.transform.GetChild(0).gameObject.name + " " + yLower);
+		if(yLower < 0.1f) {
+			yLower = 0.1f;
+		}
 
-		// for (int i = 0; i < vertices.Count; i++) {
-		// 	if(vertices[i].y > yLower) {
-		// 		vertices.RemoveAt(i);
-		// 		i--;
-		// 	}
-		// }
+		for (int i = 0; i < vertices.Count; i++) {
+			if(vertices[i].y > yLower) {
+				vertices.RemoveAt(i);
+				i--;
+			}
+		}
 
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			for (int j = i + 1; j < vertices.Count; j++) {
@@ -159,7 +160,7 @@ public class ECMMapManager : MonoBehaviour {
 
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			for (int j = i + 1; j < vertices.Count; j++) {
-				if((vertices[i] - vertices[j]).magnitude < 0.3f) {
+				if((vertices[i] - vertices[j]).magnitude < 0.1f) {
 					vertices[i] = (vertices[i] + vertices[j]) / 2;
 					vertices.RemoveAt(j);
 					j--;
@@ -171,25 +172,38 @@ public class ECMMapManager : MonoBehaviour {
 
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			int nextVertexIndex = 0;
-			for (int j = 0; j < vertices.Count; j++) {
+			for (int j = i; j < vertices.Count; j++) {
 				if(i == j) {
 					continue;
 				}
-				Vector3 normal = vertices[j] - vertices[i];
-				normal = new Vector3(-normal.z, 0.0f, normal.x);
-				Vector3 startPoint = (vertices[j] + vertices[i]) / 2;
-				Vector3 endPoint = startPoint + normal * 10;
-				Vector3 endPoint2 = startPoint - normal * 10;
-				RaycastHit hitTarget;
-				if (Physics.Raycast(startPoint, normal.normalized, out hitTarget) && !Physics.Raycast(vertices[i], vertices[j] - vertices[i])) {
-					Debug.Log(hitTarget.collider.gameObject.name);
-					if(hitTarget.collider.gameObject.name == surface.transform.GetChild(0).gameObject.name) {
-						if((vertices[j] - vertices[i]).magnitude < minNextDist) {
-							nextVertexIndex = j;
-							minNextDist = normal.magnitude;
-						}
-					}
+				Vector3 vectorA = vertices[i] - surface.transform.GetChild(0).transform.position;
+				Vector3 vectorB = vertices[j] - surface.transform.GetChild(0).transform.position;
+				float angle = Vector3.SignedAngle(vectorA, vectorB, Vector3.up);
+				Debug.Log(angle);
+				if(angle >= 0 && angle < minNextDist) {
+					nextVertexIndex = j;
+					minNextDist = angle;
 				}
+				
+				// Vector3 normal = vertices[j] - vertices[i];
+				// normal = new Vector3(-normal.z, 0.0f, normal.x);
+				// Vector3 startPoint = (vertices[j] + vertices[i]) / 2;
+				// Vector3 endPoint = startPoint + normal * 0.3f;
+				// Vector3 endPoint2 = startPoint - normal * 0.3f;
+				// RaycastHit hitTarget;
+				// if (Physics.Raycast(startPoint, normal.normalized, out hitTarget) && !Physics.Raycast(vertices[i], vertices[j] - vertices[i])) {
+				// 	Debug.Log(hitTarget.collider.gameObject.name);
+				// 	if(hitTarget.collider.gameObject.name == surface.transform.GetChild(0).gameObject.name) {
+				// 		if((vertices[j] - vertices[i]).magnitude < minNextDist) {
+				// 			nextVertexIndex = j;
+				// 			minNextDist = normal.magnitude;
+				// 		}
+				// 	}
+				// }
+
+				// if(Physics.Raycast(vertices[i], vertices[j] - vertices[i])) {
+				// 	Debug.DrawLine(vertices[i], vertices[j], Color.red, 180);
+				// }
 			}
 			if(nextVertexIndex == 0) {
 				vertices.RemoveRange(i + 1, vertices.Count - i - 1);
@@ -199,10 +213,10 @@ public class ECMMapManager : MonoBehaviour {
 			vertices[i + 1] = vertices[nextVertexIndex];
 			vertices[nextVertexIndex] = tempPoint;
 
-			if(minNextDist == 9999) {
-				vertices.RemoveRange(i + 1, vertices.Count - i - 1);
-				break;
-			}
+			// if(minNextDist == 9999) {
+			// 	vertices.RemoveRange(i + 1, vertices.Count - i - 1);
+			// 	break;
+			// }
 			minNextDist = 9999;
 		}
 
@@ -210,7 +224,7 @@ public class ECMMapManager : MonoBehaviour {
 			Vector3 vec1 = vertices[i] - vertices[(i + 1) % vertices.Count] ;
 			Vector3 vec2 = vertices[(i + 1) % vertices.Count] - vertices[(i + 2) % vertices.Count];
 			float angle = Vector3.Angle(vec1, vec2);
-			Debug.Log("angle: " + angle);
+			// Debug.Log("angle: " + angle);
 			if(angle < 20f || angle > 160.0f) {
 				vertices.RemoveAt((i + 1) % vertices.Count);
 				i--;
@@ -219,7 +233,7 @@ public class ECMMapManager : MonoBehaviour {
 
 		for (int i = 0; i < vertices.Count; i++) {
 			vertices[i] -= surface.transform.position;
-			vertices[i] -= vertices[i].normalized * 0.3f;
+			vertices[i] -= vertices[i].normalized * 0.1f;
 			vertices[i] += surface.transform.position;
 		}
 
