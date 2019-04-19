@@ -231,7 +231,7 @@ namespace UnityEditor.AI
 
 
                 // Height mesh
-                using (new EditorGUI.DisabledScope(true))
+                using (new EditorGUI.DisabledScope(false))
                 {
                     EditorGUILayout.PropertyField(m_BuildHeightMesh);
                 }
