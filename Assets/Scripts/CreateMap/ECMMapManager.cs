@@ -80,11 +80,13 @@ public class ECMMapManager : MonoBehaviour {
         {
 			surface.transform.position = new Vector3(obstacles.transform.GetChild(0).transform.position.x, 0, obstacles.transform.GetChild(0).transform.position.z);
 			obstacles.transform.GetChild(0).transform.parent = surface.transform;
-			MeshCollider mesCollider = surface.transform.GetChild(0).gameObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
-			mesCollider.convex = true;
+			if(surface.transform.GetChild(0).gameObject.GetComponent<Collider>() == null) {
+				MeshCollider mesCollider = surface.transform.GetChild(0).gameObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
+				mesCollider.convex = true;
+			}
             surface.BuildNavMesh();
 			NavMeshToVertices();
-			Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
+			// Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
 			surface.transform.GetChild(0).transform.parent = obstacles.transform;
         }
 		return getBakedMap();
@@ -158,29 +160,21 @@ public class ECMMapManager : MonoBehaviour {
 			}
 		}
 
-		for (int i = 0; i < vertices.Count - 1; i++) {
-			for (int j = i + 1; j < vertices.Count; j++) {
-				if((vertices[i] - vertices[j]).magnitude < 0.3f) {
-					vertices[i] = (vertices[i] + vertices[j]) / 2;
-					vertices.RemoveAt(j);
-					j--;
-				}
-			}
-		}
-
 		float minNextDist = 9999;
 
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			int nextVertexIndex = 0;
 			for (int j = i; j < vertices.Count; j++) {
+				if(Physics.Linecast(vertices[i], vertices[j])) {
+					continue;
+				}
 				if(i == j) {
 					continue;
 				}
 				Vector3 vectorA = vertices[i] - surface.transform.GetChild(0).transform.position;
 				Vector3 vectorB = vertices[j] - surface.transform.GetChild(0).transform.position;
 				float angle = Vector3.SignedAngle(vectorA, vectorB, Vector3.up);
-				Debug.Log(angle);
-				if(angle >= 0 && angle < minNextDist) {
+				if(angle >= 0 && angle < minNextDist ) {
 					nextVertexIndex = j;
 					minNextDist = angle;
 				}
@@ -221,13 +215,27 @@ public class ECMMapManager : MonoBehaviour {
 		}
 
 		for (int i = 0; i < vertices.Count; i++) {
+			Debug.Log(i);
+			Debug.Log((i + 1) % vertices.Count);
+			Debug.Log((i + 2) % vertices.Count);
+
 			Vector3 vec1 = vertices[i] - vertices[(i + 1) % vertices.Count] ;
-			Vector3 vec2 = vertices[(i + 1) % vertices.Count] - vertices[(i + 2) % vertices.Count];
-			float angle = Vector3.Angle(vec1, vec2);
-			// Debug.Log("angle: " + angle);
-			if(angle < 20f || angle > 160.0f) {
+			Vector3 vec2 = vertices[(i + 2) % vertices.Count] - vertices[(i + 1) % vertices.Count];
+			float angle = Mathf.Abs(Vector3.SignedAngle(vec1, vec2, Vector3.up));
+			if(angle > 170.0f) {
+			Debug.Log("angle: " + angle);
 				vertices.RemoveAt((i + 1) % vertices.Count);
 				i--;
+			}
+		}
+		
+		for (int i = 0; i < vertices.Count - 1; i++) {
+			for (int j = i + 1; j < vertices.Count; j++) {
+				if((vertices[i] - vertices[j]).magnitude < 0.3f) {
+					vertices[i] = (vertices[i] + vertices[j]) / 2;
+					vertices.RemoveAt(j);
+					j--;
+				}
 			}
 		}
 
