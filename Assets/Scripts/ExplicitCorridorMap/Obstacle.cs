@@ -8,10 +8,12 @@ namespace ExplicitCorridorMap
     public class Obstacle : SpatialData
     {
         public int ID { get; set; }
+        public int RvoID { get; set; }
         public List<Vector2> Points = new List<Vector2>();
         public List<Segment> Segments = new List<Segment>();
         private Rectangle Rectangle;
         public bool IsBorder = false;
+        public GameObject GameObject { get; set; }
         public Obstacle(List<Vector2> points)
         {
             Points = points;
@@ -50,6 +52,15 @@ namespace ExplicitCorridorMap
         public override MBRectangle GetContainingRectangle()
         {
             return mBRectangle;
+        }
+        public IList<Vector2> ToList()
+        {
+            IList<Vector2> obs = new List<Vector2>();
+            for(int i = Points.Count-1; i >= 0; i--)
+            {
+                obs.Add(new Vector2(Points[i].x, Points[i].y));
+            }
+            return obs;
         }
     }
 }

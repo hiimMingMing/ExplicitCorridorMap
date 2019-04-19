@@ -7,17 +7,18 @@ public class LineDrawer
     private LineRenderer lineRenderer;
     private float lineSize;
 
-    void start()
+    public void start ()
     {
         GameObject lineObj = new GameObject("LineObj");
-        lineRenderer = lineObj.GetComponent<LineRenderer>();
-        //Particles/Additive
+        lineRenderer = lineObj.AddComponent<LineRenderer>();
+         
         lineRenderer.material = new Material(Shader.Find("Hidden/Internal-Colored"));
     }
 
     //Draws lines through the provided vertices
     public void DrawLineInGameView(Vector3 start, Vector3 end, Color color, float lineSize)
     {
+         
         if (lineRenderer == null)
         {
             GameObject lineObj = new GameObject("LineObj");

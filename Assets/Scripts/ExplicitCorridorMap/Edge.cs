@@ -26,6 +26,8 @@ namespace ExplicitCorridorMap
         public List<EdgeProperty> EdgeProperties { get; set; }//use for agent radius
         public float Length { get; set; }
 
+        public float Cost { get; set; }
+        public float Area { get; set; }
         public int SiteID { get; set; }
         public bool ContainsPoint { get; set; }
         public bool ContainsSegment { get; set; }
@@ -46,6 +48,7 @@ namespace ExplicitCorridorMap
             IsTwin = false;
             EdgeProperties = new List<EdgeProperty>();
             Length = (start.Position -  end.Position).magnitude;
+            Cost = Length;
         }
         public override string ToString()
         {
@@ -66,7 +69,9 @@ namespace ExplicitCorridorMap
             ClearanceOfEnd = (End.Position - RightObstacleOfEnd).magnitude;
             WidthClearanceOfStart = (LeftObstacleOfStart - RightObstacleOfStart).magnitude / 2.0f;
             WidthClearanceOfEnd = (LeftObstacleOfEnd - RightObstacleOfEnd).magnitude / 2.0f;
+            Area = Geometry.ComputeAreaOfPolygon(Cell);
         }
+
         public override void ComputeMBRectangle()
         {
             mBRectangle = Geometry.ComputeMBRectangle(Cell);
@@ -93,6 +98,7 @@ namespace ExplicitCorridorMap
                 p.RightObstacleOfStart = RightObstacleOfStart + radius * (Start.Position - RightObstacleOfStart).normalized;
             }
             p.ClearanceOfStart = ClearanceOfStart - radius;
+            p.WidthClearanceOfStart = (p.LeftObstacleOfStart - p.RightObstacleOfStart).magnitude;
 
             if (radius >= ClearanceOfEnd)
             {
@@ -104,6 +110,7 @@ namespace ExplicitCorridorMap
                 p.RightObstacleOfEnd = RightObstacleOfEnd + radius * (End.Position - RightObstacleOfEnd).normalized;
             }
             p.ClearanceOfEnd = ClearanceOfEnd - radius;
+            p.WidthClearanceOfEnd = (p.LeftObstacleOfEnd - p.RightObstacleOfEnd).magnitude;
 
             EdgeProperties.Add(p);
         }
@@ -116,6 +123,7 @@ namespace ExplicitCorridorMap
         public Vector2 RightObstacleOfEnd { get; set; }
         public float ClearanceOfStart { get; set; }
         public float ClearanceOfEnd { get; set; }
-        
+        public float WidthClearanceOfStart { get; set; }
+        public float WidthClearanceOfEnd { get; set; }
     }
 }

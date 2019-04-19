@@ -6,21 +6,6 @@ namespace ExplicitCorridorMap
 {
     public class DRMath
     {
-        // Convert obstacles to list of 4 points
-        //public static List<Vector2> ConvertToPoint(float xScale, float yScale, Vector3 input)
-        //{
-        //    List<Vector2> pointList = new List<Vector2>();
-        //    float x = input.x;
-        //    float y = input.y;
-        //    float w = xScale;
-        //    float h = yScale;
-        //    pointList.Add(new Vector2(x - w / 2, y - h / 2));
-        //    pointList.Add(new Vector2(x + w / 2, y - h / 2));
-        //    pointList.Add(new Vector2(x + w / 2, y + h / 2));
-        //    pointList.Add(new Vector2(x - w / 2, y + h / 2));
-        //    return pointList;
-        //}
-
         public static RectInt ConvertToRect(float xScale, float yScale, Vector3 input)
         {
             int w = (int)xScale;
@@ -42,16 +27,56 @@ namespace ExplicitCorridorMap
         }
 
         // Remove duplicate in List<Vector2>
-        public static void RemoveDuplicate(List<Vector2> list)
+        public static List<Vector2> RemoveDuplicate(List<Vector2> list)
         {
-            for (int i = 0; i < list.Count - 1; i++)
+            List<Vector2> newList = new List<Vector2>();
+            foreach (var l in list)
             {
-                if (list[i].Equals(list[i + 1]))
+                if (!newList.Contains(l))
+                    newList.Add(l);
+            }
+            return newList;
+        }
+
+        // Remove duplicate in List<Vertex>
+        public static List<Vertex> RemoveDuplicate(List<Vertex> list)
+        {
+            List<Vertex> newList = new List<Vertex>();
+            foreach (var l in list)
+            {
+                if (!newList.Contains(l))
+                    newList.Add(l);
+            }
+            return newList;
+        }
+
+        //Find nearest point in R_area to startPosition
+        public static Vector2 FindNearestPoint(Vector2 startPosition, RectInt R_area)
+        {
+            Dictionary<Vector2, float> distance = new Dictionary<Vector2, float>();
+            float minValue = float.MinValue;
+            Vector2 minDistancePoint = new Vector2();
+
+            Vector2 bottomLeft = R_area.min;
+            Vector2 bottomRight = new Vector2(R_area.xMax, R_area.yMin);
+            Vector2 topRight = R_area.max;
+            Vector2 topLeft = new Vector2(R_area.xMin, R_area.yMax);
+
+            distance[bottomLeft] = PathFinding.HeuristicCost(bottomLeft, startPosition);
+            distance[bottomRight] = PathFinding.HeuristicCost(bottomRight, startPosition);
+            distance[topRight] = PathFinding.HeuristicCost(topRight, startPosition);
+            distance[topLeft] = PathFinding.HeuristicCost(topLeft, startPosition);
+
+            foreach (var d in distance)
+            {
+                if (d.Value < minValue)
                 {
-                    list.RemoveAt(i + 1);
-                    i--;
+                    minValue = d.Value;
+                    minDistancePoint = d.Key;
                 }
             }
+
+            return minDistancePoint;
         }
 
         // Find a position intersection of 2 lines
