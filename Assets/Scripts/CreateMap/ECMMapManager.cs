@@ -86,7 +86,7 @@ public class ECMMapManager : MonoBehaviour {
 			}
             surface.BuildNavMesh();
 			NavMeshToVertices();
-			// Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
+			Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
 			surface.transform.GetChild(0).transform.parent = obstacles.transform;
         }
 		return getBakedMap();
