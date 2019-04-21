@@ -165,9 +165,9 @@ public class ECMMapManager : MonoBehaviour {
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			int nextVertexIndex = 0;
 			for (int j = i; j < vertices.Count; j++) {
-				if(Physics.Linecast(vertices[i], vertices[j])) {
-					continue;
-				}
+				// if(Physics.Linecast(vertices[i], vertices[j])) {
+				// 	continue;
+				// }
 				if(i == j) {
 					continue;
 				}
@@ -231,7 +231,7 @@ public class ECMMapManager : MonoBehaviour {
 		
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			for (int j = i + 1; j < vertices.Count; j++) {
-				if((vertices[i] - vertices[j]).magnitude < 0.3f) {
+				if((vertices[i] - vertices[j]).magnitude < 0.45f) {
 					vertices[i] = (vertices[i] + vertices[j]) / 2;
 					vertices.RemoveAt(j);
 					j--;
@@ -241,7 +241,7 @@ public class ECMMapManager : MonoBehaviour {
 
 		for (int i = 0; i < vertices.Count; i++) {
 			vertices[i] -= surface.transform.position;
-			vertices[i] -= vertices[i].normalized * 0.3f;
+			vertices[i] -= vertices[i].normalized * 0.45f;
 			vertices[i] += surface.transform.position;
 		}
 
