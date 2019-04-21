@@ -4689,6 +4689,7 @@ MonoBehaviour:
     type: 3}
   usingODPA: 0
   defaultAddKeyCode: 97
+  defaultDeleteKeyCode: 100
 --- !u!4 &1572872348
 Transform:
   m_ObjectHideFlags: 0
