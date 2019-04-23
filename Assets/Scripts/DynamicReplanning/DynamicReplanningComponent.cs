@@ -46,11 +46,11 @@ namespace ExplicitCorridorMap
                     if (listAffectPath.Count > 0)
                         if (!usingODPA)
                         {
-                            newPath = PathFinding.FindPath(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position, player.WayPointList[player.WayPointList.Count - 1]);
+                            newPath = PathFinding.FindPath(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position.To2D(), player.WayPointList[player.WayPointList.Count - 1]);
                         }
                         else
                         {
-                            newPath = DynamicFindPathByODPAVer2(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position, player.WayPointList[player.WayPointList.Count - 1], player.WayPointList, listAffectPath, obsRect);
+                            newPath = DynamicFindPathByODPAVer2(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position.To2D(), player.WayPointList[player.WayPointList.Count - 1], player.WayPointList, listAffectPath, obsRect);
                         }
 
 
@@ -128,11 +128,11 @@ namespace ExplicitCorridorMap
 
                         if (!usingODPA)
                         {
-                            newPath = PathFinding.FindPath(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position, player.WayPointList[player.WayPointList.Count - 1]);
+                            newPath = PathFinding.FindPath(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position.To2D(), player.WayPointList[player.WayPointList.Count - 1]);
                         }
                         else
                         {
-                            newPath = DynamicFindPathByODPAVer1(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position, player.WayPointList[player.WayPointList.Count - 1], player.WayPointList, obsRect);
+                            newPath = DynamicFindPathByODPAVer1(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position.To2D(), player.WayPointList[player.WayPointList.Count - 1], player.WayPointList, obsRect);
                         }
 
                         if (newPath.Count > 0)

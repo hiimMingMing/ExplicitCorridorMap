@@ -94,8 +94,9 @@ public class GameAgent : MonoBehaviour
             goalVector = (goalVector).normalized;
             Simulator.Instance.setAgentPrefVelocity(Sid, goalVector);
             /* Perturb a little to avoid deadlocks due to perfect symmetry. */
+            
             float angle = Random.value * 2.0f * Mathf.PI;
-            float dist = Random.value * 0.0001f;
+            float dist = Random.value * 0.01f;
 
             Simulator.Instance.setAgentPrefVelocity(Sid, Simulator.Instance.getAgentPrefVelocity(Sid) +
                                                          dist * new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)));
