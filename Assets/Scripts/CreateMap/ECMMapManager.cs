@@ -80,13 +80,13 @@ public class ECMMapManager : MonoBehaviour {
         {
 			surface.transform.position = new Vector3(obstacles.transform.GetChild(0).transform.position.x, 0, obstacles.transform.GetChild(0).transform.position.z);
 			obstacles.transform.GetChild(0).transform.parent = surface.transform;
-			// if(surface.transform.GetChild(0).gameObject.GetComponent<Collider>() == null) {
-			// 	MeshCollider mesCollider = surface.transform.GetChild(0).gameObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
-			// 	mesCollider.convex = true;
-			// }
+			if(surface.transform.GetChild(0).gameObject.GetComponent<Collider>() == null) {
+				MeshCollider mesCollider = surface.transform.GetChild(0).gameObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
+				mesCollider.convex = true;
+			}
             surface.BuildNavMesh();
 			NavMeshToVertices();
-			// Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
+			Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
 			surface.transform.GetChild(0).transform.parent = obstacles.transform;
         }
 		return getBakedMap();
@@ -162,12 +162,22 @@ public class ECMMapManager : MonoBehaviour {
 
 		float minNextDist = 9999;
 
+		for (int i = 0; i < vertices.Count; i++) {
+			vertices[i] -= surface.transform.position;
+			vertices[i] -= vertices[i].normalized * 0.3f;
+			vertices[i] += surface.transform.position;
+		}
+
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			int nextVertexIndex = 0;
 			for (int j = i; j < vertices.Count; j++) {
 				// if(Physics.Linecast(vertices[i], vertices[j])) {
 				// 	continue;
 				// }
+				if(Physics.Raycast(vertices[i], 10 * (vertices[j] - vertices[i]), 10.0f) || Physics.Raycast(vertices[j], 10 * (vertices[i] - vertices[j]) , 10.0f)) {
+
+					continue;
+				}
 				if(i == j) {
 					continue;
 				}
@@ -207,10 +217,10 @@ public class ECMMapManager : MonoBehaviour {
 			vertices[i + 1] = vertices[nextVertexIndex];
 			vertices[nextVertexIndex] = tempPoint;
 
-			// if(minNextDist == 9999) {
-			// 	vertices.RemoveRange(i + 1, vertices.Count - i - 1);
-			// 	break;
-			// }
+			if(minNextDist == 9999) {
+				vertices.RemoveRange(i + 1, vertices.Count - i - 1);
+				break;
+			}
 			minNextDist = 9999;
 		}
 
@@ -241,7 +251,7 @@ public class ECMMapManager : MonoBehaviour {
 
 		for (int i = 0; i < vertices.Count; i++) {
 			vertices[i] -= surface.transform.position;
-			vertices[i] -= vertices[i].normalized * 0.45f;
+			vertices[i] -= vertices[i].normalized * 0.1f;
 			vertices[i] += surface.transform.position;
 		}
 
