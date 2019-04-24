@@ -426,7 +426,8 @@ namespace RVO
 
             WaitHandle.WaitAll(doneEvents_);
             mywatch.Stop();
-            UnityEngine.Debug.Log("Step time "+ mywatch.ElapsedTicks.ToString());
+          
+           
             globalTime_ += timeStep_;
 
             return globalTime_;
@@ -971,7 +972,7 @@ namespace RVO
             {
                 int completionPorts;
                 ThreadPool.GetMinThreads(out numWorkers_, out completionPorts);
-                UnityEngine.Debug.Log("Number of worker = "+numWorkers_);
+                
             }
             workers_ = null;
             workerAgentCount_ = 0;

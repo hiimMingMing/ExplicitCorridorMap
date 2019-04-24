@@ -25,13 +25,36 @@ public class ECMMap : MonoBehaviour
 
     void Awake()
     {
-        Obstacles = new List<Obstacle>();
         AgentMap = new Dictionary<int, GameAgent>();
-        foreach (Transform o in ObstaclesTransform)
-        {
-            var obs = Geometry.ConvertToObstacle(o);
-            obs.GameObject = o.gameObject;
-            Obstacles.Add(obs);
+        ECMMapManager _ECMMapManager = GameObject.FindObjectOfType<ECMMapManager>();
+        Obstacles = new List<Obstacle>();
+        if(_ECMMapManager){
+         
+            for (int i = 0; i < _ECMMapManager.bakedECMMap.Count; i++)
+            {
+                List<Vector2> newList = new List<Vector2>();
+                for (int j = 0; j < _ECMMapManager.bakedECMMap[i].vertices.Count; j++)
+                {
+                    newList.Add(new Vector2(_ECMMapManager.bakedECMMap[i].vertices[j].x, _ECMMapManager.bakedECMMap[i].vertices[j].z));
+                }
+                Obstacle temp = new Obstacle(newList);
+                temp.GameObject = _ECMMapManager.gameObjects[i];
+                Obstacles.Add(temp);
+            }
+
+        }else{
+        
+        
+            foreach (Transform o in ObstaclesTransform)
+            {
+                Transform obj = o;
+                if(o.GetComponent<MeshRenderer>() == null){
+                    obj = o.GetChild(0);
+                }
+                var obs = Geometry.ConvertToObstacle(obj);
+                obs.GameObject = obj.gameObject;
+                Obstacles.Add(obs);
+            }
         }
         var border = Geometry.ConvertToObstacle(GroundPlane);
         ECMGraph = new ECM(Obstacles, border);
@@ -40,7 +63,7 @@ public class ECMMap : MonoBehaviour
         ComputeCurveEdge();
         //RVO
         Simulator.Instance.setTimeStep(1f);
-        Simulator.Instance.setAgentDefaults(200.0f, 50, 0.1f, 0.05f, 10.0f, 10.0f, new  Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(50.0f, 10, 0.1f, 0.05f, 10.0f, 10.0f, new  Vector2(0.0f, 0.0f));
         foreach (var obs in Obstacles)
         {
             Simulator.Instance.addObstacle(obs);
@@ -176,15 +199,15 @@ public class ECMMap : MonoBehaviour
             var startPoint = new Vector2(inputSegment.Start.x, inputSegment.Start.y);
             var endPoint = new Vector2(inputSegment.End.x, inputSegment.End.y);
 
-            Gizmos.DrawSphere(startPoint.To3D(), inputPointRadius);
-            Gizmos.DrawSphere(endPoint.To3D(), inputPointRadius);
+            //Gizmos.DrawSphere(startPoint.To3D(), inputPointRadius);
+            //Gizmos.DrawSphere(endPoint.To3D(), inputPointRadius);
             Gizmos.DrawLine(startPoint.To3D(), endPoint.To3D());
         }
 
         //Draw ouput edge and vertex
         foreach (var vertex in ECMGraph.Vertices.Values)
         {
-            DrawUtils.DrawVertex(vertex);
+            //DrawUtils.DrawVertex(vertex);
             foreach (var edge in vertex.Edges)
             {
                 DrawUtils.DrawEdge(edge);

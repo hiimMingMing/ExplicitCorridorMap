@@ -59,9 +59,11 @@ public class ManipulateAgentComponent : MonoBehaviour
     {
 
         GameObject go = Lean.LeanPool.Spawn(agentPrefab, new Vector3(mousePosition.x, 0, mousePosition.y), Quaternion.identity);
-
-        GameAgent ga = agentPrefab.GetComponent<GameAgent>();
-        Vector3 newScale = go.transform.localScale * (ga.Radius * 2 / (2 * go.GetComponent<MeshRenderer>().bounds.size.x));
+        
+        GameAgent ga = go.GetComponent<GameAgent>();
+        ga.Radius = ECMMap.AgentRadiusList[ga.RadiusIndex];
+        float currentRadius = go.GetComponent<MeshRenderer>().bounds.size.x/2;
+        Vector3 newScale = go.transform.localScale * (ga.Radius  / (currentRadius));
         go.transform.localScale = newScale;
 
 
@@ -95,12 +97,14 @@ public class ManipulateAgentComponent : MonoBehaviour
 
 
 
-        GameObject go = Lean.LeanPool.Spawn(objectPrefab, position, Quaternion.identity);
-
-        //TODO change to 3D
-        GameAgent ga = objectPrefab.GetComponent<GameAgent>();
-        Vector3 newScale = go.transform.localScale * (ga.Radius  * 2 / (2 * go.GetComponent<MeshRenderer>().bounds.size.x));
+        GameObject go = Lean.LeanPool.Spawn(agentPrefab, new Vector3(mousePosition.x, 0, mousePosition.y), Quaternion.identity);
+        
+        GameAgent ga = go.GetComponent<GameAgent>();
+        ga.Radius = ECMMap.AgentRadiusList[ga.RadiusIndex];
+        float currentRadius = go.GetComponent<MeshRenderer>().bounds.size.x/2;
+        Vector3 newScale = go.transform.localScale * (ga.Radius  / (currentRadius));
         go.transform.localScale = newScale;
+
 
 
 

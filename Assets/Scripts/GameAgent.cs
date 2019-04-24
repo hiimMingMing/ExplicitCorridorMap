@@ -16,8 +16,8 @@ public class GameAgent : MonoBehaviour
    
     [HideInInspector] public ECMMap ECMMap;
     private ECM ECMGraph;
-    [HideInInspector] public int RadiusIndex = 0;
-    [HideInInspector] public float Radius;
+    public int RadiusIndex = 0;
+    [HideInInspector] public float Radius=5;
     public float Speed = 2;
     public float Priority = 1;
     public float DestinationRadius = 5;
@@ -29,7 +29,8 @@ public class GameAgent : MonoBehaviour
         ECMGraph = ECMMap.ECMGraph;
         CurrentWayPoint = 1;
         WayPointList = new List<Vector2>();
-
+        Radius = ECMMap.AgentRadiusList[RadiusIndex];
+        Debug.Log("Radius = "+Radius);
         Sid = Simulator.Instance.addAgent(transform.position.To2D(), Radius, Speed, Priority);
         ECMMap.AgentMap.Add(Sid, this);
     }

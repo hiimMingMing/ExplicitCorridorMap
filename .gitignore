@@ -37,3 +37,4 @@ sysinfo.txt
 *.unitypackage
 archive.zip
 .vscode/launch.json
+*.meta
