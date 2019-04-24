@@ -162,22 +162,19 @@ public class ECMMapManager : MonoBehaviour {
 
 		float minNextDist = 9999;
 
-		for (int i = 0; i < vertices.Count; i++) {
-			vertices[i] -= surface.transform.position;
-			vertices[i] -= vertices[i].normalized * 0.3f;
-			vertices[i] += surface.transform.position;
-		}
-
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			int nextVertexIndex = 0;
 			for (int j = i; j < vertices.Count; j++) {
-				// if(Physics.Linecast(vertices[i], vertices[j])) {
-				// 	continue;
-				// }
-				if(Physics.Raycast(vertices[i], 10 * (vertices[j] - vertices[i]), 10.0f) || Physics.Raycast(vertices[j], 10 * (vertices[i] - vertices[j]) , 10.0f)) {
-
+				Vector3 pointA = vertices[i] + new Vector3(0.0f, 0.1f, 0.0f);
+				Vector3 pointB = vertices[j] + new Vector3(0.0f, 0.1f, 0.0f);
+				if(Physics.Linecast(pointA, pointB)) {
 					continue;
 				}
+
+				// if(Physics.Raycast(vertices[i], 10 * (vertices[j] - vertices[i])) || Physics.Raycast(vertices[j], 10 * (vertices[i] - vertices[j]))) {
+				// 	continue;
+				// }
+
 				if(i == j) {
 					continue;
 				}
@@ -225,6 +222,28 @@ public class ECMMapManager : MonoBehaviour {
 		}
 
 		for (int i = 0; i < vertices.Count; i++) {
+			vertices[i] -= surface.transform.position;
+			vertices[i] -= vertices[i].normalized * 0.3f;
+			vertices[i] += surface.transform.position;
+		}
+
+		for (int i = 0; i < vertices.Count - 1; i++) {
+			Vector3 pointA = vertices[i] + new Vector3(0.0f, 0.1f, 0.0f);
+			Vector3 pointB = vertices[i + 1] + new Vector3(0.0f, 0.1f, 0.0f);
+			Vector3 direction = 10 * (pointB - pointA);
+			if(Physics.Raycast(pointA, direction) || Physics.Raycast(pointB, -direction)) {
+				vertices.RemoveAt(i + 1);
+				i--;
+			}
+		}
+
+		for (int i = 0; i < vertices.Count; i++) {
+			vertices[i] -= surface.transform.position;
+			vertices[i] -= vertices[i].normalized * 0.1f;
+			vertices[i] += surface.transform.position;
+		}
+
+		for (int i = 0; i < vertices.Count; i++) {
 			// Debug.Log(i);
 			// Debug.Log((i + 1) % vertices.Count);
 			// Debug.Log((i + 2) % vertices.Count);
@@ -232,13 +251,14 @@ public class ECMMapManager : MonoBehaviour {
 			Vector3 vec1 = vertices[i] - vertices[(i + 1) % vertices.Count] ;
 			Vector3 vec2 = vertices[(i + 2) % vertices.Count] - vertices[(i + 1) % vertices.Count];
 			float angle = Mathf.Abs(Vector3.SignedAngle(vec1, vec2, Vector3.up));
-			if(angle > 170.0f) {
 			// Debug.Log("angle: " + angle);
+
+			if(angle > 160.0f) {
 				vertices.RemoveAt((i + 1) % vertices.Count);
 				i--;
 			}
 		}
-		
+
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			for (int j = i + 1; j < vertices.Count; j++) {
 				if((vertices[i] - vertices[j]).magnitude < 0.45f) {
@@ -247,12 +267,6 @@ public class ECMMapManager : MonoBehaviour {
 					j--;
 				}
 			}
-		}
-
-		for (int i = 0; i < vertices.Count; i++) {
-			vertices[i] -= surface.transform.position;
-			vertices[i] -= vertices[i].normalized * 0.1f;
-			vertices[i] += surface.transform.position;
 		}
 
 		ObstaclesVertices result = new ObstaclesVertices();
