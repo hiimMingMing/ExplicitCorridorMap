@@ -84,9 +84,11 @@ public class ECMMapManager : MonoBehaviour {
 				MeshCollider mesCollider = surface.transform.GetChild(0).gameObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
 				mesCollider.convex = true;
 			}
+			surface.transform.GetChild(0).gameObject.layer = 31;
             surface.BuildNavMesh();
 			NavMeshToVertices();
 			Destroy(surface.transform.GetChild(0).gameObject.GetComponent<MeshCollider>());
+			surface.transform.GetChild(0).gameObject.layer = 0;
 			surface.transform.GetChild(0).transform.parent = obstacles.transform;
         }
 		return getBakedMap();
@@ -165,8 +167,8 @@ public class ECMMapManager : MonoBehaviour {
 		for (int i = 0; i < vertices.Count - 1; i++) {
 			int nextVertexIndex = 0;
 			for (int j = i; j < vertices.Count; j++) {
-				Vector3 pointA = vertices[i] + new Vector3(0.0f, 0.1f, 0.0f);
-				Vector3 pointB = vertices[j] + new Vector3(0.0f, 0.1f, 0.0f);
+				Vector3 pointA = vertices[i] + new Vector3(0.0f, 0.15f, 0.0f);
+				Vector3 pointB = vertices[j] + new Vector3(0.0f, 0.15f, 0.0f);
 				if(Physics.Linecast(pointA, pointB)) {
 					continue;
 				}
@@ -228,10 +230,12 @@ public class ECMMapManager : MonoBehaviour {
 		}
 
 		for (int i = 0; i < vertices.Count - 1; i++) {
-			Vector3 pointA = vertices[i] + new Vector3(0.0f, 0.1f, 0.0f);
-			Vector3 pointB = vertices[i + 1] + new Vector3(0.0f, 0.1f, 0.0f);
-			Vector3 direction = 10 * (pointB - pointA);
-			if(Physics.Raycast(pointA, direction) || Physics.Raycast(pointB, -direction)) {
+			Vector3 pointA = vertices[i] + new Vector3(0.0f, 0.15f, 0.0f);
+			Vector3 pointB = vertices[i + 1] + new Vector3(0.0f, 0.15f, 0.0f);
+			Vector3 direction = (pointB - pointA).normalized;
+			RaycastHit hitTarget;
+			if(Physics.Raycast(pointA, direction, out hitTarget, Mathf.Infinity, 1<<31) || Physics.Raycast(pointB, -direction, out hitTarget, Mathf.Infinity, 1<<31)) {
+				Debug.Log(hitTarget.transform.name);
 				vertices.RemoveAt(i + 1);
 				i--;
 			}
