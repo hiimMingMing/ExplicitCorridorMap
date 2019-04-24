@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using System.Diagnostics;
 namespace RVO
 {
     /**
@@ -381,6 +382,8 @@ namespace RVO
          */
         public float doStep()
         {
+            Stopwatch mywatch = new Stopwatch();
+           
             updateDeleteAgent();
 
             if (workers_ == null)
@@ -406,7 +409,7 @@ namespace RVO
             }
 
             kdTree_.buildAgentTree();
-
+            mywatch.Start();
             for (int block = 0; block < workers_.Length; ++block)
             {
                 doneEvents_[block].Reset();
@@ -422,7 +425,8 @@ namespace RVO
             }
 
             WaitHandle.WaitAll(doneEvents_);
-
+            mywatch.Stop();
+            UnityEngine.Debug.Log("Step time "+ mywatch.ElapsedTicks.ToString());
             globalTime_ += timeStep_;
 
             return globalTime_;
@@ -967,6 +971,7 @@ namespace RVO
             {
                 int completionPorts;
                 ThreadPool.GetMinThreads(out numWorkers_, out completionPorts);
+                UnityEngine.Debug.Log("Number of worker = "+numWorkers_);
             }
             workers_ = null;
             workerAgentCount_ = 0;

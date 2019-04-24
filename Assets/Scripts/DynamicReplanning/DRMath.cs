@@ -6,7 +6,7 @@ namespace ExplicitCorridorMap
 {
     public class DRMath
     {
-        public static RectInt ConvertToRect(float xScale, float yScale, Vector3 input)
+        public static RectInt ConvertTransToRectInt(float xScale, float yScale, Vector3 input)
         {
             int w = (int)xScale;
             int h = (int)yScale;

@@ -46,7 +46,7 @@ public class ECMMap : MonoBehaviour
             Simulator.Instance.addObstacle(obs);
         }
         Simulator.Instance.processObstacles();
-        Simulator.Instance.SetNumWorkers(10);
+        //Simulator.Instance.SetNumWorkers(10);
     }
     private float time = 0.0f;
     private float densityTimeStep = 1.0f;
