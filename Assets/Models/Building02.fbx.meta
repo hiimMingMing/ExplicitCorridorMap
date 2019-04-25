@@ -1,7 +1,7 @@
 fileFormatVersion: 2
-guid: 7fa610bf2b9bccd48a9b3a6d79f90a37
+guid: 71352dd5685ffb946a9b573c253782b2
 ModelImporter:
-  serializedVersion: 22
+  serializedVersion: 23
   fileIDToRecycleName:
     100000: //RootNode
     400000: //RootNode
@@ -15,32 +15,32 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: BuildingGlass
-    second: {fileID: 2100000, guid: 7e41e83d6bd224b4d99fa3ffa5e3a3a4, type: 2}
+    second: {fileID: 2100000, guid: 0fe81d8db0e3f6f419ff168465b710db, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: BuildingGrey
-    second: {fileID: 2100000, guid: 87d2e70ca18454e4f855f8d99afb32e3, type: 2}
+    second: {fileID: 2100000, guid: 7db6407c278beed4cbb8faf12ac8d8d1, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: BuildingMetal
-    second: {fileID: 2100000, guid: e7df269b1d6121e4787b2f27aab18dbe, type: 2}
+    second: {fileID: 2100000, guid: fcf6a64379ad26145a3e1e8d4e2c11c6, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: BuildingStone
-    second: {fileID: 2100000, guid: 03ad6a4c3c0e64440b1d6cee74fc2a4f, type: 2}
+    second: {fileID: 2100000, guid: 29855f381f8d48e4498aad97408b106d, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: BuildingWhite
-    second: {fileID: 2100000, guid: d0c31a39c426da94496d2abbf928d525, type: 2}
+    second: {fileID: 2100000, guid: f43babab231c7a04ea1c3988e07e1c02, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: OilDrums
-    second: {fileID: 2100000, guid: b3a1f2f69b4c3a84cba5446e31e87c20, type: 2}
+    second: {fileID: 2100000, guid: a95f341ebf349904891f749fa849440e, type: 2}
   materials:
     importMaterials: 1
     materialName: 1
@@ -74,6 +74,7 @@ ModelImporter:
     globalScale: 1
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
     importVisibility: 0
     importBlendShapes: 1
     importCameras: 0
@@ -91,11 +92,16 @@ ModelImporter:
     secondaryUVHardAngle: 89
     secondaryUVPackMargin: 2
     useFileScale: 1
+    previousCalculatedGlobalScale: 0.01
+    hasPreviousCalculatedGlobalScale: 1
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 4
     normalCalculationMode: 0
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
@@ -110,7 +116,6 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     rootMotionBoneName: 
-    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 0
