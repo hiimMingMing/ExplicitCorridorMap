@@ -146,6 +146,7 @@ namespace ExplicitCorridorMap
 
         protected override void FindPathForGroup(List<Portal> pathPortals)
         {
+            pathPortals.ForEach(x => x.ComputeVector());
             //compute distance infos
             foreach (var kv in AgentDictionary)
             {
@@ -191,7 +192,6 @@ namespace ExplicitCorridorMap
                 var path = new List<Vector2>();
                 pathPortals[0] = new Portal(a.GetPosition2D());
                 var shortestPathPortal = PathFinding.GetShortestPath(pathPortals);
-                shortestPathPortal.ForEach(x => x.ComputeVector());
                 foreach (var p in shortestPathPortal)
                 {
                     if (p.IsLeft)
