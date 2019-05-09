@@ -52,10 +52,11 @@ public class ECMMapManager : MonoBehaviour {
 		for(int i = 0; i < bakedECMMap.Count; i++) {
 			LineRenderer lineRenderer = obstacles.transform.GetChild(i).gameObject.AddComponent(typeof(LineRenderer)) as LineRenderer;
 			Vector3[] abc = new Vector3[1];
+			lineRenderer.material.color = Color.red;
 			lineRenderer.positionCount = bakedECMMap[i].vertices.Count;
 			lineRenderer.SetPositions(bakedECMMap[i].vertices.ToArray());
-			lineRenderer.startWidth = 0.05f;
-			lineRenderer.endWidth = 0.05f;
+			lineRenderer.startWidth = 0.2f;
+			lineRenderer.endWidth = 0.2f;
 			lineRenderer.loop = true;
 
 			for(int j = 0; j < lineRenderer.positionCount; j++) {

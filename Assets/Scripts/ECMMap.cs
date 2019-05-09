@@ -9,6 +9,7 @@ using System.Linq;
 using UnityEngine;
 using Obstacle = ExplicitCorridorMap.Obstacle;
 using Vector2 = UnityEngine.Vector2;
+using System.Diagnostics;
 
 public class ECMMap : MonoBehaviour
 {
@@ -20,11 +21,14 @@ public class ECMMap : MonoBehaviour
     [HideInInspector] public bool GroupBehavior = true;
     public ECM ECMGraph { get; protected set; }
     private List<Obstacle> Obstacles;
-
+    Stopwatch stopwatch;
     public Dictionary<int, GameAgent> AgentMap;
-
+    WorkerPool workerPool;
+    IList<GameAgent> listAgent = new List<GameAgent>();
     void Awake()
     {
+        workerPool= WorkerPool.getInstance();
+        stopwatch = new Stopwatch();
         AgentMap = new Dictionary<int, GameAgent>();
         ECMMapManager _ECMMapManager = GameObject.FindObjectOfType<ECMMapManager>();
         Obstacles = new List<Obstacle>();
@@ -60,7 +64,8 @@ public class ECMMap : MonoBehaviour
         ECMGraph = new ECM(Obstacles, border);
         ECMGraph.Construct();
         ECMGraph.AddAgentRadius(AgentRadiusList);
-        ComputeCurveEdge();
+ 
+        //ComputeCurveEdge();
         //RVO
         Simulator.Instance.setTimeStep(1f);
         Simulator.Instance.setAgentDefaults(50.0f, 10, 0.1f, 0.05f, 10.0f, 10.0f, new  Vector2(0.0f, 0.0f));
@@ -93,10 +98,28 @@ public class ECMMap : MonoBehaviour
         ComputeEdgeCost(densityDict);
         //replan path for all agent
         //Debug.Log("Replanned");
-        foreach (var a in AgentMap.Values)
+
+
+     
+
+        if (listAgent.Count != AgentMap.Count)
         {
-            a.ReplanPath();
+            listAgent.Clear();
+            foreach (var item in AgentMap.Values)
+            {
+                listAgent.Add(item);
+            }
         }
+        if (listAgent.Count == 0)
+        {
+            return;
+        }
+        workerPool.doStep(listAgent);
+        // foreach (var a in AgentMap.Values)
+        // {
+        //    a.ReplanPath();
+        // }
+      
     }
     private Dictionary<Edge, List<GameAgent>> ComputeDensityDictionary()
     {

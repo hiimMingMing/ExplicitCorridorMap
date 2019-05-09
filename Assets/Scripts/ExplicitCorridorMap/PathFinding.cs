@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.Assertions;
 namespace ExplicitCorridorMap
 {
+
+    
     public static class PathFinding
     {
         public static List<Portal> FindPath(ECM ecm, int radiusIndex, Edge startEdge, Vector2 startPosition1, Vector2 startPosition2,ref Vector2 endPosition, out Vertex choosenVertex)
@@ -13,6 +15,7 @@ namespace ExplicitCorridorMap
             //find end edge
             choosenVertex = null;
             var pathPortals = new List<Portal>();
+         
             var radius = ecm.AgentRadius[radiusIndex];
             var endEdge = ecm.GetNearestEdge(ref endPosition, radius);
             if (startEdge == null || endEdge == null) return pathPortals;
@@ -42,11 +45,14 @@ namespace ExplicitCorridorMap
             pathPortals = ComputePortals(radiusIndex, edgeList, choosenStartPosition, endPosition);
             return pathPortals;
         }
-        public static List<Vector2> FindPath(ECM ecm,int radiusIndex,Vector2 startPosition,Vector2 endPosition)
+        public static List<Vector2> FindPath(ECM ecm, int radiusIndex, Vector2 startPosition, Vector2 endPosition)
         {
+
             var radius = ecm.AgentRadius[radiusIndex];
             var startEdge = ecm.GetNearestEdge(ref startPosition, radius);
-            var pathPortals =  FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition,ref endPosition, out Vertex v);
+            var pathPortals = FindPath(ecm, radiusIndex, startEdge, startPosition, startPosition, ref endPosition, out Vertex v);
+
+         
             return GetShortestPath(pathPortals).ConvertAll(a => a.Point);
         }
         public static List<Edge> ConvertToEdgeList(List<Vertex> path)

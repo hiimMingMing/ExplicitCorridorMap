@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Scenes/3dWithModel.unity
+    guid: 7c9486ed7f27faf46b2306b8e0233389
   m_configObjects: {}

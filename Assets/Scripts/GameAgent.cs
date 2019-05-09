@@ -20,9 +20,10 @@ public class GameAgent : MonoBehaviour
     [HideInInspector] public float Radius=5;
     public float Speed = 2;
     public float Priority = 1;
-    public float DestinationRadius = 5;
+    public float DestinationRadius = 2;
     [HideInInspector]public int Sid;
-
+    [HideInInspector] private float AgentRadiusOffset =0f;
+    [HideInInspector] private  Vector2 _position;
     void Start()
     {
         ECMMap = FindObjectOfType<ECMMap>();
@@ -30,14 +31,15 @@ public class GameAgent : MonoBehaviour
         CurrentWayPoint = 1;
         WayPointList = new List<Vector2>();
         Radius = ECMMap.AgentRadiusList[RadiusIndex];
-        Debug.Log("Radius = "+Radius);
-        Sid = Simulator.Instance.addAgent(transform.position.To2D(), Radius, Speed, Priority);
+      
+        Sid = Simulator.Instance.addAgent(transform.position.To2D(), Radius+AgentRadiusOffset, Speed, Priority);
         ECMMap.AgentMap.Add(Sid, this);
     }
 
     // Update is called once per frame
     void Update()
     {
+        _position = transform.position.To2D();
         UpdateMovement();
     }
     public void SetNewPath(List<Vector2> path)
@@ -49,14 +51,17 @@ public class GameAgent : MonoBehaviour
     {
         
         //if (ECMMap.Grouping) throw new System.Exception("Agent cannot self call when ECMMap.Grouping is on, use ECMMap.FindPathGroup instead");
-        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), goalPosition);
+        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, _position, goalPosition);
         SetNewPath(path);
     }
     public void ReplanPath()
     {
+      
         if (CurrentWayPoint >= WayPointList.Count-1) return;
         var goalPosition = WayPointList[WayPointList.Count - 1];
-        var path = PathFinding.FindPath(ECMGraph, RadiusIndex, GetPosition2D(), goalPosition);
+        
+        var path = PathFinding.FindPath(ECMGraph, RadiusIndex,_position, goalPosition);
+       
         SetNewPath(path);
     }
     public Vector2 GetPosition2D()
@@ -98,7 +103,7 @@ public class GameAgent : MonoBehaviour
             
             float angle = Random.value * 2.0f * Mathf.PI;
             float dist = Random.value * 0.01f;
-
+         
             Simulator.Instance.setAgentPrefVelocity(Sid, Simulator.Instance.getAgentPrefVelocity(Sid) +
                                                          dist * new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)));
 
@@ -173,11 +178,11 @@ public class GameAgent : MonoBehaviour
         IList<Agent> listOfAgent = Simulator.Instance.GetListAgents();
         for (int i = 0; i < listOfAgent.Count; i++)
         {
-            var x = listOfAgent[i].position_;
+            var x = listOfAgent[i].position;
             var d = (x - FinalTarget).sqrMagnitude;
-            if ((listOfAgent[i].position_  - FinalTarget).sqrMagnitude <= distanceToDesSqr)
+            if ((listOfAgent[i].position  - FinalTarget).sqrMagnitude <= distanceToDesSqr)
             {
-                sumAgentS += listOfAgent[i].radius_ * listOfAgent[i].radius_ * 3.14f;
+                sumAgentS += listOfAgent[i].radius * listOfAgent[i].radius * 3.14f;
             }
         }
 
