@@ -10,6 +10,7 @@ public class ManipulateAgentComponent : MonoBehaviour
     private Vector2 mousePosition;
     private ECMMap ECMMap;
     public GameObject agentPrefab;
+    public int multipleAgentPerAdd = 100;
     // Start is called before the first frame update
     void Start()
     {
@@ -38,7 +39,7 @@ public class ManipulateAgentComponent : MonoBehaviour
             CreateCustomAgent();
         }
         if (Input.GetKeyDown(KeyCode.V)) {
-            CreateMultiAgent(agentPrefab, new Vector3(mousePosition.x, 0, mousePosition.y), 100);
+            CreateMultiAgent(agentPrefab, new Vector3(mousePosition.x, 0, mousePosition.y), multipleAgentPerAdd);
         }
     }
 

@@ -32,6 +32,7 @@ public class ECMMap : MonoBehaviour
         AgentMap = new Dictionary<int, GameAgent>();
         ECMMapManager _ECMMapManager = GameObject.FindObjectOfType<ECMMapManager>();
         Obstacles = new List<Obstacle>();
+        int tempTotalVertices = 0;
         if(_ECMMapManager){
          
             for (int i = 0; i < _ECMMapManager.bakedECMMap.Count; i++)
@@ -39,11 +40,13 @@ public class ECMMap : MonoBehaviour
                 List<Vector2> newList = new List<Vector2>();
                 for (int j = 0; j < _ECMMapManager.bakedECMMap[i].vertices.Count; j++)
                 {
-                    newList.Add(new Vector2(_ECMMapManager.bakedECMMap[i].vertices[j].x, _ECMMapManager.bakedECMMap[i].vertices[j].z));
+                    newList.Add(new Vector2(Mathf.FloorToInt(_ECMMapManager.bakedECMMap[i].vertices[j].x), Mathf.FloorToInt(_ECMMapManager.bakedECMMap[i].vertices[j].z)));
+                    tempTotalVertices++;
                 }
                 Obstacle temp = new Obstacle(newList);
                 temp.GameObject = _ECMMapManager.gameObjects[i];
                 Obstacles.Add(temp);
+               
             }
 
         }else{
@@ -64,8 +67,9 @@ public class ECMMap : MonoBehaviour
         ECMGraph = new ECM(Obstacles, border);
         ECMGraph.Construct();
         ECMGraph.AddAgentRadius(AgentRadiusList);
- 
-        //ComputeCurveEdge();
+        UnityEngine.Debug.Log("Number of ECM vertices= "+ECMGraph.MapVertices.Count);
+        UnityEngine.Debug.Log("Number of Obstacle vertices= " + tempTotalVertices);
+        ComputeCurveEdge();
         //RVO
         Simulator.Instance.setTimeStep(1f);
         Simulator.Instance.setAgentDefaults(50.0f, 10, 0.1f, 0.05f, 10.0f, 10.0f, new  Vector2(0.0f, 0.0f));
@@ -190,7 +194,6 @@ public class ECMMap : MonoBehaviour
     }
     
 #if UNITY_EDITOR
-    #region Draw
     [HideInInspector]
     public bool drawGraph = true;
     [HideInInspector]
@@ -251,7 +254,7 @@ public class ECMMap : MonoBehaviour
         }
         
     }
-
+#endif
     public void ComputeCurveEdge()
     {
         #if UNITY_EDITOR
@@ -269,6 +272,7 @@ public class ECMMap : MonoBehaviour
         }
         #endif
     }
+#if UNITY_EDITOR
     /// <summary>
     /// Generate a polyline representing a curved edge.
     /// </summary>
@@ -328,7 +332,6 @@ public class ECMMap : MonoBehaviour
             0
         );
     }
-    #endregion
 
 #endif
 }

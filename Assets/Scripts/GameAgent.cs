@@ -22,7 +22,7 @@ public class GameAgent : MonoBehaviour
     public float Priority = 1;
     public float DestinationRadius = 2;
     [HideInInspector]public int Sid;
-    [HideInInspector] private float AgentRadiusOffset =0f;
+    [HideInInspector] private float AgentRadiusOffset =1f;
     [HideInInspector] private  Vector2 _position;
     void Start()
     {

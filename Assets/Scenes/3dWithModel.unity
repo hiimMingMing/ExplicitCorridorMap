@@ -757,7 +757,7 @@ MonoBehaviour:
   - 4
   - 1
   Grouping: 1
-  CrowDensity: 0
+  CrowDensity: 1
   GroupBehavior: 1
   drawGraph: 1
   inputPointRadius: 2
@@ -2949,8 +2949,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1058247237}
-  m_LocalRotation: {x: 0.21802789, y: -0.6760677, z: 0.22052795, w: 0.6684039}
-  m_LocalPosition: {x: 2555.3765, y: 1769.0245, z: -358.3783}
+  m_LocalRotation: {x: 0.19572234, y: -0.6630689, z: 0.18587475, w: 0.6981999}
+  m_LocalPosition: {x: 612.4161, y: 381.43192, z: -355.99283}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -2963,7 +2963,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1058247237}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e17a1df60e8e974ba078104e8ee0592, type: 3}
   m_Name: 

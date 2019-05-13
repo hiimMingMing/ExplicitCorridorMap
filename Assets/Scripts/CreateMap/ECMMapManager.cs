@@ -280,7 +280,7 @@ public class ECMMapManager : MonoBehaviour {
 		ObstaclesVertices result = new ObstaclesVertices();
 		result.vertices = vertices;
 
-		result.vertices.Reverse();
+		//result.vertices.Reverse();
 		bakedECMMap.Add(result);
 
 		yLower = 99999f;
