@@ -171,9 +171,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ab0fc1ea95e35448bb0cf24e21a45b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obstaclePrefab: {fileID: 946082751479417136, guid: cb06d60ea1193c64aa708dab086db078,
-    type: 3}
-  usingODPA: 0
+  obstaclePrefab: {fileID: 1280584941}
+  usingODPA: 1
   defaultAddKeyCode: 97
   defaultDeleteKeyCode: 100
 --- !u!4 &92796714
@@ -1595,8 +1594,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1058247237}
-  m_LocalRotation: {x: -0.5531413, y: 0.083396636, z: -0.05577827, w: -0.8270239}
-  m_LocalPosition: {x: 128.34819, y: 386.37463, z: -299.0636}
+  m_LocalRotation: {x: 0.32343665, y: 0.014192855, z: -0.004851887, w: 0.946131}
+  m_LocalPosition: {x: -62.991875, y: 205.46437, z: -340.40775}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1834,7 +1833,7 @@ MonoBehaviour:
   - 2
   - 3
   Grouping: 1
-  CrowDensity: 1
+  CrowDensity: 0
   GroupBehavior: 1
   drawGraph: 1
   inputPointRadius: 2

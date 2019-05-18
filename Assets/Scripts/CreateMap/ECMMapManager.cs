@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEditor;
+using UnityEngine.SceneManagement;
+using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class ECMMapManager : MonoBehaviour {
 
 	public NavMeshSurface surface;
 	public List<ObstaclesVertices> bakedECMMap;
-
+    public bool isLoadedScene= false;
 	public static ECMMapManager instance = null;
 	public List<GameObject> gameObjects;
 	[SerializeField]
@@ -37,13 +41,62 @@ public class ECMMapManager : MonoBehaviour {
 
 		DontDestroyOnLoad(gameObject);
 		setGround(GameObject.Find("GroundForECM").GetComponent<NavMeshSurface>());
-		bakeECMMap();
+        if (isLoadedScene)
+        {
+            string sceneName = SceneManager.GetActiveScene().name;
+            LoadData(sceneName);
+        }
+        else
+        {
+            bakeECMMap();
+        }
 		if(enableDebug) {
 			drawDebug();
 		}
-	}
+        
 
-	void Start () {
+    }
+
+    private void LoadData(string sceneName)
+    {
+        if (!File.Exists(Application.persistentDataPath + "/gamesave.save"))
+        {
+            Debug.Log("Save" + Application.persistentDataPath + "/gamesave.save");
+            SaveData(sceneName);
+        }
+        else
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream fileStream = File.Open(Application.persistentDataPath + "/gamesave.save", FileMode.Open);
+            ListSave listSave = (ListSave)bf.Deserialize(fileStream);
+            fileStream.Close();
+            bakedECMMap = listSave.toObstacleVertices();
+            GameObject obstacles = GameObject.Find("Obstacles");
+
+            int obstaclesCOunt = obstacles.transform.childCount;
+            gameObjects = new List<GameObject>(obstaclesCOunt);
+            for (int i = 0; i < obstaclesCOunt; i++)
+            {
+                gameObjects.Add(obstacles.transform.GetChild(i).gameObject);
+
+            }
+        }
+    }
+
+    private void SaveData( string sceneName)
+    {
+        bakeECMMap();
+        ListSave listSave = createSaveGameObject();
+        BinaryFormatter bf = new BinaryFormatter();
+        Debug.Log(Application.persistentDataPath + "/gamesave.save");
+        FileStream file = File.Create(Application.persistentDataPath + "/gamesave.save");
+        bf.Serialize(file, listSave);
+        file.Close();
+        Debug.Log("GameSave");
+
+    }
+
+    void Start () {
 		
 	}
 
@@ -239,7 +292,7 @@ public class ECMMapManager : MonoBehaviour {
 			Vector3 direction = (pointB - pointA).normalized;
 			RaycastHit hitTarget;
 			if(Physics.Raycast(pointA, direction, out hitTarget, Mathf.Infinity, 1<<31) || Physics.Raycast(pointB, -direction, out hitTarget, Mathf.Infinity, 1<<31)) {
-				Debug.Log(hitTarget.transform.name);
+				
 				vertices.RemoveAt(i + 1);
 				i--;
 			}
@@ -291,6 +344,50 @@ public class ECMMapManager : MonoBehaviour {
 	{
 		public List<Vector3> vertices = new List<Vector3>();
 	}
+    [System.Serializable]
+    public class Vector3Serializable {
+        public List<float> xs= new List<float>();
+        public List<float> ys= new List<float>();
+        public List<float> zs= new List<float>();
+    }
+    [System.Serializable]
+    public class ListSave {
+        public List<Vector3Serializable> listSave = new List<Vector3Serializable>();
+        public List<ObstaclesVertices> toObstacleVertices() {
+            List<ObstaclesVertices> listObstacleVertices = new List<ObstaclesVertices>();
+            for (int i = 0; i < listSave.Count; i++)
+            {
+                ObstaclesVertices obstaclesVertices = new ObstaclesVertices();
+                for (int j = 0; j < listSave[i].xs.Count; j++)
+                {
+                    obstaclesVertices.vertices.Add(new Vector3(listSave[i].xs[j], listSave[i].ys[j], listSave[i].zs[j]));
 
+                }
+                listObstacleVertices.Add(obstaclesVertices);
+            }
 
+            return listObstacleVertices;
+        }
+    }
+
+    private ListSave createSaveGameObject() {
+        ListSave listSave = new ListSave();
+        for (int i = 0; i < bakedECMMap.Count; i++) {
+            Vector3Serializable vector3Serializable = new Vector3Serializable();
+            for (int j = 0; j < bakedECMMap[i].vertices.Count; j++) {
+                vector3Serializable.xs.Add(bakedECMMap[i].vertices[j].x);
+                vector3Serializable.ys.Add(bakedECMMap[i].vertices[j].y);
+                vector3Serializable.zs.Add(bakedECMMap[i].vertices[j].z);
+
+            }
+            listSave.listSave.Add(vector3Serializable);
+        }
+        return listSave;
+    }
+    private void SaveAsJson() {
+        ListSave listSave = createSaveGameObject();
+        string JSon = JsonUtility.ToJson(listSave);
+        Debug.Log("Saving object" + JSon);
+    }
+   
 }

@@ -2,11 +2,6 @@
 /// \page changelog Changelog
 /// \order{-10}
 ///
-/// - 4.2.6 (2019-03-23)
-/// 	- Fixed AIPath.reachedDestination and RichAI.reachedDestination only worked when the y coordinate of the agent was close to zero... which it of course was in all my tests.
-/// 		Sorry about this silly bug and the headache it may have caused.
-/// 	- Fixed loading a serialized navmesh graph when the source mesh no longer existed would cause the graph to be offset if a navmesh cut was later used to cut it.
-///
 /// - 4.2.5 (2019-02-14)
 /// 	- Added a new documentation page for how to create and configure graphs during runtime. runtime-graphs (view in online documentation for working links).
 /// 	- Added a new documentation page about editing point graph connections manually. editing-graphs (view in online documentation for working links).

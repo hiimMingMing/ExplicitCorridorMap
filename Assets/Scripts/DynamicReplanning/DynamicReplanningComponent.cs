@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using ExplicitCorridorMap.Maths;
 using rvo = RVO;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 namespace ExplicitCorridorMap
 {
     public class DynamicReplanningComponent : MonoBehaviour
@@ -29,7 +31,9 @@ namespace ExplicitCorridorMap
             var obsRect = Geometry.ConvertToRectInt(go.GetComponent<Transform>());
             var obs = new Obstacle(obsRect);
             obs.GameObject = go;
+            
             ecmMap.ECMGraph.AddPolygonDynamic(obs);
+           
             ecmMap.ComputeCurveEdge();
             rvo.Simulator.Instance.addObstacle(obs);
             //TODO change to effective way to add obstacle
@@ -46,11 +50,17 @@ namespace ExplicitCorridorMap
                     if (listAffectPath.Count > 0)
                         if (!usingODPA)
                         {
+                            Stopwatch stopwatch = new Stopwatch();
+                            stopwatch.Start();
                             newPath = PathFinding.FindPath(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position.To2D(), player.WayPointList[player.WayPointList.Count - 1]);
+                            stopwatch.Stop();
+                            UnityEngine.Debug.Log("Time to replanning using ODPA =" + stopwatch.ElapsedMilliseconds);
                         }
                         else
                         {
+                            
                             newPath = DynamicFindPathByODPAVer2(ecmMap.ECMGraph, player.RadiusIndex, player.transform.position.To2D(), player.WayPointList[player.WayPointList.Count - 1], player.WayPointList, listAffectPath, obsRect);
+                          
                         }
 
 
@@ -114,7 +124,10 @@ namespace ExplicitCorridorMap
                 var obsRect = ConvertObsToRect(deleteObs);
                 Destroy(deleteObs.GameObject);
                 var rvoID = deleteObs.RvoID;
+              
                 ecmMap.ECMGraph.DeletePolygonDynamic(ID);
+              
+                
                 ecmMap.ComputeCurveEdge();
                 rvo.Simulator.Instance.deleteObstacle(rvoID);
                 rvo.Simulator.Instance.processObstacles();

@@ -4630,9 +4630,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ab0fc1ea95e35448bb0cf24e21a45b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obstaclePrefab: {fileID: 946082751479417136, guid: cb06d60ea1193c64aa708dab086db078,
-    type: 3}
-  usingODPA: 1
+  obstaclePrefab: {fileID: 2102543134}
+  usingODPA: 0
   defaultAddKeyCode: 97
   defaultDeleteKeyCode: 100
 --- !u!4 &92796714
@@ -38813,6 +38812,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   surface: {fileID: 0}
   bakedECMMap: []
+  isLoadedScene: 1
   gameObjects: []
   enableDebug: 1
 --- !u!4 &851062937
@@ -46276,8 +46276,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1058247237}
-  m_LocalRotation: {x: 0.34286636, y: -0.23237972, z: 0.08794926, w: 0.90592897}
-  m_LocalPosition: {x: 392.86334, y: 700.4801, z: -715.40015}
+  m_LocalRotation: {x: 0.20464228, y: -0.68124646, z: 0.20760992, w: 0.671508}
+  m_LocalPosition: {x: 1903.8113, y: 1169.0087, z: 52.233635}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -93828,13 +93828,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2102543134}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 558, y: 5.5, z: -447.3}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 819, y: 5.5, z: 1}
   m_LocalScale: {x: 74.6839, y: 10, z: 31.520088}
   m_Children: []
   m_Father: {fileID: 1772512205}
   m_RootOrder: 627
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!65 &2102543136
 BoxCollider:
   m_ObjectHideFlags: 0

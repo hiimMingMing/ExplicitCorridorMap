@@ -1627,9 +1627,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ab0fc1ea95e35448bb0cf24e21a45b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obstaclePrefab: {fileID: 946082751479417136, guid: cb06d60ea1193c64aa708dab086db078,
-    type: 3}
-  usingODPA: 1
+  obstaclePrefab: {fileID: 1342298989}
+  usingODPA: 0
   defaultAddKeyCode: 97
   defaultDeleteKeyCode: 100
 --- !u!4 &92796714
@@ -15848,7 +15847,7 @@ MonoBehaviour:
   - 2
   - 3
   Grouping: 1
-  CrowDensity: 1
+  CrowDensity: 0
   GroupBehavior: 1
   drawGraph: 1
   inputPointRadius: 2

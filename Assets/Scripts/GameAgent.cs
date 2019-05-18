@@ -24,8 +24,15 @@ public class GameAgent : MonoBehaviour
     [HideInInspector]public int Sid;
     [HideInInspector] private float AgentRadiusOffset =1f;
     [HideInInspector] private  Vector2 _position;
+    //Use to benchmark
+    System.DateTime start;
+    System.DateTime end;
+    
+    public static float totalTime=0;
+    bool isFirst = true;
     void Start()
     {
+      
         ECMMap = FindObjectOfType<ECMMap>();
         ECMGraph = ECMMap.ECMGraph;
         CurrentWayPoint = 1;
@@ -44,6 +51,12 @@ public class GameAgent : MonoBehaviour
     }
     public void SetNewPath(List<Vector2> path)
     {
+        if (isFirst) 
+        {
+            start = System.DateTime.Now;
+            
+            isFirst = !isFirst;
+        }
         WayPointList = path;
         CurrentWayPoint = 1;
     }
@@ -125,7 +138,16 @@ public class GameAgent : MonoBehaviour
         }
         else
         {
-            Simulator.Instance.setAgentPrefVelocity(Sid, new  Vector2(0, 0));
+            if (!isFirst)
+            {
+                Simulator.Instance.setAgentPrefVelocity(Sid, new Vector2(0, 0));
+                end = System.DateTime.Now;
+                
+                totalTime += (end - start).Minutes * 60 + (end - start).Seconds + (end - start) .Milliseconds/ 1000.0f;
+                Debug.Log(totalTime);
+                isFirst = true;
+            }
+           
             return;
         }
 

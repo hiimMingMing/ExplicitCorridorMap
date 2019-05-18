@@ -431,6 +431,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentPrefab: {fileID: 5507474019436848124, guid: 26355b24a29b38e4981ad657a2d54930,
     type: 3}
+  multipleAgentPerAdd: 10
 --- !u!114 &92796713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -443,8 +444,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ab0fc1ea95e35448bb0cf24e21a45b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obstaclePrefab: {fileID: 946082751479417136, guid: cb06d60ea1193c64aa708dab086db078,
-    type: 3}
+  obstaclePrefab: {fileID: 251198880}
   usingODPA: 1
   defaultAddKeyCode: 97
   defaultDeleteKeyCode: 100
@@ -1035,7 +1035,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 251198880}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 54, y: 5.5, z: 0}
+  m_LocalPosition: {x: 61.5, y: 5.5, z: 6.5}
   m_LocalScale: {x: 54.833996, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 1772512205}
@@ -3231,6 +3231,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   surface: {fileID: 0}
   bakedECMMap: []
+  isLoadedScene: 1
   gameObjects: []
   enableDebug: 1
 --- !u!4 &851062937
@@ -3596,8 +3597,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1058247237}
-  m_LocalRotation: {x: 0.34286636, y: -0.23237972, z: 0.08794926, w: 0.90592897}
-  m_LocalPosition: {x: 392.86334, y: 700.4801, z: -715.40015}
+  m_LocalRotation: {x: -0.0019899833, y: -0.9488036, z: 0.3158039, w: -0.0059783305}
+  m_LocalPosition: {x: 6.649106, y: 404.27704, z: 530.0226}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -4563,7 +4564,7 @@ MonoBehaviour:
   - 2
   - 3
   Grouping: 1
-  CrowDensity: 1
+  CrowDensity: 0
   GroupBehavior: 1
   drawGraph: 1
   inputPointRadius: 2

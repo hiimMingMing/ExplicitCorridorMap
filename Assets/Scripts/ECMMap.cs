@@ -64,8 +64,13 @@ public class ECMMap : MonoBehaviour
             }
         }
         var border = Geometry.ConvertToObstacle(GroundPlane);
+        
+    
         ECMGraph = new ECM(Obstacles, border);
+        stopwatch.Start();
         ECMGraph.Construct();
+        stopwatch.Stop();
+        UnityEngine.Debug.Log("Time build ECM = " + stopwatch.ElapsedMilliseconds);
         ECMGraph.AddAgentRadius(AgentRadiusList);
         UnityEngine.Debug.Log("Number of ECM vertices= "+ECMGraph.MapVertices.Count);
         UnityEngine.Debug.Log("Number of Obstacle vertices= " + tempTotalVertices);
