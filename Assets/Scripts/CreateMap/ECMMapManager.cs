@@ -12,14 +12,16 @@ public class ECMMapManager : MonoBehaviour {
 
 	public NavMeshSurface surface;
 	public List<ObstaclesVertices> bakedECMMap;
-    public bool isLoadedScene= false;
+    
 	public static ECMMapManager instance = null;
 	public List<GameObject> gameObjects;
 	[SerializeField]
 	public bool enableDebug = false;
-
-
-	float yLower = 99999f;
+    [Header("Save/Load data")]
+    
+    public bool bDeleteAllSaveObject = false;
+    public bool isLoadedScene = false;
+    float yLower = 99999f;
 
     float Round(float input, int decimalPlaces = 1)
     {
@@ -41,9 +43,13 @@ public class ECMMapManager : MonoBehaviour {
 
 		DontDestroyOnLoad(gameObject);
 		setGround(GameObject.Find("GroundForECM").GetComponent<NavMeshSurface>());
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (bDeleteAllSaveObject) {
+            DeleteSaveObj(sceneName);
+        }
         if (isLoadedScene)
         {
-            string sceneName = SceneManager.GetActiveScene().name;
+            
             LoadData(sceneName);
         }
         else
@@ -56,18 +62,24 @@ public class ECMMapManager : MonoBehaviour {
         
 
     }
-
+    private void DeleteSaveObj(string sceneName) {
+        if (File.Exists(Application.persistentDataPath + "/gamesave" + sceneName + ".save"))
+        {
+           File.Delete(Application.persistentDataPath + "/gamesave" + sceneName + ".save");
+        }
+    }
     private void LoadData(string sceneName)
     {
-        if (!File.Exists(Application.persistentDataPath + "/gamesave.save"))
+        if (!File.Exists(Application.persistentDataPath + "/gamesave" + sceneName +".save"))
         {
-            Debug.Log("Save" + Application.persistentDataPath + "/gamesave.save");
             SaveData(sceneName);
         }
         else
         {
+            Debug.Log("Load" + Application.persistentDataPath + "/gamesave" + sceneName + ".save");
+
             BinaryFormatter bf = new BinaryFormatter();
-            FileStream fileStream = File.Open(Application.persistentDataPath + "/gamesave.save", FileMode.Open);
+            FileStream fileStream = File.Open(Application.persistentDataPath + "/gamesave" + sceneName + ".save", FileMode.Open);
             ListSave listSave = (ListSave)bf.Deserialize(fileStream);
             fileStream.Close();
             bakedECMMap = listSave.toObstacleVertices();
@@ -88,8 +100,8 @@ public class ECMMapManager : MonoBehaviour {
         bakeECMMap();
         ListSave listSave = createSaveGameObject();
         BinaryFormatter bf = new BinaryFormatter();
-        Debug.Log(Application.persistentDataPath + "/gamesave.save");
-        FileStream file = File.Create(Application.persistentDataPath + "/gamesave.save");
+        Debug.Log(Application.persistentDataPath + "/gamesave" + sceneName + ".save");
+        FileStream file = File.Create(Application.persistentDataPath + "/gamesave" + sceneName + ".save");
         bf.Serialize(file, listSave);
         file.Close();
         Debug.Log("GameSave");
