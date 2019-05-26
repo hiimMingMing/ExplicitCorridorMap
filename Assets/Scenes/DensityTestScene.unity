@@ -3136,6 +3136,8 @@ MonoBehaviour:
   GroundPlane: {fileID: 1870947666}
   AgentRadiusList:
   - 10
+  - 20
+  - 30
   Grouping: 1
   CrowDensity: 0
   GroupBehavior: 1

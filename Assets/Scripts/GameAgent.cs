@@ -16,12 +16,12 @@ public class GameAgent : MonoBehaviour
    
     [HideInInspector] public ECMMap ECMMap;
     private ECM ECMGraph;
-    public int RadiusIndex = 0;
+    [HideInInspector] public int RadiusIndex = 0;
     [HideInInspector] public float Radius=5;
     public float Speed = 2;
     public float Priority = 1;
-    public float DestinationRadius = 2;
-    [HideInInspector]public int Sid;
+    [HideInInspector] public float DestinationRadius = 2;
+    [HideInInspector] public int Sid;
     [HideInInspector] private float AgentRadiusOffset =1f;
     [HideInInspector] private  Vector2 _position;
     //Use to benchmark

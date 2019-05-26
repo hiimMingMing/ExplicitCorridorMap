@@ -17,7 +17,7 @@ public class AgentEditor : Editor
         {
             options[i] = radiusList[i].ToString();
         }
-        //agent.RadiusIndex = EditorGUILayout.Popup("Radius", agent.RadiusIndex, options);
-        //agent.Radius = radiusList[agent.RadiusIndex];
+        agent.RadiusIndex = EditorGUILayout.Popup("Radius", agent.RadiusIndex, options);
+        agent.Radius = radiusList[agent.RadiusIndex];
     }
 }

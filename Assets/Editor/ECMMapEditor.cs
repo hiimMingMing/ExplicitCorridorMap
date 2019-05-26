@@ -15,15 +15,14 @@ public class ECMMapEditor : Editor
         DrawDefaultInspector();
         map = (ECMMap)target;
         map.Grouping = EditorGUILayout.Toggle("Grouping", map.Grouping);
-        if(map.Grouping) map.GroupBehavior = EditorGUILayout.Toggle("Group Behavior", map.GroupBehavior);
+        if(map.Grouping) map.GroupBehavior = EditorGUILayout.Toggle("   Group Behavior At Corner", map.GroupBehavior);
         map.CrowDensity = EditorGUILayout.Toggle("Crow Density", map.CrowDensity);
 
         map.drawGraph = EditorGUILayout.Toggle("Show Graph", map.drawGraph);
 
         if (map.drawGraph)
         {
-            map.drawNearestObstaclePoints = EditorGUILayout.Toggle("Draw Nearest Obs Points", map.drawNearestObstaclePoints);
-            map.drawVertexLabel = EditorGUILayout.Toggle("Draw Vertex Label", map.drawVertexLabel);
+            map.drawNearestObstaclePoints = EditorGUILayout.Toggle("Show Nearest Obstacle Points", map.drawNearestObstaclePoints);
         }
     }
     void OnSceneGUI()
